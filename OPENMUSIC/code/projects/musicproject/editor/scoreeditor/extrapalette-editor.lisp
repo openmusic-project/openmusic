@@ -493,11 +493,11 @@
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 55)
                                (om-make-point 80 20) ""
-                               :range '("Slur" "Crescendo" "Decrescendo") ; "Bracket"
-                               :value (nth (position (nth 0 params) '(slur cresc decresc brack)) 
-                                           '("Slur" "Crescendo" "Decrescendo" "Bracket"))
+                               :range '("Slur" "Crescendo" "Decrescendo" "Trill") ; "Bracket"
+                               :value (nth (position (nth 0 params) '(slur cresc decresc trill)) 
+                                           '("Slur" "Crescendo" "Decrescendo" "Trill"))
                                :di-action (om-dialog-item-act item
-                                            (setf (nth 0 params) (nth (om-get-selected-item-index item) '(slur cresc decresc brack)))
+                                            (setf (nth 0 params) (nth (om-get-selected-item-index item) '(slur cresc decresc trill)))
                                             (set-extra-param *extramanager* value params)
                                             ;(om-invalidate-view (preview (win *extramanager*)))
                                             ))
