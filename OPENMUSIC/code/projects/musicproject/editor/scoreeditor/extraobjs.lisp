@@ -940,7 +940,48 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (om-draw-line x y  x1 (round (+ y (/ (- y1 y) 2))))
   (om-draw-line  x y1  x1 (round (+ y (/ (- y1 y) 2)))))
 
+
+(defmethod draw-graph-extra-obj ((self grap-d-dynamic-extra) view size staff) 
+  (let* ((grap-obj (gobject self))
+          (object (reference self))
+          points
+          (params (gparams object))
+          (targetpt (third (rectangle (get-end-obj view object (last-elem (msoffsets object))))))
+          (startpt (third (rectangle (get-end-obj view object (car (msoffsets object))))))
+          (diffpt (- targetpt startpt))
+          (selec-size 6) 
+          (voff 15)
+          fun)
+    (setf points (convert-delta-to-points grap-obj (p-points object) size))
+    (setf fun (cond
+                ((trill-p (reference self)) 'draw-trill)
+                ((crescendo-p (reference self)) 'draw-cresc)
+                (t 'draw-decresc)))
+     (when points 
+     (om-with-fg-color view (fourth params)
+       (om-with-line-size (third params)
+         (if (trill-p object)
+             (funcall 'draw-trill (trill-string diffpt) (om-point-h (car points)) targetpt
+                    (om-point-v (car points)) (om-point-v (second points)))
+         (if (equal (second params) 'dash)
+             (om-with-dashline
+               (funcall fun (om-point-h (car points)) (om-point-h (second points))
+                        (om-point-v (car points))  (om-point-v (second points))));todo
+           
+           (funcall fun (om-point-h (car points)) targetpt
+                    (om-point-v (car points)) (om-point-v (second points)))))))
+     
+     (when (or (equal (score-get-extra-mode) 'cresc) (equal (score-get-extra-mode) 'decresc) (equal (score-get-extra-mode) 'trill));faire pour trill a part
+       (setf (selection-rec self) (list (+ (om-point-h (car points)) (round (- targetpt
+                                                                               (om-point-h (car points))) 2))
+                                        (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
+        (om-with-fg-color nil *om-red-color*
+          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))))
+
+;***************
 ;cresc
+;***************
+
 (defclass! crescendo (d-dynamic-extra) ()
  (:default-initargs  :cresc t))
 
@@ -1006,10 +1047,17 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 |#
 
 
-
+;***************
 ;decresc
+;***************
+
 (defclass! diminuendo (d-dynamic-extra) ()
            (:default-initargs  :cresc nil))
+
+
+(defmethod diminuendo-p ((self diminuendo)) t)
+(defmethod diminuendo-p ((self t)) nil)
+
 
 (defmethod draw-obj-in-rect ((self diminuendo) x x1 y y1 edparams  view)
   (om-draw-line x y x1 (round (+ y (/ (- y1 y) 2))))
@@ -1061,33 +1109,82 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                             :gobject gobj)))
     (setf (graphic-frame self) rep)))
    
-(defmethod draw-graph-extra-obj ((self grap-d-dynamic-extra) view size staff)
-  (let* ((grap-obj (gobject self))
-          (object (reference self))
-          points
-          (params (gparams object))
-          (targetpt (third (rectangle (get-end-obj view object (last-elem (msoffsets object))))))
-          (selec-size 6) 
-          (voff 15)
-          fun)
-     (setf points (convert-delta-to-points grap-obj (p-points object) size))
-     (setf fun (if (crescendo-p (reference self)) 'draw-cresc 'draw-decresc))
-     (when points 
-     (om-with-fg-color view (fourth params)
-       (om-with-line-size (third params)
-         (if (equal (second params) 'dash)
-             (om-with-dashline
-               (funcall fun (om-point-h (car points)) (om-point-h (second points))
-                        (om-point-v (car points))  (om-point-v (second points))))
-           (funcall fun (om-point-h (car points)) targetpt
-                    (- (om-point-v (car points)) 5) (+ (om-point-v (second points)) 5)))))
-     
-     (when (or (equal (score-get-extra-mode) 'cresc) (equal (score-get-extra-mode) 'decresc))
-       (setf (selection-rec self) (list (+ (om-point-h (car points)) (round (- targetpt
-                                                                               (om-point-h (car points))) 2))
-                                        (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
-        (om-with-fg-color nil *om-red-color*
-          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))))
+
+;***************
+;trill
+;***************
+
+(defclass! trill (d-dynamic-extra) ()
+ (:default-initargs  :trill t))
+
+(defmethod trill-p ((self trill)) t)
+(defmethod trill-p ((self t)) nil)
+
+
+(defun trill-string (n)
+  (let ((strg (repeat-n "5" (1- (round (/ n 13.5)))))
+        (rep "5"))
+    (loop for i in  strg
+          do (setf rep  (concatenate 'string rep i)))
+    rep))
+
+(defmethod draw-trill ( string x x1 y y1 )
+  (let* ((fontsize 24)
+         (thefont (om-make-music-font *extras-font* fontsize))
+         (sizetext 3))
+    (om-with-font thefont
+                  (om-draw-string (- x 5) y "*")
+                  (om-draw-string (+ x 10) y string)
+                  )))
+
+;not used?
+(defmethod draw-obj-in-rect ((self  trill) x x1 y y1 edparams  view)
+  (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
+  (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
+
+
+;(om-make-music-font *extras-font* 24)
+
+
+(defmethod do-release-extra-action ((self scorepanel) (mode (eql 'trill)) pos)
+  (let* ((size (staff-size self))
+        (mode-obj (grap-class-from-type  (obj-mode self)))
+        (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
+        (voff (om-make-point (om-point-x *extra-initial-pos*) (- (om-point-y *extra-initial-pos*) 15)));15 related to 5 above.
+        newextra obj points0 points1)
+    (if target
+        (progn
+          (setf points0 (convert-points-to-delta (car (rectangle *start-extra-gobj-click*)) (second (rectangle *start-extra-gobj-click*))
+                                                 (list *extra-initial-pos* (om-add-points voff ;*extra-initial-pos* 
+                                                                                          (om-make-point size size))) size))
+          (setf points1 (convert-points-to-delta (car (rectangle target)) (second (rectangle target)) (list (om-add-points pos (om-make-point (* -1 size) size)) pos) size))
+          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff ;*extra-initial-pos*
+                                              ))
+          (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list voff ;*extra-initial-pos* 
+                                                                                                     pos) size))
+          ;(print (list "target" *extra-initial-pos*))
+          (setf newextra (make-instance 'trill
+                                  :object (reference obj) 
+                                  :p-points points
+                                  :gparams (copy-list (score-get-extra-params))))
+          (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
+                                            (offset->ms (reference target) (object (om-view-container self)))))
+          
+          ;(setf *start-extra-obj-click* nil)
+          (push newextra (extra-obj-list (reference obj)))
+          (update-panel self t))
+      (om-beep))))
+
+
+(defmethod add-new-extra-drag (self where obj (mode (eql 'trill)) dc) 
+  (if (and obj (or (equal (obj-mode self) "note")
+                   (equal (obj-mode self) "chord")))
+      (om-init-motion-click 
+       self where :motion-draw 'draw-score-connection :display-mode 2 
+       :release-action 'release-score-connection)
+    (om-beep)))
+
+
 
 ;***************
 ;slur
