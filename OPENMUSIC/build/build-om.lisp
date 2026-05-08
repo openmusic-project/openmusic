@@ -331,6 +331,7 @@
   (editor:setup-indent "defmethod*" 2 2 2)  
   (init-root-definition-pathname cl-user::*om-src-directory* om::*om-root*)
 
+  #+win32(win32:set-dpi-awareness :none)
   (setf *print-case* :downcase)
   (setf *msg-error-label-on* nil)
   (in-package :om)
