@@ -940,6 +940,14 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (om-draw-line x y  x1 (round (+ y (/ (- y1 y) 2))))
   (om-draw-line  x y1  x1 (round (+ y (/ (- y1 y) 2)))))
 
+(defclass grap-d-dynamic-extra (grap-compose-extra) ())
+
+(defmethod make-graph-extra-obj ((self d-dynamic-extra) gobj)
+  (let ((rep (make-instance 'grap-d-dynamic-extra
+                            :reference  self
+                            :gobject gobj)))
+    (setf (graphic-frame self) rep)))
+
 
 (defmethod draw-graph-extra-obj ((self grap-d-dynamic-extra) view size staff) 
   (let* ((grap-obj (gobject self))
@@ -1101,13 +1109,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (om-draw-line x y (- (+ x w) 1) (round (+ y (/ h 2))))
     (om-draw-line x (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2))))))
 
-(defclass grap-d-dynamic-extra (grap-compose-extra) ())
 
-(defmethod make-graph-extra-obj ((self d-dynamic-extra) gobj)
-  (let ((rep (make-instance 'grap-d-dynamic-extra
-                            :reference  self
-                            :gobject gobj)))
-    (setf (graphic-frame self) rep)))
    
 
 ;***************
