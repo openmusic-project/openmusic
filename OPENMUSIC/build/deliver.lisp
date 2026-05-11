@@ -284,6 +284,7 @@
 ;;; INIT FUNCALL
 (defun init-om ()
   (setf om::*om-startup* t)
+  #+win32(win32:set-dpi-awareness :none)
   (push :om-deliver *features*)
   #+cocoa(default-interface)
   (oa::om-root-init)
