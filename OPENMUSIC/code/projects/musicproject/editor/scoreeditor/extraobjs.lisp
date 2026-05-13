@@ -624,6 +624,21 @@ If <dynamics>
         (om-make-point (round (+ x0 (* (om-point-h item) size)))
                        (round (+ y0 (* (om-point-v item) size)))))))
 
+
+(defun convert-delta-to-points-zoom (gobj points size zoom)
+  (let ((x0 (car (rectangle gobj)))
+        (y0 (second (rectangle gobj))))
+  (loop for item in points collect
+        (om-make-point (round (+ x0 (* (om-point-h item) size zoom)))
+                       (round (+ y0 (* (om-point-v item) size)))))))
+
+
+(defun convert-points-to-delta-zoom (x0 y0 points size zoom)
+  (loop for item in points collect
+        (om-make-point (/ (/ (- (om-point-h item) x0) size) zoom)
+                       (/ (- (om-point-v item) y0) size))))
+
+
 ;***************
 ;LINES
 ;***************
@@ -948,19 +963,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                             :gobject gobj)))
     (setf (graphic-frame self) rep)))
 
-
 (defmethod draw-graph-extra-obj ((self grap-d-dynamic-extra) view size staff) 
   (let* ((grap-obj (gobject self))
           (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
           points
           (params (gparams object))
-          (targetpt (third (rectangle (get-end-obj view object (last-elem (msoffsets object))))))
-          (startpt (third (rectangle (get-end-obj view object (car (msoffsets object))))))
-          (diffpt (- targetpt startpt))
-          (selec-size 6) 
-          (voff 15)
+          (selec-size 6)
           fun)
-    (setf points (convert-delta-to-points grap-obj (p-points object) size))
+    (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
     (setf fun (cond
                 ((trill-p (reference self)) 'draw-trill)
                 ((crescendo-p (reference self)) 'draw-cresc)
@@ -969,22 +980,25 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
      (om-with-fg-color view (fourth params)
        (om-with-line-size (third params)
          (if (trill-p object)
-             (funcall 'draw-trill (trill-string diffpt) (om-point-h (car points)) targetpt
+             (funcall 'draw-trill (trill-string (- (om-point-h (second points)) (om-point-h (car points)))) 
+                                                (om-point-h (car points)) (om-point-h (second points))
                     (om-point-v (car points)) (om-point-v (second points)))
          (if (equal (second params) 'dash)
              (om-with-dashline
                (funcall fun (om-point-h (car points)) (om-point-h (second points))
                         (om-point-v (car points))  (om-point-v (second points))));todo
-           
-           (funcall fun (om-point-h (car points)) targetpt
+           (funcall fun (om-point-h (car points)) (om-point-h (second points))
                     (om-point-v (car points)) (om-point-v (second points)))))))
      
-     (when (or (equal (score-get-extra-mode) 'cresc) (equal (score-get-extra-mode) 'decresc) (equal (score-get-extra-mode) 'trill));faire pour trill a part
-       (setf (selection-rec self) (list (+ (om-point-h (car points)) (round (- targetpt
-                                                                               (om-point-h (car points))) 2))
+     (when (or (equal (score-get-extra-mode) 'cresc) 
+               (equal (score-get-extra-mode) 'decresc) 
+               (equal (score-get-extra-mode) 'trill))
+       (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+                                           (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
                                         (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
         (om-with-fg-color nil *om-red-color*
           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))))
+
 
 ;***************
 ;cresc
@@ -1003,20 +1017,16 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'cresc)) pos)
   (let* ((size (staff-size self))
+         (zoom (om-round (staff-zoom self) 2))
          (mode-obj (grap-class-from-type  (obj-mode self)))
          (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
          (voff (om-make-point (om-point-x *extra-initial-pos*) (+ 15 (om-point-y *extra-initial-pos*))));15 related to 5 above.
          newextra obj points0 points1)
     (if target
         (progn
-          (setf points0 (convert-points-to-delta (car (rectangle *start-extra-gobj-click*)) (second (rectangle *start-extra-gobj-click*))
-                                                 (list *extra-initial-pos* (om-add-points voff ;*extra-initial-pos* 
-                                                                                          (om-make-point size size))) size))
-          (setf points1 (convert-points-to-delta (car (rectangle target)) (second (rectangle target)) (list (om-add-points pos (om-make-point (* -1 size) size)) pos) size))
-          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff ;*extra-initial-pos*
-                                              ))
-          (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list voff ;*extra-initial-pos* 
-                                                                                                     pos) size))
+          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff))
+          (setf points (convert-points-to-delta-zoom (car (rectangle obj)) (second (rectangle obj)) 
+                                                     (list voff pos) size zoom))
           (setf newextra (make-instance 'crescendo
                                         :object (reference obj) 
                                         :p-points points
@@ -1027,22 +1037,21 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
-      (om-beep))))
+      (beep))))
 
+;not needed anymore
 (defmethod get-end-obj ((self scorepanel) (extra d-dynamic-extra) off)
   (let* ((chords (collect-chords-cont-and-rests (object (om-view-container self))))
          (offs (mapcar #'(lambda (x) (offset->ms x self)) chords))
          (pos (position off offs)))
     (nth pos (get-graph-type-obj (graphic-obj self) 'grap-chord))))
 
-
 (defmethod add-new-extra-drag (self where obj (mode (eql 'cresc)) dc) 
-  (if (and obj (or (equal (obj-mode self) "note")
-                   (equal (obj-mode self) "chord")))
+  (if (and obj (string-equal (obj-mode self) "chord"))
       (om-init-motion-click 
        self where :motion-draw 'draw-score-connection :display-mode 2 
        :release-action 'release-score-connection)
-    (om-beep)))
+    (om-message-dialog "Only in CHORD mode")))
 
 
 ;this is for the initial drag connection:
@@ -1073,20 +1082,16 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'decresc)) pos)
   (let* ((size (staff-size self))
+         (zoom (om-round (staff-zoom self) 2))
          (mode-obj (grap-class-from-type  (obj-mode self)))
          (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
          (voff (om-make-point (om-point-x *extra-initial-pos*) (+ 15 (om-point-y *extra-initial-pos*))));15 related to 5 above.
          newextra obj points0 points1)
     (if target
         (progn
-          (setf points0 (convert-points-to-delta (car (rectangle *start-extra-gobj-click*)) (second (rectangle *start-extra-gobj-click*))
-                                                 (list *extra-initial-pos* (om-add-points voff ;*extra-initial-pos* 
-                                                                                          (om-make-point size size))) size))
-          (setf points1 (convert-points-to-delta (car (rectangle target)) (second (rectangle target)) (list (om-add-points pos (om-make-point (* -1 size) size)) pos) size))
-          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff ;*extra-initial-pos*
-                                              ))
-          (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list voff ;*extra-initial-pos* 
-                                                                                                     pos) size))
+          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff))
+          (setf points (convert-points-to-delta-zoom (car (rectangle obj)) (second (rectangle obj)) 
+                                                     (list voff pos) size zoom))
           (setf newextra (make-instance 'diminuendo
                                         :object (reference obj) 
                                         :p-points points
@@ -1097,20 +1102,28 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
-      (om-beep))))
+      (beep))))
 
+#|
 (defmethod add-new-extra-drag (self where obj (mode (eql 'decresc)) dc)
   (om-init-motion-click 
    self where :motion-draw 'draw-decresc-connection :display-mode 2 
    :release-action 'release-score-connection))
+
 
 (defmethod draw-decresc-connection ((self scorepanel) p1 p2)
  (multiple-value-bind (x y w h) (om-points-to-rect p1 P2)
     (om-draw-line x y (- (+ x w) 1) (round (+ y (/ h 2))))
     (om-draw-line x (- (+ y h) 1) (- (+ x w) 1) (round (+ y (/ h 2))))))
 
+|#
 
-   
+(defmethod add-new-extra-drag (self where obj (mode (eql 'decresc)) dc) 
+  (if (and obj (string-equal (obj-mode self) "chord"))
+      (om-init-motion-click 
+       self where :motion-draw 'draw-score-connection :display-mode 2 
+       :release-action 'release-score-connection)
+    (om-message-dialog "Only in CHORD mode")))
 
 ;***************
 ;trill
@@ -1145,46 +1158,39 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
 
 
-;(om-make-music-font *extras-font* 24)
-
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'trill)) pos)
   (let* ((size (staff-size self))
-        (mode-obj (grap-class-from-type  (obj-mode self)))
-        (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
-        (voff (om-make-point (om-point-x *extra-initial-pos*) (- (om-point-y *extra-initial-pos*) 15)));15 related to 5 above.
-        newextra obj points0 points1)
-    (if target
+         (zoom (om-round (staff-zoom self) 2))
+         (mode-obj (grap-class-from-type  (obj-mode self)))
+         (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
+         (voff (om-make-point (om-point-x *extra-initial-pos*) (- (om-point-y *extra-initial-pos*) 15)));15 related to 5 above.
+         newextra obj points0 points1)
+    (if target 
         (progn
-          (setf points0 (convert-points-to-delta (car (rectangle *start-extra-gobj-click*)) (second (rectangle *start-extra-gobj-click*))
-                                                 (list *extra-initial-pos* (om-add-points voff ;*extra-initial-pos* 
-                                                                                          (om-make-point size size))) size))
-          (setf points1 (convert-points-to-delta (car (rectangle target)) (second (rectangle target)) (list (om-add-points pos (om-make-point (* -1 size) size)) pos) size))
-          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff ;*extra-initial-pos*
-                                              ))
-          (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list voff ;*extra-initial-pos* 
-                                                                                                     pos) size))
-          ;(print (list "target" *extra-initial-pos*))
+          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff ))
+          (setf points (convert-points-to-delta-zoom (car (rectangle obj)) (second (rectangle obj)) 
+                                                     (list voff pos) size zoom))
           (setf newextra (make-instance 'trill
-                                  :object (reference obj) 
-                                  :p-points points
-                                  :gparams (copy-list (score-get-extra-params))))
+                                        :object (reference obj) 
+                                        :p-points points
+                                        :gparams (copy-list (score-get-extra-params))))
           (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
-                                            (offset->ms (reference target) (object (om-view-container self)))))
+                                           (offset->ms (reference target) (object (om-view-container self)))))
           
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
-      (om-beep))))
+      (beep))))
+
 
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'trill)) dc) 
-  (if (and obj (or (equal (obj-mode self) "note")
-                   (equal (obj-mode self) "chord")))
+  (if (and obj (string-equal (obj-mode self) "chord"))
       (om-init-motion-click 
        self where :motion-draw 'draw-score-connection :display-mode 2 
        :release-action 'release-score-connection)
-    (om-beep)))
+    (om-message-dialog "Only in CHORD mode")))
 
 
 
@@ -1231,11 +1237,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod extra-movable-edit-class ((self slur)) 'movable-extra-slur)
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'slur)) dc)
-  (if obj
+  (if (and obj (string-equal (obj-mode self) "chord"))
       (om-init-motion-click 
        self where :motion-draw 'draw-score-connection :display-mode 2 
        :release-action 'release-score-connection)
-    (om-beep)))
+    (om-message-dialog "Only in CHORD mode")))
 
 (defmethod draw-score-connection ((self scorepanel) initpos pos)
   (om-with-dashline 
@@ -1244,32 +1250,32 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'slur)) pos) 
   (let* ((size (staff-size self))
-        (mode-obj (grap-class-from-type  (obj-mode self)))
-        (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
-        newextra obj points0 points1)
+         (mode-obj (grap-class-from-type  (obj-mode self)))
+         (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
+         newextra obj points0 points1)
     (if target
         (let* ((slurname (intern (string (gensym)))) newextrab newextrae)
           (setf points0 (convert-points-to-delta (car (rectangle *start-extra-gobj-click*)) (second (rectangle *start-extra-gobj-click*)) 
                                                  (list *extra-initial-pos* (om-add-points *extra-initial-pos* (om-make-point size size))) size))
           (setf points1 (convert-points-to-delta (car (rectangle target)) (second (rectangle target)) (list (om-add-points pos (om-make-point (* -1 size) size)) pos) size))
           (setf newextrab (make-instance 'slur
-                                    :object *start-extra-obj-click*
-                                    :slurname slurname
-                                    :p-points points0
-                                    :b-s-p t))
+                                         :object *start-extra-obj-click*
+                                         :slurname slurname
+                                         :p-points points0
+                                         :b-s-p t))
           (setf newextrae (make-instance 'slur
-                                    :object (reference target)
-                                    :slurname slurname
-                                    :p-points points1
-                                    :gparams (copy-list (score-get-extra-params) )
-                                    :b-s-p nil))
+                                         :object (reference target)
+                                         :slurname slurname
+                                         :p-points points1
+                                         :gparams (copy-list (score-get-extra-params) )
+                                         :b-s-p nil))
           (setf (msoffsets newextrab) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
                                             (offset->ms (reference target) (object (om-view-container self)))))
           (push newextrab (extra-obj-list *start-extra-obj-click*))
           (push newextrae (extra-obj-list (reference target)))
           ;(setf *start-extra-obj-click* nil)
           (update-panel self t))
-      (om-beep))))
+      (beep))))
 
 
 (defmethod draw-obj-in-rect ((self  slur) x x1 y y1 edparams  view)
