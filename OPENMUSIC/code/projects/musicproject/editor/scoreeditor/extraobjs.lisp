@@ -495,8 +495,7 @@ If <dynamics>
 
 (defclass compose-extra-object (extra-objet) 
   ((p-points :initform nil :initarg :p-points  :accessor p-points)
-   (gparams :initform nil :initarg :gparams  :accessor gparams)
-   (msoffsets :initform nil :initarg :msoffsets  :accessor msoffsets)))
+   (gparams :initform nil :initarg :gparams  :accessor gparams)))
 
 (defmethod compose-extra-p ((self compose-extra-object)) t)
 (defmethod compose-extra-p ((self t)) nil)
@@ -506,14 +505,12 @@ If <dynamics>
   `(let ((copy ,(call-next-method)))
      (setf (p-points copy) ,(omng-save (p-points self)))
      (setf (gparams copy) ,(omng-save (gparams self)))
-     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
-   copy))
+     copy))
 
 (defmethod omNG-copy ((self compose-extra-object))
   `(let ((copy ,(call-next-method)))
      (setf (p-points copy) ,(omng-copy (p-points self)))
      (setf (gparams copy) ,(omng-copy (gparams self)))
-     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
      copy))
 
 (defmethod extra-movable-edit-class ((self compose-extra-object))
@@ -937,6 +934,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defclass! d-dynamic-extra (compose-extra-object)
 ((cresc :initform nil :initarg :cresc :accessor cresc)
+ (msoffsets :initform nil :initarg :msoffsets  :accessor msoffsets)
  (start-val :initform nil :initarg :start-val :accessor start-val)
  (end-val :initform nil :initarg :end-val :accessor end-val))
    (:icon 490))
@@ -946,6 +944,23 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod d-dynamic-extra-p ((self d-dynamic-extra)) t)
 (defmethod d-dynamic-extra-p ((self t)) nil)
+
+
+
+(defmethod omNG-save ((self d-dynamic-extra) &optional (values? nil))
+  `(let ((copy ,(call-next-method)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
+     (setf (start-val copy) ,(omng-save (start-val self)))
+     (setf (end-val copy) ,(omng-save (end-val self)))
+     copy))
+
+(defmethod omNG-copy ((self d-dynamic-extra))
+  `(let ((copy ,(call-next-method)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
+     (setf (start-val copy) ,(omng-save (start-val self)))
+     (setf (end-val copy) ,(omng-save (end-val self)))
+     copy))
+
 
 (defmethod draw-cresc ( x x1 y y1  )
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
@@ -1033,7 +1048,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                         :gparams (copy-list (score-get-extra-params))))
           (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
                                            (offset->ms (reference target) (object (om-view-container self)))))
-          
+           (setf (start-val newextra) (car (lvel *start-extra-obj-click*)))
+           (setf (end-val newextra) (car (lvel (reference target))))         
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
@@ -1098,7 +1114,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                         :gparams (copy-list (score-get-extra-params))))
           (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
                                            (offset->ms (reference target) (object (om-view-container self)))))
-          
+          (setf (start-val newextra) (car (lvel *start-extra-obj-click*)))
+          (setf (end-val newextra) (car (lvel (reference target))))
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
