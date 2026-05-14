@@ -45,12 +45,20 @@
 (defmethod extra-p ((self t)) nil)
 
 (defmethod transpose-a ((self extra-objet) trans &optional panel)
+  (if (om-shift-key-p)
+    (setf (deltay self) 
+        (+ (deltay self)
+           (* -1 (if (plusp trans) 1 -1))))  
   (setf (deltay self) 
         (+ (deltay self)
-           (* -1 (if (plusp trans) (ceiling trans 1000) (floor trans 1000))))))
+           (* -1 (if (plusp trans) 0.1 -0.1))))))
+
 
 (defmethod move-in-x ((self extra-objet) trans)
-   (setf (deltax self) (+ (deltax self) trans)))
+  (if (om-shift-key-p)
+      (setf (deltax self) (+ (deltax self) (* 10 trans)))
+   (setf (deltax self) (+ (deltax self) trans))))
+
 
 (defmethod click-in-extra ((self extra-objet)) t)
 
@@ -961,6 +969,29 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
      (setf (end-val copy) ,(omng-save (end-val self)))
      copy))
 
+
+(defmethod transpose-a ((self d-dynamic-extra) trans &optional panel)
+  (let* ((points (p-points self))
+        (x0 (om-point-x (car points)))
+        (x1 (om-point-x (second points)))
+        (y0 (om-point-y (car points)))
+        (y1 (om-point-y (second points)))
+        (inc (if (om-shift-key-p) 0.5 0.1))
+        (val (if (plusp trans) (* inc -1) inc)))
+    (setf (p-points self) (list (om-make-point x0 (+ y0 val)) 
+                                (om-make-point x1 (+ y1 val))))))
+
+
+(defmethod move-in-x ((self d-dynamic-extra) trans)
+  (let* ((points (p-points self))
+        (x0 (om-point-x (car points)))
+        (x1 (om-point-x (second points)))
+        (y0 (om-point-y (car points)))
+        (y1 (om-point-y (second points)))
+        (inc (if (om-shift-key-p) 0.5 0.1))
+        (val (if (plusp trans) inc (* inc -1))))
+    (setf (p-points self) (list (om-make-point (+ x0 val) y0) 
+                                (om-make-point (+ x1 val) y1)))))
 
 (defmethod draw-cresc ( x x1 y y1  )
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
