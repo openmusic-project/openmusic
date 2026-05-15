@@ -476,30 +476,37 @@ The extras are distributed successively in the internal objects in <self> (e.g. 
 
 ;-----------------------------
 (defmethod! get-extras ((self simple-container) filter)
-   :icon 162
-   :initvals '(nil "all") 
-   :indoc '("a musical object" "type of extra")
-   :menuins '(( 1 (("all" "all")  ("head" "head") ("vel" "vel") ("char" "char") 
-                  ("text" "text") ("pict" "pict") ("line" "line"))))
-   :doc "
+  :icon 162
+  :initvals '(nil "all") 
+  :indoc '("a musical object" "type of extra")
+  :menuins '(( 1 (("all" "all")  ("head" "head") ("vel" "vel") ("char" "char") 
+                  ("text" "text") ("pict" "pict") ("line" "line")
+                  ("dyn" "dyn") ("cresc" "cresc") ("decresc" "decresc")
+                  ("trill" "trill"))))
+  :doc "
 Returns the list of EXTRA objects in <self>.
 
 <filter> allows to select only a particular type of extra.
 "
-   (let* ((extras (get-all-extras self)))
-     (loop for item in extras
-           when (filtre-extra-p item filter) collect item)))
+  (let* ((extras (get-all-extras self)))
+    (loop for item in extras
+          when (filtre-extra-p item filter) collect item)))
 
 
 (defmethod filtre-extra-p ((self extra-objet) test)
-   (cond
-    ((string-equal test "all") t)
-    ((string-equal test "head") (head-extra-p self))
-    ((string-equal test "vel") (vel-extra-p self))
-    ((string-equal test "char") (char-extra-p self))
-    ((string-equal test "text") (text-extra-p self))
-    ((string-equal test "pict") (pict-extra-p self))
-    ((string-equal test "line") (line-extra-p self))))
+  (cond
+   ((string-equal test "all") t)
+   ((string-equal test "head") (head-extra-p self))
+   ((string-equal test "vel") (vel-extra-p self))
+   ((string-equal test "char") (char-extra-p self))
+   ((string-equal test "text") (text-extra-p self))
+   ((string-equal test "pict") (pict-extra-p self))
+   ((string-equal test "line") (line-extra-p self))
+   ((string-equal test "dyn") (d-dynamic-extra-p self))
+   ((string-equal test "cresc") (crescendo-p self))
+   ((string-equal test "decresc") (decrescendo-p self))
+   ((string-equal test "trill") (trill-p self))
+   ))
 ;-----------------------------
 
 (defmethod! delete-extras ((self list))
