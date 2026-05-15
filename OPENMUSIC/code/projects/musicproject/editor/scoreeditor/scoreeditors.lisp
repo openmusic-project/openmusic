@@ -1396,8 +1396,9 @@
                        (unless *extramanager* ;avoiding conflict when extra editor is active
                          (add-new-object self mode-obj where graph-obj)))
                      (when (editor self) (update-inspector (editor self) 0)))
-                    ((and (grap-extra-p graph-obj) double-click-p) 
-                     (open-extra-editor self graph-obj))
+                    ((and (grap-extra-p graph-obj) double-click-p)
+                     ;(open-extra-editor self graph-obj)
+                     (edit-extra-vals self (reference graph-obj)))
                      
                     ((or graph-obj segment)
                      ;;; new 

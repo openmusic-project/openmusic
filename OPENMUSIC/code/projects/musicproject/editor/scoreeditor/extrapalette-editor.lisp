@@ -671,4 +671,130 @@
           )))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;EDIT DIALOGS;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;crescendo
+
+(defmethod edit-extra-vals ((self scorePanel) (extra extra-objet))
+  (cond 
+   ((trill-p extra)
+    (open-edit-trill-dialog self extra))
+   ((d-dynamic-extra-p extra)
+    (open-edit-d-dynamic-dialog self extra))
+   (t (print "No yet!"))))
+
+
+;cresc-decrec
+;ajouter reset x-pos according to begin and end of chords 
+(defmethod open-edit-d-dynamic-dialog ((self scorePanel) (extra extra-objet))
+  (let* ((Mydilog (om-make-window 'om-dialog
+                                 :size (om-make-point 260 220)
+                                 :window-title "Crescendo/Decrescendo values"
+                                 :resizable nil :maximize nil :minimize nil
+                                 :font *om-default-font1*
+                                 :window-show nil
+                                 :position :centered))
+         (diff (if (cursor-interval self)
+                   (- (second (cursor-interval self))
+                      (car (cursor-interval self))) 0))
+          
+        (start (om-make-dialog-item 'om-editable-text (om-make-point 20 36) (om-make-point 90 12)
+                                    (format nil "~D" (start-val extra))
+                                    :font *om-default-font1*
+                                    :focus nil))
+        (end (om-make-dialog-item 'om-editable-text (om-make-point 20 100) (om-make-point 90 12)
+                                  (format nil "~D" (end-val extra))
+                                  :value (format nil "~D" (end-val extra))
+                                  :enabled t
+                                  :font *om-default-font1*
+                                  :focus nil)))
+                 
+      (om-add-subviews mydilog 
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 5) (om-make-point 80 18) "Start [1-127]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 70) (om-make-point 80 18) "End [1-27]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       (om-make-dialog-item 'om-button (om-make-point 140 36) (om-make-point 80 20) "Cancel"
+                                            :di-action (om-dialog-item-act item
+                                                         (declare (ignore item)) (om-return-from-modal-dialog mydilog ())))
+                       (om-make-dialog-item 'om-button (om-make-point 140 76) (om-make-point 80 20) "Apply"
+                                            :di-action (om-dialog-item-act item
+                                                         (declare (ignore item))
+                                                         (when (not (equal "" (om-dialog-item-text start))) 
+                                                           (let ((repstart (read-from-string (om-dialog-item-text start)))
+                                                                 (repend (read-from-string (om-dialog-item-text end))))
+                                                             (apply-cresc-vel extra self repstart repend)
+                                                             (om-invalidate-view self t)
+                                                         (om-return-from-modal-dialog mydilog ())
+                                                         )))
+                                            ;:focus t
+                                            :default-button t
+                                            )
+                       start end
+                       )
+      ;to display value of numbox
+      (om-modal-dialog mydilog)))
+
+;;TRILL
+(defmethod open-edit-trill-dialog ((self scorePanel) (extra extra-objet))
+  (let* ((Mydilog (om-make-window 'om-dialog
+                                 :size (om-make-point 260 220)
+                                 :window-title "Trill values"
+                                 :resizable nil :maximize nil :minimize nil
+                                 :font *om-default-font1*
+                                 :window-show nil
+                                 :position :centered))
+         (diff (if (cursor-interval self)
+                   (- (second (cursor-interval self))
+                      (car (cursor-interval self))) 0))
+          
+        (start (om-make-dialog-item 'om-editable-text (om-make-point 20 36) (om-make-point 90 12)
+                                    (format nil "~D" (start-val extra))
+                                    :font *om-default-font1*
+                                    :focus nil))
+        (end (om-make-dialog-item 'om-editable-text (om-make-point 20 100) (om-make-point 90 12)
+                                  (format nil "~D" (end-val extra))
+                                  :value (format nil "~D" (end-val extra))
+                                  :enabled t
+                                  :font *om-default-font1*
+                                  :focus nil)))
+                 
+      (om-add-subviews mydilog 
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 5) (om-make-point 80 18) "Start [1-127]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       (om-make-dialog-item 'om-static-text (om-make-point 25 70) (om-make-point 80 18) "End [1-27]:"           
+                                            :font *om-default-font2*
+                                            :bg-color *om-window-def-color*)
+                       (om-make-dialog-item 'om-button (om-make-point 140 36) (om-make-point 80 20) "Cancel"
+                                            :di-action (om-dialog-item-act item
+                                                         (declare (ignore item)) (om-return-from-modal-dialog mydilog ())))
+                       (om-make-dialog-item 'om-button (om-make-point 140 76) (om-make-point 80 20) "Apply"
+                                            :di-action (om-dialog-item-act item
+                                                         (declare (ignore item))
+                                                         (when (not (equal "" (om-dialog-item-text start))) 
+                                                           (let ((repstart (read-from-string (om-dialog-item-text start)))
+                                                                 (repend (read-from-string (om-dialog-item-text end))))
+                                                             (if (and (integerp repstart) (> repstart 0))
+                                                                 (progn
+                                                                   (setf (cursor-pos self) repstart)
+                                                                 ;(set-edit-param (om-view-container self) 'grillestep  rep)
+                                                                   (if  (and repend (> repend repstart))
+                                                                       (setf (cursor-interval self) (list repstart repend))
+                                                                     (om-beep-msg (string+ "Bad end value ! (" (om-dialog-item-text end) ") should be > than (om-dialog-item-text start)" )))
+                                                                   (om-invalidate-view self t))
+                                                               (om-beep-msg (string+ "Bad start value ! (" (om-dialog-item-text start) ")" )))))
+                                                         (om-return-from-modal-dialog mydilog ()))
+                                            ;:focus t
+                                            :default-button t
+                                            )
+                       start end
+                       )
+      ;to display value of numbox
+      (om-modal-dialog mydilog)))
+
 

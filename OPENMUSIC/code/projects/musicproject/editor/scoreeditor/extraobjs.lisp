@@ -1084,7 +1084,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
-      (beep))))
+      (om-beep))))
 
 ;not needed anymore
 (defmethod get-end-obj ((self scorepanel) (extra d-dynamic-extra) off)
@@ -1150,7 +1150,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
-      (beep))))
+      (om-beep))))
 
 #|
 (defmethod add-new-extra-drag (self where obj (mode (eql 'decresc)) dc)
@@ -1229,7 +1229,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           ;(setf *start-extra-obj-click* nil)
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
-      (beep))))
+      (om-beep))))
 
 
 
@@ -1323,7 +1323,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (push newextrae (extra-obj-list (reference target)))
           ;(setf *start-extra-obj-click* nil)
           (update-panel self t))
-      (beep))))
+      (om-beep))))
 
 
 (defmethod draw-obj-in-rect ((self  slur) x x1 y y1 edparams  view)
@@ -1548,4 +1548,23 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;FUNCTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(defmethod apply-cresc-vel ((self crescendo) (panel scorepanel) vel1 vel2)
+  (let* ((voice (object (om-view-container panel)))
+         (offsets (msoffsets self))
+         (chords (get-chords&cont-chords voice))
+         (objs (remove-if #'(lambda (x) (or (< (offset->ms x voice) (car offsets))
+                                            (> (offset->ms x voice) (second  offsets)))) chords))
+         (velvals (om-round (interpolation vel1 vel2 (length objs) 0.0)));probleme... il se peut que le rhtyhm ne souit pas lineaire
+         ;donc faire une bpf a partir du timebpf; non car c'est graphic!
+         )
+    (setf (start-val self) vel1)
+    (setf (end-val self) vel2)
+    (loop for i in objs
+          for v in velvals
+          do (loop for n in (inside i)
+                     do (setf (vel n) v)))))
