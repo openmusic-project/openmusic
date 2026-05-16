@@ -1019,26 +1019,35 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           fun)
     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
     (setf fun (cond
-                ((trill-p (reference self)) 'draw-trill)
-                ((crescendo-p (reference self)) 'draw-cresc)
-                (t 'draw-decresc)))
+               ((sost-ped-p (reference self)) 'draw-sost-ped)
+               ((trill-p (reference self)) 'draw-trill)
+               ((crescendo-p (reference self)) 'draw-cresc)
+               (t 'draw-decresc)))
      (when points 
      (om-with-fg-color view (fourth params)
        (om-with-line-size (third params)
-         (if (trill-p object)
+         (cond 
+          ((sost-ped-p object)
+             (funcall 'draw-sost-ped (sost-ped-string (- (om-point-h (second points)) (om-point-h (car points)))) 
+                                                (om-point-h (car points)) (om-point-h (second points))
+                                                (om-point-v (car points)) (om-point-v (second points))))
+          ((trill-p object)
              (funcall 'draw-trill (trill-string (- (om-point-h (second points)) (om-point-h (car points)))) 
                                                 (om-point-h (car points)) (om-point-h (second points))
-                    (om-point-v (car points)) (om-point-v (second points)))
+                    (om-point-v (car points)) (om-point-v (second points))))
+          (t
          (if (equal (second params) 'dash)
              (om-with-dashline
                (funcall fun (om-point-h (car points)) (om-point-h (second points))
                         (om-point-v (car points))  (om-point-v (second points))));todo
            (funcall fun (om-point-h (car points)) (om-point-h (second points))
-                    (om-point-v (car points)) (om-point-v (second points)))))))
+                    (om-point-v (car points)) (om-point-v (second points))))))))
      
      (when (or (equal (score-get-extra-mode) 'cresc) 
                (equal (score-get-extra-mode) 'decresc) 
-               (equal (score-get-extra-mode) 'trill))
+               (equal (score-get-extra-mode) 'trill)
+               (equal (score-get-extra-mode) 'sost-ped)
+               )
        (setf (selection-rec self) (list (+ (om-point-h (car points)) 
                                            (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
                                         (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
@@ -1234,6 +1243,74 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'trill)) dc) 
+  (if (and obj (string-equal (obj-mode self) "chord"))
+      (om-init-motion-click 
+       self where :motion-draw 'draw-score-connection :display-mode 2 
+       :release-action 'release-score-connection)
+    (om-message-dialog "Only in CHORD mode")))
+
+;***************
+;sost-pedal
+;***************
+
+(defclass! sost-ped (d-dynamic-extra) ()
+ (:default-initargs  :sost-ped t))
+
+(defmethod sost-ped-p ((self sost-ped)) t)
+(defmethod sost-ped-p ((self t)) nil)
+
+
+(defun sost-ped-string (n)
+  (let ((strg (repeat-n " " (1- (round (/ n 7)))))
+        (rep " "))
+    (loop for i in  strg
+          do (setf rep  (concatenate 'string rep i)))
+    (setf rep (concatenate 'string rep ":"))
+    ))
+
+(defmethod draw-sost-ped (string x x1 y y1 )
+  (let* ((fontsize 24)
+         (thefont (om-make-music-font *extras-font* fontsize))
+         (sizetext 3))
+    (om-with-font thefont
+                  (om-draw-string (- x 5) y "q")
+                  (om-draw-string (+ x 10) y string)
+                  )))
+
+;not used?
+(defmethod draw-obj-in-rect ((self sost-ped) x x1 y y1 edparams  view)
+  (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
+  (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
+
+
+
+(defmethod do-release-extra-action ((self scorepanel) (mode (eql 'sost-ped)) pos)
+  (let* ((size (staff-size self))
+         (zoom (om-round (staff-zoom self) 2))
+         (mode-obj (grap-class-from-type  (obj-mode self)))
+         (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
+         (voff (om-make-point (om-point-x *extra-initial-pos*) (+ (om-point-y *extra-initial-pos*) 35)));15 related to 5 above.
+         newextra obj points0 points1)
+    (if target 
+        (progn
+          (setf obj  (get-near-obj-from-pixel (graphic-obj self) t voff ))
+          (setf points (convert-points-to-delta-zoom (car (rectangle obj)) (second (rectangle obj)) 
+                                                     (list voff pos) size zoom))
+          (setf newextra (make-instance 'sost-ped
+                                        :object (reference obj) 
+                                        :p-points points
+                                        :gparams (copy-list (score-get-extra-params))))
+          (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
+                                           (offset->ms (reference target) (object (om-view-container self)))))
+          
+          ;(setf *start-extra-obj-click* nil)
+          (push newextra (extra-obj-list (reference obj)))
+          (update-panel self t))
+      (om-beep))))
+
+
+
+(defmethod add-new-extra-drag (self where obj (mode (eql 'sost-ped)) dc) 
   (if (and obj (string-equal (obj-mode self) "chord"))
       (om-init-motion-click 
        self where :motion-draw 'draw-score-connection :display-mode 2 
@@ -1553,18 +1630,18 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defmethod apply-cresc-vel ((self crescendo) (panel scorepanel) vel1 vel2)
+(defmethod apply-dynamic-vel ((self d-dynamic-extra) (panel scorepanel) vel1 vel2)
+  (unless (trill-p self)
   (let* ((voice (object (om-view-container panel)))
          (offsets (msoffsets self))
          (chords (get-chords&cont-chords voice))
          (objs (remove-if #'(lambda (x) (or (< (offset->ms x voice) (car offsets))
                                             (> (offset->ms x voice) (second  offsets)))) chords))
-         (velvals (om-round (interpolation vel1 vel2 (length objs) 0.0)));probleme... il se peut que le rhtyhm ne souit pas lineaire
-         ;donc faire une bpf a partir du timebpf; non car c'est graphic!
+         (velvals (om-round (interpolation vel1 vel2 (length objs) 0.0)))
          )
     (setf (start-val self) vel1)
     (setf (end-val self) vel2)
     (loop for i in objs
           for v in velvals
           do (loop for n in (inside i)
-                     do (setf (vel n) v)))))
+                     do (setf (vel n) v))))))

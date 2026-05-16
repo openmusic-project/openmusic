@@ -493,11 +493,11 @@
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 55)
                                (om-make-point 80 20) ""
-                               :range '("Slur" "Crescendo" "Decrescendo" "Trill") ; "Bracket"
-                               :value (nth (position (nth 0 params) '(slur cresc decresc trill)) 
-                                           '("Slur" "Crescendo" "Decrescendo" "Trill"))
+                               :range '("Slur" "Crescendo" "Decrescendo" "Trill" "Sost. Ped.") ; "Bracket"
+                               :value (nth (position (nth 0 params) '(slur cresc decresc trill sost-ped)) 
+                                           '("Slur" "Crescendo" "Decrescendo" "Trill" "Sost. Ped."))
                                :di-action (om-dialog-item-act item
-                                            (setf (nth 0 params) (nth (om-get-selected-item-index item) '(slur cresc decresc trill)))
+                                            (setf (nth 0 params) (nth (om-get-selected-item-index item) '(slur cresc decresc trill sost-ped)))
                                             (set-extra-param *extramanager* value params)
                                             ;(om-invalidate-view (preview (win *extramanager*)))
                                             ))
@@ -540,6 +540,7 @@
                                                 ))))
           
          )))
+
 
 
 (defun make-text-extra (self &optional (deltay 3))
@@ -727,7 +728,7 @@
                                                          (when (not (equal "" (om-dialog-item-text start))) 
                                                            (let ((repstart (read-from-string (om-dialog-item-text start)))
                                                                  (repend (read-from-string (om-dialog-item-text end))))
-                                                             (apply-cresc-vel extra self repstart repend)
+                                                             (apply-dynamic-vel extra self repstart repend)
                                                              (om-invalidate-view self t)
                                                          (om-return-from-modal-dialog mydilog ())
                                                          )))
