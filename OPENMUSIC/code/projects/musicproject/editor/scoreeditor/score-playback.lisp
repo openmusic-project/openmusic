@@ -232,9 +232,68 @@
 ;;;=========================
 
 
-;ici ajouter les vel et les chan correspondant aux grace-chords!                    
+;;;FUNCTIONS FOR EXTRAS
+
+;;TRILL
+
+(defmethod make-trill-from-chords ((self chord) (chord2 chord) (n number) (ms number))
+  "<number> being number of repetition of the two chords"
+  (let* ((c1 (clone self))
+         (c1 (setf (ldur c1) (list ms)))
+         (c1n (repeat-n c1 n))
+         (c2 (clone chord2))
+         (c2 (setf (ldur c2) (list ms)))
+         (c2n (repeat-n c2 n))
+         (chrdlst (flat (mat-trans (list c1n c2n))))
+         (chordseq (objfromobjs chrdlst (make-instance 'chord-seq))))
+         (setf (lonset chordseq) (list 0 ms))))
+
+;here when lmidic given.
+(defmethod make-trill-from-chords ((self chord) (chord2 list) (n number) (ms number))
+  "<number> being number of repetition of the two chords"
+  (let* ((c1 (clone self))
+         (c1 (setf (ldur c1) (list ms)))
+         (c1n (repeat-n c1 n))
+         (c2 (clone self))
+         (c2 (setf (lmidic c2) chord2))
+         (c2 (setf (ldur c2) (list ms)))
+         (c2n (repeat-n c2 n))
+         (chrdlst (flat (mat-trans (list c1n c2n))))
+         (chordseq (objfromobjs chrdlst (make-instance 'chord-seq))))
+         (setf (lonset chordseq) (list 0 ms))))
+
+;not used
+(defmethod prepare-to-trill ((self1 chord) (self2 t) (ms number));default dur = 85
+  (when (get-trill self1)
+  (let* ((trill (get-trill self1))
+         (offs (msoffsets trill))
+         (dur (car (ldur self1)))
+         (ndurs (ceiling (/ (ceiling (/ dur ms)) 2))))
+    (if self2
+         (make-trill-from-chords self1 self2 ndurs ms)
+      (let* ((step (approx-factor (get-scale-from-approx (approx self1))))
+             (clone (clone self1)))
+        (setf (lmidic clone) (om+ (lmidic clone) (ceiling step)))
+        (make-trill-from-chords self1 clone ndurs ms))))))
+
+
+(defmethod chdeq-from-trill ((self1 chord));default *gdur* = 85
+  (when (get-trill self1)
+  (let* ((trill (get-trill self1))
+         (offs (msoffsets trill))
+         (dur (car (ldur self1)))
+         (ndurs (ceiling (/ (ceiling (/ dur *gdur*)) 2))))
+
+    (let* ((step (approx-factor (get-scale-from-approx (approx self1))))
+           (clone (clone self1)))
+      (setf (lmidic clone) (lmidic trill))
+        (make-trill-from-chords self1 clone ndurs *gdur*)))))
+
+;;;;;;;
+
 (defmethod PrepareToPlay ((player t) (self chord) at &key approx port interval voice)
-  (append 
+  (append
+    ;;gracenotes 
    (when (gnotes self)
      (let ((chseq (make-instance 'chord-seq 
                                  :lmidic (mapcar 'lmidic (glist (gnotes self)))
@@ -247,12 +306,38 @@
                       :port port
                       :interval interval
                       :voice voice)))
+   ;;trill
+   (when (get-trill self)
+     (let ((chseq (chdeq-from-trill self)))
+       (PrepareToPlay player chseq at
+                      :approx approx 
+                      :port port
+                      :interval interval
+                      :voice voice)
+       ))
+   ;;sostpedal (faire une fonction pour les extras); et prevoir la precedence (trill)
+   (when (get-sost-pedal self)
+     (let ((offs (msoffsets (get-sost-pedal self))))
+       (list
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (car offs)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 64 127))
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (second offs)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 64 0)))
+       ))
    (call-next-method)))
 
 
-;a voir
+;prepare-to-play
+
 (defmethod PrepareToPlay ((player t) (self rest) at &key approx port interval voice)
   (append
+    ;;gracenotes
    (when  (gnotes self)
      (let ((chseq (make-instance 'chord-seq 
                                  :lmidic (mapcar 'lmidic (glist (gnotes self)))
@@ -263,8 +348,22 @@
                       :port port
                       :interval interval
                       :voice voice)))
+     ;;sostpedal
+   (when (get-sost-pedal self)
+     (let ((offsets (msoffsets (get-sost-pedal self))))
+       (list
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (car offsets)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 64 127))
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (second offsets)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 64 0)))
+       ))
    (call-next-method)))
-
 
 
 ;;;;;
