@@ -1246,6 +1246,8 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
                                            (offset->ms (reference target) (object (om-view-container self)))))
           
           ;(setf *start-extra-obj-click* nil)
+          (let ((step (approx-factor (get-scale-from-approx (approx (reference obj))))))
+            (setf (lmidic newextra) (om+ (lmidic (reference obj)) (ceiling step)))) 
           (push newextra (extra-obj-list (reference obj)))
           (update-panel self t))
       (om-beep))))
