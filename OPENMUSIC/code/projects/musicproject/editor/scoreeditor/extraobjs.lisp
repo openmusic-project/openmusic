@@ -1642,6 +1642,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defmethod get-sost-pedal ((self chord))
+  (when (extra-obj-list self)
+    (find-if #'sost-ped-p (extra-obj-list self) :from-end t)))
+
+(defmethod get-trill ((self chord))
+  (when (extra-obj-list self)
+    (find-if #'trill-p (extra-obj-list self) :from-end t)))
+
+
 (defmethod apply-dynamic-vel ((self d-dynamic-extra) (panel scorepanel) vel1 vel2)
   (unless (trill-p self)
   (let* ((voice (object (om-view-container panel)))
@@ -1657,3 +1666,4 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           for v in velvals
           do (loop for n in (inside i)
                      do (setf (vel n) v))))))
+
