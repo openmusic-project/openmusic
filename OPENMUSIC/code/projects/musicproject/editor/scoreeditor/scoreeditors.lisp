@@ -1393,8 +1393,7 @@
                     ((om-add-key-p) 
                      (if (analysis-mode? self)
                          (handle-add-click-analysis self where)
-                       (unless *extramanager* ;avoiding conflict when extra editor is active
-                         (add-new-object self mode-obj where graph-obj)))
+                       (add-new-object self mode-obj where graph-obj))
                      (when (editor self) (update-inspector (editor self) 0)))
                     ((and (grap-extra-p graph-obj) double-click-p)
                      ;(open-extra-editor self graph-obj)
@@ -1520,6 +1519,7 @@
 
 
 (defmethod om-score-click-extra ((self scorePanel) where double-click-p)
+  (when (equal (editor self) (editor (current-editor *extramanager*)));make sure extranager focuses only on its editor
   (let* ((extra-mode (score-get-extra-mode))
          (mode-obj (grap-class-from-type  (obj-mode self)))
          (extra-obj (click-in-extra-p (graphic-obj self) where))
@@ -1536,7 +1536,7 @@
        (setf graph-obj (get-click-in-obj self (graphic-obj self) mode-obj where))
        (make-new-extra-mode self where graph-obj double-click-p)
        t)
-      (t nil))))
+      (t nil)))))
 
 
 (defun score-in-extra-mode-p ()
