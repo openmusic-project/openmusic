@@ -1186,12 +1186,22 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 ;trill
 ;***************
 
-(defclass! trill (d-dynamic-extra) ()
- (:default-initargs  :trill t))
+(defclass! trill (d-dynamic-extra) 
+((lmidic :initform nil :initarg :lmidic :accessor lmidic)))
 
 (defmethod trill-p ((self trill)) t)
 (defmethod trill-p ((self t)) nil)
 
+
+(defmethod omNG-save ((self trill) &optional (values? nil))
+  `(let ((copy ,(call-next-method)))
+     (setf (lmidic copy) ,(omng-save (lmidic self)))
+     copy))
+
+(defmethod omNG-copy ((self trill))
+  `(let ((copy ,(call-next-method)))
+     (setf (lmidic copy) ,(omng-save (lmidic self)))
+     copy))
 
 (defun trill-string (n)
   (let ((strg (repeat-n "5" (1- (round (/ n 13.5)))))

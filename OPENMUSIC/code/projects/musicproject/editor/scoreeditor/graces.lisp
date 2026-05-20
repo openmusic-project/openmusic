@@ -33,39 +33,6 @@
 ;(setf *gdur* 100)
 
 
-
-;ici ajouter les vel et les chan correspondant aux grace-chords!                    
-(defmethod PrepareToPlay ((player t) (self chord) at &key approx port interval voice)
-  (append 
-   (when (gnotes self)
-     (let ((chseq (make-instance 'chord-seq 
-                                 :lmidic (mapcar 'lmidic (glist (gnotes self)))
-                                 :lonset (list 0 *gdur*)
-                                 :ldur (list (- *gdur* 1))
-                                 :lvel (list (car (lvel self)))
-                                 :lchan (list (car (lchan self))))))
-       (PrepareToPlay player chseq (- at (* *gdur* (length (glist (gnotes self)))))
-                      :approx approx 
-                      :port port
-                      :interval interval
-                      :voice voice)))
-   (call-next-method)))
-
-
-;a voir
-(defmethod PrepareToPlay ((player t) (self rest) at &key approx port interval voice)
-  (append
-   (when  (gnotes self)
-     (let ((chseq (make-instance 'chord-seq 
-                                 :lmidic (mapcar 'lmidic (glist (gnotes self)))
-                                 :lonset (list 0 *gdur*)
-                                 :ldur (list (- *gdur* 1)))))
-       (PrepareToPlay player chseq (- at (* *gdur* (length (glist (gnotes self)))))
-                      :approx approx 
-                      :port port
-                      :interval interval
-                      :voice voice)))
-   (call-next-method)))
                
 ;=======CLASS
 

@@ -227,7 +227,87 @@
 
 
 
+;;;=========================
+;;; PREPARE TO PLAY
+;;;=========================
 
 
+;ici ajouter les vel et les chan correspondant aux grace-chords!                    
+(defmethod PrepareToPlay ((player t) (self chord) at &key approx port interval voice)
+  (append 
+   (when (gnotes self)
+     (let ((chseq (make-instance 'chord-seq 
+                                 :lmidic (mapcar 'lmidic (glist (gnotes self)))
+                                 :lonset (list 0 *gdur*)
+                                 :ldur (list (- *gdur* 1))
+                                 :lvel (list (car (lvel self)))
+                                 :lchan (list (car (lchan self))))))
+       (PrepareToPlay player chseq (- at (* *gdur* (length (glist (gnotes self)))))
+                      :approx approx 
+                      :port port
+                      :interval interval
+                      :voice voice)))
+   (call-next-method)))
+
+
+;a voir
+(defmethod PrepareToPlay ((player t) (self rest) at &key approx port interval voice)
+  (append
+   (when  (gnotes self)
+     (let ((chseq (make-instance 'chord-seq 
+                                 :lmidic (mapcar 'lmidic (glist (gnotes self)))
+                                 :lonset (list 0 *gdur*)
+                                 :ldur (list (- *gdur* 1)))))
+       (PrepareToPlay player chseq (- at (* *gdur* (length (glist (gnotes self)))))
+                      :approx approx 
+                      :port port
+                      :interval interval
+                      :voice voice)))
+   (call-next-method)))
+
+
+
+;;;;;
+
+;-----------ARP-CHORD
+
+(defclass arp-chord ()
+  ((notes :initform nil :initarg :notes :accessor notes)))
+
+(add-player-for-object 'arp-chord '(:midi-player :osc-scoreplayer :microplayer))
+
+(defmethod extent ((self arp-chord))
+   (* (length (notes self)) 500))
+
+(defmethod get-obj-dur ((self arp-chord)) (extent self))
+
+(defmethod play-obj? ((self arp-chord)) t)
+
+(defmethod chord-obj-to-play ((self chord) mode)
+  (if (find mode '(1 2 3) :test '=)     
+     (let ((notes (copy-list (inside self))))
+       (case mode
+         (1 (make-instance 'arp-chord :notes (sort notes '< :key 'midic)))
+         (2 (make-instance 'arp-chord :notes (sort notes '> :key 'midic)))
+         (3 (make-instance 'arp-chord :notes notes)))
+       )
+    self))
+
+;=== Play a chord in "arp" mode
+(defmethod PrepareToPlay ((player t) (chord arp-chord) at &key  approx port interval voice)
+     ;(setf port (verify-port port))
+    (loop for note in (notes chord)
+          for offset from 0 by 400
+          collect (PrepareToPlay player note (+ offset at) 
+                                 :approx approx
+                                 :port port :interval interval :voice voice)))
+
+;;; request from TM/JF: never play a box in "arp" mode
+;;; to do it, just use mode = 0 always
+(defmethod play-obj-from-value ((value chord) (box omboxeditcall)) 
+  (chord-obj-to-play value (get-edit-param box 'mode)))
+
+(defmethod get-obj-to-play ((self chordeditor))
+  (chord-obj-to-play (object self) (staff-mode (panel self))))
 
 
