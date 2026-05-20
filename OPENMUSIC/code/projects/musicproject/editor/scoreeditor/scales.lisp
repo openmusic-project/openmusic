@@ -884,6 +884,8 @@
     (or (cadr (find tone *scales-list* :test 'equal :key 'car))
         *current-1/2-scale*))
 
+(defun get-scale-from-approx (n)
+  (second (find n *scales-list* :test 'eq :key 'car)))
 
 (defun default-scale-p (scale)
     (or (equal *current-1/2-scale* scale)
