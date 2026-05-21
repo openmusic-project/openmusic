@@ -676,7 +676,9 @@
 ;;;;;;;;;;;;;;;;;;;EDIT DIALOGS;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;crescendo
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;crescendo
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod edit-extra-vals ((self scorePanel) (extra extra-objet))
   (cond 
@@ -740,62 +742,176 @@
       ;to display value of numbox
       (om-modal-dialog mydilog)))
 
-;;TRILL
-(defmethod open-edit-trill-dialog ((self scorePanel) (extra extra-objet))
-  (let* ((Mydilog (om-make-window 'om-dialog
-                                 :size (om-make-point 260 220)
-                                 :window-title "Trill values"
-                                 :resizable nil :maximize nil :minimize nil
-                                 :font *om-default-font1*
-                                 :window-show nil
-                                 :position :centered))
-         (diff (if (cursor-interval self)
-                   (- (second (cursor-interval self))
-                      (car (cursor-interval self))) 0))
-          
-        (start (om-make-dialog-item 'om-editable-text (om-make-point 20 36) (om-make-point 90 12)
-                                    (format nil "~D" (start-val extra))
-                                    :font *om-default-font1*
-                                    :focus nil))
-        (end (om-make-dialog-item 'om-editable-text (om-make-point 20 100) (om-make-point 90 12)
-                                  (format nil "~D" (end-val extra))
-                                  :value (format nil "~D" (end-val extra))
-                                  :enabled t
-                                  :font *om-default-font1*
-                                  :focus nil)))
-                 
-      (om-add-subviews mydilog 
-                       (om-make-dialog-item 'om-static-text (om-make-point 25 5) (om-make-point 80 18) "Start [1-127]:"           
-                                            :font *om-default-font2*
-                                            :bg-color *om-window-def-color*)
-                       (om-make-dialog-item 'om-static-text (om-make-point 25 70) (om-make-point 80 18) "End [1-27]:"           
-                                            :font *om-default-font2*
-                                            :bg-color *om-window-def-color*)
-                       (om-make-dialog-item 'om-button (om-make-point 140 36) (om-make-point 80 20) "Cancel"
-                                            :di-action (om-dialog-item-act item
-                                                         (declare (ignore item)) (om-return-from-modal-dialog mydilog ())))
-                       (om-make-dialog-item 'om-button (om-make-point 140 76) (om-make-point 80 20) "Apply"
-                                            :di-action (om-dialog-item-act item
-                                                         (declare (ignore item))
-                                                         (when (not (equal "" (om-dialog-item-text start))) 
-                                                           (let ((repstart (read-from-string (om-dialog-item-text start)))
-                                                                 (repend (read-from-string (om-dialog-item-text end))))
-                                                             (if (and (integerp repstart) (> repstart 0))
-                                                                 (progn
-                                                                   (setf (cursor-pos self) repstart)
-                                                                 ;(set-edit-param (om-view-container self) 'grillestep  rep)
-                                                                   (if  (and repend (> repend repstart))
-                                                                       (setf (cursor-interval self) (list repstart repend))
-                                                                     (om-beep-msg (string+ "Bad end value ! (" (om-dialog-item-text end) ") should be > than (om-dialog-item-text start)" )))
-                                                                   (om-invalidate-view self t))
-                                                               (om-beep-msg (string+ "Bad start value ! (" (om-dialog-item-text start) ")" )))))
-                                                         (om-return-from-modal-dialog mydilog ()))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;TRILL
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defclass trilleditor (editorview) 
+  ((trillobj :initform nil :accessor trillobj)
+   (chordobj :initform nil :accessor chordobj)
+   (textobj :initform nil :accessor textobj)
+   (trilldur :initform *gdur* :accessor trilldur)
+   (selection :initform nil :accessor selection)
+   (controlview :initform nil :accessor controlview)))
+
+(defclass trillpanel (om-view) ())
+
+(defmethod editor ((self trillpanel)) (om-view-container self))
+
+;todo
+(defmethod get-help-list ((self trilleditor)) 
+  '((("tab" "Select a Graphic Object")
+     ("del" "Delete Selected Object"))))
+
+(defmethod get-menubar ((self trilleditor)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;in order to disable resize (only).
+(defmethod make-editor-window ((class (eql 'trilleditor)) object name ref &key 
+                                 winsize winpos (close-p t) (winshow nil) 
+                                 (resize nil) (maximize nil))
+   (let ((win (call-next-method class object name ref 
+                                :winsize (om-make-point 600 500)
+                                :winpos winpos :resize nil
+                                :close-p t :winshow t
+                                )))
+     win))
+
+
+(defmethod initialize-instance :after ((self trilleditor) &rest args) 
+    (om-add-subviews self
+                     (setf (panel self) (om-make-view 'trillpanel
+                                                      :position (om-make-point 0 0)
+                                                      :size (om-make-point (w self) (- (h self) 0))
+                                                      :fg-color (om-make-color 0.82 0.82 0.82);ca ne marche pas
+                                                      )))
+                     
+                     
+    (om-add-subviews (panel self)
+                     ;chorded
+                     (setf (chordobj self) (om-make-view 'chordeditor;(get-editor-class chord) 
+                                                         :owner self 
+                                                         :object (object self);chord ;(chordobj self)
+                                                         :ref (ref (editor self))
+                                                         :position (om-make-point 10 10) 
+                                                         :size (om-make-point 480 280)))
+                     (setf (textobj self) (om-make-dialog-item 'edit-comment
+                                                               (om-make-point 0 400)
+                                                               (om-make-point 600 400)
+                                                               (format nil "~A" (lmidic (object self)))
+                                                               :allow-returns t 
+                                                               :scrollbars :v
+                                                               :vertical-scroll t 
+                                                               :retain-scrollbars t
+                                                               :filed-size (om-make-point 600 400)
+                                                               :focus nil
+                                                             ;  :object self 
+                                                               :container (panel self)
+                                                               :font *om-default-font2*
+                                                       ;:after-fun 
+                                                               ))
+                     (om-make-dialog-item 'om-button (om-make-point 500 36) (om-make-point 80 20) "Cancel"
+                                          :di-action (om-dialog-item-act item
+                                                       (declare (ignore item)) 
+                                                       (om-close-window self)
+                                                       ))
+                     (om-make-dialog-item 'om-button (om-make-point 500 76) (om-make-point 80 20) "Apply"
+                                          :di-action (om-dialog-item-act item
+                                                       (declare (ignore item))
+                                                       (om-invalidate-view self t)
+                                                       (setf (lmidic (trillobj self)) (lmidic (object (chordobj self))))
+                                                       (om-close-window self)
+                                                       )
                                             ;:focus t
-                                            :default-button t
-                                            )
-                       start end
-                       )
-      ;to display value of numbox
-      (om-modal-dialog mydilog)))
+                                          :default-button t
+                                          )
+                     (om-make-dialog-item 'om-static-text (om-make-point 25 300) (om-make-point 120 18) "Trill (ms) duration:"           
+                                          :font *om-default-font2*
+                                          :bg-color *om-window-def-color*)
+                     (om-make-dialog-item 'om-editable-text (om-make-point 150 305) (om-make-point 60 12)
+                                                                (format nil "~D" *gdur*)
+                                                                :font *om-default-font1*
+                                                                :focus nil)
+                          
+                     ))
 
 
+(defmethod open-edit-trill-dialog ((self scorePanel) (extra extra-objet))
+  (let* ((editor (om-view-container self))
+         (orig (object extra))
+         (step (approx-factor (get-scale-from-approx (approx orig))))
+         (chrd (make-instance 'chord 
+                                 :approx (approx (object editor))
+                                 :lmidic (lmidic extra)
+                                 ))
+         (internal (obj-for-internal-editor chrd))
+         (win (make-editor-window 'trilleditor chrd "Trill note editor" editor)))
+    (setf (trillobj (editor win)) extra)
+    (setf (approx chrd) (approx (object editor)));ADD
+    (om-set-bg-color (panel win) (om-make-color 0.82 0.82 0.82)); ca marche!!!!
+    (push win (attached-editors editor))))
+
+
+;put here all setf values of trill
+(defmethod close-editor-before ((self trilleditor))  
+  ;(setf (lmidic (trillobj self)) (lmidic (object (chordobj self))))
+  (call-next-method))
+
+(defmethod handle-key-event ((self trillpanel) key) 
+  (let ((chrd (panel (chordobj (editor self)))))
+    (case key 
+               (#\h (show-help-window "Fingering Editor commands..." (get-help-list (editor self))))
+               (:om-key-tab (change-obj-mode chrd 1))
+               ;;;;chordpanel
+                 ((equal char :om-key-up)
+                  (move-selection chrd 0)
+                  (update-panel chrd t)
+                  ;(report-modifications self)
+                  )
+                 ((equal char :om-key-down)
+                  (move-selection chrd 1)
+                  (update-panel chrd t)
+                  ;(report-modifications self)
+                  )
+                 ;;;;
+               (:om-key-delete 
+                (delete-selection chrd)
+                ;(report-modifications self)
+                ))
+    (call-next-method)
+    (om-invalidate-view self)
+    ))
+
+#|
+(defmethod report-modifications ((self fingpanel)) 
+  (report-modifications (om-view-container self)))
+
+(defmethod report-modifications ((self fingeditor))
+  (let* ((midics (lmidic (object (chordobj self))))
+         (inst (instrument self))
+         (instr (cond 
+                 ((equal inst "Viola") 1)
+                 ((equal inst "Cello") 2)
+                 (t 0)))
+         (fings (fingerings::get-fingerings midics instr :natural-harmonics (harm (controlview self))))
+         (res (fingerings::finger-pretty-print fings instr)))
+    (setf (chord (object self)) (object (chordobj self)))
+    (setf (instrument (object self)) (format nil "~A" (instrument self)))
+    (om-set-dialog-item-text (numsol (controlview self)) (format nil "~D" (length fings)))
+    (setf (color (color (controlview self))) *om-light-gray-color*)
+    (om-set-bg-color (color (controlview self)) *om-light-gray-color*)
+    (setf (fingerings self) fings)
+    (setf (notes (object self)) midics)
+    (setf (solutions (object self)) fings)
+    (om-set-dialog-item-text (textobj self) 
+                             (format nil "~A"  res))
+    (when fings
+      (om-set-item-list (solutions (controlview self))
+                        (let ((res '("All")))
+                          (loop for i from 1 to (length (fingerings self))
+                                collect (push (format nil "~S" i) res))
+                          (reverse res))))
+    ))
+|#
