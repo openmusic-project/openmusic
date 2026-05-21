@@ -1646,6 +1646,10 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (when (extra-obj-list self)
     (find-if #'sost-ped-p (extra-obj-list self) :from-end t)))
 
+(defmethod get-sost-pedal ((self rest))
+  (when (extra-obj-list self)
+    (find-if #'sost-ped-p (extra-obj-list self) :from-end t)))
+
 (defmethod get-trill ((self chord))
   (when (extra-obj-list self)
     (find-if #'trill-p (extra-obj-list self) :from-end t)))

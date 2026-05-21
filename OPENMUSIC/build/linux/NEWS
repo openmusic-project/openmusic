@@ -2,9 +2,11 @@
 
 NEW FEATURES
 
+- New extras: trill, sost. pedal
 
 IMPROVEMENTS
 
+- Extras are MIDI aware
 - Empty SDIFFILE, MIDIFILE obj warning on double-click 
 - Now grid view in CHORD-SEQ shows milliseconds
 
