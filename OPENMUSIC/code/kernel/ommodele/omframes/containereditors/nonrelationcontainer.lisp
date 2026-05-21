@@ -623,7 +623,8 @@ Workspace Panels contain icons of patches, maquettes and folders
 #seealso# (OmWorkspace patch-icon-frame maquette-icon-frame folder-icon-frame) #seealso#"))
  
 (defmethod set-panel-color ((self workSpacePanel))
-  (om-set-bg-color self *ws-color*))
+  (om-set-bg-color self *ws-color*)
+  (om-invalidate-view self t))
 
 
 ;(defmethod set-field-size ((self workspacepanel))
