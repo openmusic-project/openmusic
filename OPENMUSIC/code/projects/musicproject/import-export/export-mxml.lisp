@@ -431,7 +431,10 @@ si on a (14 8 1/16) il retourne (7 4 1/8)"
                                (when (accent? self) (accent-notation self)))))
                         )
                 
-               (t ())))
+               (t (remove nil 
+                    (list 
+                     (when (tied? self) (tied-notation self))
+                     (when (accent? self) (accent-notation self)))))))
              
            
           (when (or (tied? self) (accent? self))
