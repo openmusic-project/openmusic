@@ -324,19 +324,20 @@
 
 ;=====5 EDO=====
 
-(defvar *5-EDO_#*
-  (make-instance 'scale
-                 :alteration-list
-                 (list nil (t-S2) (t-F1) (t-S1) (t-S6))
-                 :lines-list (list 0 1 3 4 5)
-                 :approx-factor 1200/5))
 
-
-(defvar *5-EDO_b*
+(defvar *5-EDO_i*
 (make-instance 'scale
 :alteration-list
-(list nil (t-S2) (t-F1) (t-S1) (t-F10))
-:lines-list (list 0 1 3 4 6)
+(list nil nil nil nil nil)
+:lines-list (list 0 1 3 4 5)
+:approx-factor 1200/5))
+
+
+(defvar *5-EDO_ii*
+(make-instance 'scale
+:alteration-list
+(list nil nil nil nil nil)
+:lines-list (list 6 1 2 4 5)
 :approx-factor 1200/5))
 
 ;=====6 EDO=====
@@ -381,37 +382,34 @@
 
 ;=====9 EDO=====
 
-
-(defvar *9-EDO_#*
+(defvar *9-EDO_i*
 (make-instance 'scale
 :alteration-list
-(list nil (t-S9) (t-S7) nil (t-S1) (t-F1) (t-S8) (t-S1) (t-F1))
-:lines-list (list 0 0 1 2 3 4 4 5 6)
+(list nil nil nil (t-S8) nil nil nil nil (t-S8))
+:lines-list (list 0 1 2 3 3 4 5 6 7)
 :approx-factor 1200/9))
 
-
-(defvar *9-EDO_b*
+(defvar *9-EDO_ii*
 (make-instance 'scale
 :alteration-list
-(list nil (t-F7) (t-F9) nil (t-S1) (t-F1) (t-F8) (t-S1) (t-F1))
-:lines-list (list 0 1 2 2 3 4 5 5 6)
+(list nil nil nil (t-F8) nil nil nil nil (t-F8))
+:lines-list (list 0 1 2 2 3 4 5 6 6)
 :approx-factor 1200/9))
 
 ;=====10 EDO=====
 
-(defvar *10-EDO_#*
+(defvar *10-EDO_i*
 (make-instance 'scale
 :alteration-list
-(list nil (t-S9) (t-S2) (t-F2) (t-F1) (t-S8) (t-S1) (t-S10) (t-S6) (t-F1))
-:lines-list (list 0 0 1 2 3 3 4 4 5 6)
+(list nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa))
+:lines-list (list 0 0 1 1 3 3 4 4 5 5)
 :approx-factor 1200/10))
 
-
-(defvar *10-EDO_b*
+(defvar *10-EDO_ii*
 (make-instance 'scale
 :alteration-list
-(list nil (t-F7) (t-S2) (t-F2) (t-F1) (t-F8) (t-S1) (t-F6) (t-F10) (t-F1))
-:lines-list (list 0 1 1 2 3 4 4 5 6 6)
+(list nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa))
+:lines-list (list 6 -1 1 1 2 2 4 4 5 5)
 :approx-factor 1200/10))
 
 
@@ -434,16 +432,14 @@
 
 ;=====14 EDO=====
 
-
-(defvar *14-EDO_^*
+(defvar *14-EDO_i*
 (make-instance 'scale
 :alteration-list
 (list nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa) nil (t-Sa))
 :lines-list (list 0 0 1 1 2 2 3 3 4 4 5 5 6 6)
 :approx-factor 1200/14))
 
-
-(defvar *14-EDO_v*
+(defvar *14-EDO_ii*
 (make-instance 'scale
 :alteration-list
 (list nil (t-Fa) nil (t-Fa) nil (t-Fa) nil (t-Fa) nil (t-Fa) nil (t-Fa) nil (t-Fa))
@@ -452,38 +448,36 @@
 
 ;=====15 EDO=====
 
-(defvar *15-EDO_#*
+(defvar *15-EDO_i*
 (make-instance 'scale
 :alteration-list
-(list nil (t-S7) (t-F2) (t-S2) (t-S9) nil (t-F1) (t-S6) (t-S10) (t-S1) (t-S8) (t-F1) (t-S6) (t-S10) (t-S1))
-:lines-list (list 0 0 1 1 1 2 3 3 3 4 4 5 5 5 6)
+(list nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa))
+:lines-list (list 0 0 1 1 1 3 3 3 4 4 4 5 5 5 7)
 :approx-factor 1200/15))
 
-
-(defvar *15-EDO_b*
+(defvar *15-EDO_ii*
 (make-instance 'scale
 :alteration-list
-(list nil (t-F9) (t-F2) (t-S2) (t-F7) nil (t-F1) (t-F10) (t-F6) (t-S1) (t-F8) (t-F1) (t-F10) (t-F6) (t-S1))
-:lines-list (list 0 1 1 1 2 2 3 4 4 4 5 5 6 6 6)
+(list nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa) nil (t-Sa) (t-Fa))
+:lines-list (list 6 -1 1 1 1 2 2 2 4 4 4 5 5 5 6)
 :approx-factor 1200/15))
 
 ;=====16 EDO=====
 
-(defvar *16-EDO_#*
+(defvar *16-EDO_i*
 (make-instance 'scale
 :alteration-list
-(list nil (t-S7) (t-S4) (t-S1) (t-S8) (t-F1) (t-S4) (t-S1) (t-S8) (t-F1) (t-S4) (t-S9) nil (t-S7) (t-S12) (t-S1))
-:lines-list (list 0 0 0 1 1 2 2 3 3 4 4 4 5 5 5 6)
+(list nil (t-S8) nil (t-S8) nil (t-F8) (t-S8) nil (t-S8) nil (t-S8) nil (t-S8) nil (t-F8) (t-S8))
+:lines-list (list 0 1 1 2 2 2 3 3 4 4 5 5 6 6 6 7)
 :approx-factor 1200/16))
 
 
-(defvar *16-EDO_b*
+(defvar *16-EDO_ii*
 (make-instance 'scale
 :alteration-list
-(list nil (t-F9) (t-F4) (t-S1) (t-F8) (t-F1) (t-F4) (t-S1) (t-F8) (t-F1) (t-F12) (t-F7) nil (t-F9) (t-F4) (t-S1))
-:lines-list (list 0 1 1 1 2 2 3 3 4 4 5 5 5 6 6 6)
+(list nil (t-F8) nil (t-F8) nil (t-F8) (t-S8) nil (t-F8) nil (t-F8) nil (t-F8) nil (t-F8) (t-S8))
+:lines-list (list 0 0 1 1 2 2 3 3 3 4 4 5 5 6 6 7)
 :approx-factor 1200/16))
-
 
 ;=====17 EDO=====
 
@@ -513,20 +507,20 @@
 
 ;=====18 EDO=====
 
-(defvar *18-EDO_#*
+(defvar *18-EDO_i*
 (make-instance 'scale
 :alteration-list
-(list nil (t-S7) (t-S9) nil (t-S7) (t-S9) nil (t-F1) (t-S1) (t-S8) (t-F1) (t-S1) (t-S8) (t-F1) (t-S1) (t-S8) (t-F1) (t-S1))
-:lines-list (list 0 0 0 1 1 1 2 3 3 3 4 4 4 5 5 5 6 6)
+(list nil (t-S1) nil (t-S1) nil (t-S1) (t-F8) (t-S8) nil (t-S1) nil (t-S1) nil (t-S1) nil (t-S1) (t-S8) (t-S9))
+:lines-list (list 0 0 1 1 2 2 2 3 3 3 4 4 5 5 6 6 7 7)
 :approx-factor 1200/18))
 
-
-(defvar *18-EDO_b*
+(defvar *18-EDO_ii*
 (make-instance 'scale
 :alteration-list
-(list nil (t-F9) (t-F7) nil (t-F9) (t-F7) nil (t-F1) (t-S1) (t-F8) (t-F1) (t-S1) (t-F8) (t-F1) (t-S1) (t-F8) (t-F1) (t-S1))
-:lines-list (list 0 1 1 1 2 2 2 3 3 4 4 4 5 5 5 6 6 6)
+(list nil (t-F1) nil (t-F1) nil (t-F9) (t-F8) (t-F1) nil (t-F1) nil (t-F1) nil (t-F1) nil (t-S7) (t-S8) (t-F1))
+:lines-list (list 0 1 1 2 2 2 2 3 3 4 4 5 5 6 6 7 7 7)
 :approx-factor 1200/18))
+
 
 ;=====19 EDO=====
 
@@ -810,31 +804,31 @@
 ;for EDO scales
 
 (defparameter *scales-list* (list
-                             (list 50.0 *5-EDO_#* "5 EDO_#")
-                             (list 50.1 *5-EDO_b* "5 EDO_b")
+                             (list 50.0 *5-EDO_i* "5 EDO(i)")
+                             (list 50.1 *5-EDO_ii* "5 EDO(ii)")
                              (list 1 *1-tone-chromatic-scale* "6 EDO_#")
                              (list 60.1 *6-EDO_b* "6 EDO_b")
                              (list 1.0 *1#-tone-chromatic-scale* "6 EDO_om(t)")
                              (list 70 *7-EDO* "7 EDO")
                              (list 80.0 *8-EDO_#* "8 EDO_#")
                              (list 80.1 *8-EDO_b* "8 EDO_b")
-                             (list 90.0 *9-EDO_#* "9 EDO_#")
-                             (list 90.1 *9-EDO_b* "9 EDO_b")
-                             (list 100.0 *10-EDO_#* "10 EDO_#")
-                             (list 100.1 *10-EDO_b* "10 EDO_b")
+                             (list 90.0 *9-EDO_i* "9 EDO(i)")
+                             (list 90.1 *9-EDO_ii* "9 EDO(ii)")
+                             (list 100.0 *10-EDO_i* "10 EDO(i)")
+                             (list 100.1 *10-EDO_ii* "10 EDO(ii)")
                              (list 2 *current-1/2-scale* "12 EDO_#")
                              (list 120.1 *12-EDO_b* "12 EDO_b")
-                             (list 140.0 *14-EDO_^* "14 EDO_^")
-                             (list 140.1 *14-EDO_v* "14 EDO_v")
-                             (list 150.0 *15-EDO_#* "15 EDO_#")
-                             (list 150.1 *15-EDO_b* "15 EDO_b")
-                             (list 160.0 *16-EDO_#* "16 EDO_#")
-                             (list 160.1 *16-EDO_b* "16 EDO_b")
+                             (list 140.0 *14-EDO_i* "14 EDO(i)")
+                             (list 140.1 *14-EDO_ii* "14 EDO(ii)")
+                             (list 150.0 *15-EDO_i* "15 EDO(i)")
+                             (list 150.1 *15-EDO_ii* "15 EDO(ii)")
+                             (list 160.0 *16-EDO_i* "16 EDO(i)")
+                             (list 160.1 *16-EDO_ii* "16 EDO(ii)")
                              (list 170 *17-EDO* "17 EDO")
                              (list 170.0 *17-EDO_#* "17 EDO_#")
                              (list 170.1 *17-EDO_b* "17 EDO_b")
-                             (list 180.0 *18-EDO_#* "18 EDO_#")
-                             (list 180.1 *18-EDO_b* "18 EDO_b")
+                             (list 180.0 *18-EDO_i* "18 EDO(i)")
+                             (list 180.1 *18-EDO_ii* "18 EDO(ii)")
                              (list 3 *3-tone-chromatic-scale* "18 EDO_om")
                              (list 3.0 *3#-tone-chromatic-scale* "18 EDO_om(t)")
                              (list 190 *19-EDO* "19 EDO")
