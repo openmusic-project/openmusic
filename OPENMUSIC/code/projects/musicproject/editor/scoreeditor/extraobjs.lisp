@@ -524,6 +524,30 @@ If <dynamics>
 (defmethod extra-movable-edit-class ((self compose-extra-object))
   'movable-extra-line)
 
+
+(defmethod transpose-a ((self compose-extra-object) trans &optional panel)
+  (let* ((points (p-points self))
+        (x0 (om-point-x (car points)))
+        (x1 (om-point-x (second points)))
+        (y0 (om-point-y (car points)))
+        (y1 (om-point-y (second points)))
+        (inc (if (om-shift-key-p) 0.5 0.1))
+        (val (if (plusp trans) (* inc -1) inc)))
+    (setf (p-points self) (list (om-make-point x0 (+ y0 val)) 
+                                (om-make-point x1 (+ y1 val))))))
+
+(defmethod move-in-x ((self compose-extra-object) trans)
+  (let* ((points (p-points self))
+        (x0 (om-point-x (car points)))
+        (x1 (om-point-x (second points)))
+        (y0 (om-point-y (car points)))
+        (y1 (om-point-y (second points)))
+        (inc (if (om-shift-key-p) 0.5 0.1))
+        (val (if (plusp trans) inc (* inc -1))))
+    (setf (p-points self) (list (om-make-point (+ x0 val) y0) 
+                                (om-make-point (+ x1 val) y1)))))
+
+
 (defmethod click-in-other-point ((self compose-extra-object) where) nil)
 
 (defvar *start-extra-obj-click* nil)
@@ -673,15 +697,20 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'line)) pos) 
   (let ((size (staff-size self))
+        (zoom (om-round (staff-zoom self) 2))
         newextra obj points)
     (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
-    (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list *extra-initial-pos* pos) size))
+    (setf points (convert-points-to-delta-zoom (car (rectangle obj)) 
+                                          ;(second (rectangle obj)) 
+                                          (second (rectangle *start-extra-gobj-click*))
+                                          (list *extra-initial-pos* pos) size zoom))
     (setf newextra (make-instance 'line-extra
-                                  :object (reference obj) 
+                                  :object *start-extra-obj-click* ;(reference obj) 
                                   :p-points points
                                   :gparams (copy-list (score-get-extra-params) )))
-   (push newextra (extra-obj-list (reference obj)))
+   (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
    (update-panel self t)))
+
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'line)) dc)
   (om-init-motion-click 
@@ -702,10 +731,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod draw-graph-extra-obj ((self grap-extra-line) view size staff)
    (let* ((grap-obj (gobject self))
           (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
           points
           (params (gparams object))
           (selec-size 6))
-     (setf points (convert-delta-to-points grap-obj (p-points object) size))
+     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
      (if (and points (>= (length points) 2)) 
      
      (om-with-fg-color nil (fourth params)
@@ -743,12 +773,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (let ((size (staff-size self))
         newextra obj points)
     (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
-    (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list *extra-initial-pos* pos) size))
+    (setf points (convert-points-to-delta (car (rectangle obj)) 
+                                          ;(second (rectangle obj)) 
+                                          (second (rectangle *start-extra-gobj-click*))
+                                          (list *extra-initial-pos* pos) size))
     (setf newextra (make-instance 'rect-extra
-                                  :object (reference obj) 
+                                  :object *start-extra-obj-click* ;(reference obj) 
                                   :p-points points
                                   :gparams (copy-list (score-get-extra-params) )))
-   (push newextra (extra-obj-list (reference obj)))
+   (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'rect)) dc)
@@ -805,12 +838,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (let ((size (staff-size self))
         newextra obj points)
     (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
-    (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) (list *extra-initial-pos* pos) size))
+    (setf points (convert-points-to-delta (car (rectangle obj)) 
+                                          ;(second (rectangle obj)) 
+                                          (second (rectangle *start-extra-gobj-click*))
+                                          (list *extra-initial-pos* pos) size))
     (setf newextra (make-instance 'cercle-extra
-                                  :object (reference obj) 
+                                  :object *start-extra-obj-click* ;(reference obj) 
                                   :p-points points
                                   :gparams (copy-list (score-get-extra-params) )))
-   (push newextra (extra-obj-list (reference obj)))
+   (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
    (update-panel self t)))
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'circ)) dc)
@@ -877,6 +913,34 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (close-score-polygon self)))
 
 
+(defmethod transpose-a ((self polygon-extra) trans &optional panel)
+  (let ((npoints (p-points self))
+        (res '()))
+    (loop for i in npoints
+          do (let* ((points i)
+                    (x0 (om-point-x points))
+                    (y0 (om-point-y points))
+                    (inc (if (om-shift-key-p) 0.5 0.1))
+                    (val (if (plusp trans) (* inc -1) inc)))
+               (push (om-make-point x0 (+ y0 val))  res)))
+    (setf (p-points self) res)))
+    
+
+(defmethod move-in-x ((self polygon-extra) trans)
+ (let ((npoints (p-points self))
+        (res '()))
+    (loop for i in npoints
+          do (let* ((points i)
+                    (x0 (om-point-x points))
+                    (y0 (om-point-y points))
+                    (inc (if (om-shift-key-p) 0.5 0.1))
+                    (val (if (plusp trans) inc (* inc -1))))
+               (push (om-make-point (+ x0 val) y0)  res)))
+             (setf (p-points self) res)))
+
+
+
+
 (defmethod close-score-polygon ((self scorePanel))
   (when *polygon-points*
     (let ((points (loop for item in *polygon-points* append (list (om-point-h item) (om-point-v item)))))
@@ -884,12 +948,15 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (let* ((size (staff-size self))
            newextra obj points)
       (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
-      (setf points (convert-points-to-delta (car (rectangle obj)) (second (rectangle obj)) *polygon-points* size))
+      (setf points (convert-points-to-delta (car (rectangle obj)) 
+                                            ;(second (rectangle obj))
+                                            (second (rectangle *start-extra-gobj-click*))
+                                            *polygon-points* size))
       (setf newextra (make-instance 'polygon-extra
-                                    :object (reference obj)
+                                    :object *start-extra-obj-click* ;(reference obj)
                                     :p-points points
                                     :gparams (copy-list (score-get-extra-params) )))
-      (push newextra (extra-obj-list (reference obj)))
+      (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
       (setf *polygon-points* nil)
       (update-panel self t))))
 
