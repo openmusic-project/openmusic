@@ -672,10 +672,11 @@ If <dynamics>
 ;LINES
 ;***************
 
-(defclass! line-extra (compose-extra-object) ()
-   (:icon 490)
-   (:documentation 
-"
+(defclass! line-extra (compose-extra-object) 
+           ((msoffsets :initform nil :initarg :msoffsets  :accessor msoffsets))
+           (:icon 490)
+           (:documentation 
+            "
 A vertical line mark symbol to be attached to a particular chord or note in the score.
 
 EXTRA objects are additional data or graphics integrated in the score objects (voice, chord-seq, etc.)
@@ -683,6 +684,18 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 <deltax> and <deltay> are relative horizontal and vertical offsets (arbitrary non-temporal unit depending on the zoom and font size)
 "))
+
+
+(defmethod omNG-save ((self line-extra) &optional (values? nil))
+  `(let ((copy ,(call-next-method)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
+     copy))
+
+(defmethod omNG-copy ((self line-extra))
+  `(let ((copy ,(call-next-method)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
+     copy))
+
 
 (defclass! arrow-extra (line-extra) ()
    (:icon 490))
@@ -696,20 +709,24 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
      (push newextra (extra-obj-list self))))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'line)) pos) 
-  (let ((size (staff-size self))
-        (zoom (om-round (staff-zoom self) 2))
-        newextra obj points)
+  (let* ((size (staff-size self))
+         (zoom (om-round (staff-zoom self) 2))
+         (mode-obj (grap-class-from-type  (obj-mode self)))
+         (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
+         newextra obj points)
     (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
     (setf points (convert-points-to-delta-zoom (car (rectangle obj)) 
                                           ;(second (rectangle obj)) 
-                                          (second (rectangle *start-extra-gobj-click*))
-                                          (list *extra-initial-pos* pos) size zoom))
+                                               (second (rectangle *start-extra-gobj-click*))
+                                               (list *extra-initial-pos* pos) size zoom))
     (setf newextra (make-instance 'line-extra
                                   :object *start-extra-obj-click* ;(reference obj) 
                                   :p-points points
                                   :gparams (copy-list (score-get-extra-params) )))
-   (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
-   (update-panel self t)))
+    (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
+                                     (offset->ms (reference target) (object (om-view-container self)))))
+    (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
+    (update-panel self t)))
 
 
 (defmethod add-new-extra-drag (self where obj (mode (eql 'line)) dc)
@@ -1728,6 +1745,9 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (when (extra-obj-list self)
     (find-if #'trill-p (extra-obj-list self) :from-end t)))
 
+(defmethod get-line-extra ((self chord))
+  (when (extra-obj-list self)
+    (find-if #'line-extra-p (extra-obj-list self) :from-end t)))
 
 (defmethod apply-dynamic-vel ((self d-dynamic-extra) (panel scorepanel) vel1 vel2)
   (unless (trill-p self)
