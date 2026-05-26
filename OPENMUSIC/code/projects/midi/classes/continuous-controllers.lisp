@@ -43,7 +43,8 @@
    (ctr-num :initform 7 :accessor ctr-num :type t)
    (ref :initform 0 :accessor ref :initarg :ref :type t :documentation "track number")
    (port :initform 0 :accessor port :initarg :port :type t :documentation "output port number")
-   (chan :initform 1 :accessor chan :initarg :chan :type t :documentation "MIDI channel (1-16)"))
+   (chan :initform 1 :accessor chan :initarg :chan :type t :documentation "MIDI channel (1-16)")
+   (approx :initform *global-midi-approx* :accessor approx  :type integer))
   (:icon 903)
   (:documentation "
 MIDICONTROL is a special BPF controlling the variation of a MIDI continuous controller. 
