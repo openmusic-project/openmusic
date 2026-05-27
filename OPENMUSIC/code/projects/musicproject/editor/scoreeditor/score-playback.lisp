@@ -306,16 +306,7 @@
                       :port port
                       :interval interval
                       :voice voice)))
-   ;;trill
-   (when (get-trill self)
-     (let ((chseq (chdeq-from-trill self)))
-       (PrepareToPlay player chseq at
-                      :approx approx 
-                      :port port
-                      :interval interval
-                      :voice voice)
-       ))
-   ;;sostpedal (faire une fonction pour les extras); et prevoir la precedence (trill)
+      ;;sostpedal (faire une fonction pour les extras);
    (when (get-sost-pedal self)
      (let ((offs (msoffsets (get-sost-pedal self))))
        (list
@@ -330,6 +321,76 @@
                                 :port (or (car (lport self)) *def-midi-out*)
                                 :fields (list 64 0)))
        ))
+   ;;trill
+   (when (get-trill self)
+     (let ((chseq (chdeq-from-trill self)))
+       (PrepareToPlay player chseq at
+                      :approx approx 
+                      :port port
+                      :interval interval
+                      :voice voice)
+       ))
+   ;;gliss
+   (when (get-gliss-extra self)
+     (let* ((offs (msoffsets (get-gliss-extra self)))
+            (start-mc (car (lmidic self)))
+            (end-mc (car (targetmc (get-gliss-extra self))))
+            (delta-mc (- end-mc start-mc))       
+            (bend-range 48) ;4 octaves
+            (bend-val (round (+ 8192
+                                (* (/ delta-mc (* bend-range 100))
+                                   8191)))) 
+            (timestamps  (arithm-ser (car offs)  (- (second offs) 1)  20))
+            (bendvalues (bpf-sample (om-make-bpf 'bpf offs (list 8192 bend-val) ;16383)
+                                                 0)
+                                    (car offs) (second offs) (length timestamps))))
+       (x-append
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (- (car offs) 5)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 101 0))
+
+        
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (- (car offs) 5)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 100 0))
+        
+        
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (- (car offs) 5)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 6 bend-range));12 interval in semitones of gliss
+        
+        
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date (- (car offs) 5)
+                                :chan (car (lchan self))
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :fields (list 38 0));0 8192
+        
+       
+        (loop for off in timestamps
+              for val in bendvalues
+              collect  (om-midi::make-midi-evt :type :PitchBend
+                                               :date  off
+                                               :port (or (car (lport self)) *def-midi-out*)
+                                               :chan (car (lchan self))
+                                               ;:ref 0
+                                               :fields (list val)))
+        (om-midi::make-midi-evt :type :PitchBend
+                                :date (second offs)
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :chan (car (lchan self))
+                                               ;:ref 0
+                                :fields (list 8192))
+        
+        )))
+
+
    (call-next-method)))
 
 

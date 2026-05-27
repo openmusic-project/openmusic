@@ -1422,6 +1422,115 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
        :release-action 'release-score-connection)
     (om-message-dialog "Only in CHORD mode")))
 
+;***************
+;gliss
+;***************
+
+
+(defclass! gliss-extra (compose-extra-object) 
+           ((msoffsets :initform nil :initarg :msoffsets  :accessor msoffsets)
+            (targetmc :initform nil :initarg :targetmc  :accessor targetmc))
+           (:icon 490)
+           (:documentation 
+            "
+A vertical line mark symbol to be attached to a particular chord or note in the score.
+
+EXTRA objects are additional data or graphics integrated in the score objects (voice, chord-seq, etc.)
+They can be added and manipulated thanks to the Extra package functions (add-extra, etc.)
+
+<deltax> and <deltay> are relative horizontal and vertical offsets (arbitrary non-temporal unit depending on the zoom and font size)
+"))
+
+(defmethod gliss-extra-p ((self gliss-extra)) t)
+(defmethod gliss-extra-p ((self t)) nil)
+
+
+
+(defmethod omNG-save ((self gliss-extra) &optional (values? nil))
+  `(let ((copy ,(call-next-method)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
+     (setf (targetmc copy) ,(omng-save (targetmc self)))
+     copy))
+
+(defmethod omNG-copy ((self gliss-extra))
+  `(let ((copy ,(call-next-method)))
+     (setf (msoffsets copy) ,(omng-save (msoffsets self)))
+     (setf (targetmc copy) ,(omng-save (targetmc self)))
+     copy))
+
+(defmethod add-new-extra ((self t) (mode (eql 'gliss)))
+   (let ((newextra (make-instance 'gliss-extra
+                     :object self)))
+     (push newextra (extra-obj-list self))))
+
+
+(defmethod do-release-extra-action ((self scorepanel) (mode (eql 'gliss)) pos) 
+  (let* ((size (staff-size self))
+         (zoom (om-round (staff-zoom self) 2))
+         (mode-obj (grap-class-from-type  (obj-mode self)))
+         (target (get-click-in-obj self (graphic-obj self) mode-obj pos))
+         newextra obj points)
+    (setf obj  (get-near-obj-from-pixel (graphic-obj self) t *extra-initial-pos*))
+    (setf points (convert-points-to-delta-zoom (car (rectangle obj)) 
+                                          ;(second (rectangle obj)) 
+                                               (second (rectangle *start-extra-gobj-click*))
+                                               (list *extra-initial-pos* pos) size zoom))
+    (setf newextra (make-instance 'gliss-extra
+                                  :object *start-extra-obj-click* ;(reference obj) 
+                                  :p-points points
+                                  :gparams (copy-list (score-get-extra-params) )))
+    (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
+                                     (offset->ms (reference target) (object (om-view-container self)))))
+    (setf (targetmc newextra) (lmidic (reference target)))
+    (print (list "midic" (lmidic (reference target))))
+    (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
+    (update-panel self t)))
+
+
+(defmethod add-new-extra-drag (self where obj (mode (eql 'gliss)) dc)
+  (om-init-motion-click 
+       self where :motion-draw 'draw-score-connection :display-mode 2 
+       :release-action 'release-score-connection))
+
+(defmethod draw-obj-in-rect ((self gliss-extra) x x1 y y1 edparams  view)
+   (om-draw-line (round (+ x (/ (- x1 x) 2))) y (round (+ x (/ (- x1 x) 2))) y1))
+
+(defclass grap-extra-gliss (grap-compose-extra) ())
+
+(defmethod make-graph-extra-obj ((self gliss-extra) gobj)
+  (let ((rep (make-instance 'grap-extra-gliss
+                            :reference  self
+                            :gobject gobj)))
+    (setf (graphic-frame self) rep)))
+   
+(defmethod draw-graph-extra-obj ((self grap-extra-gliss) view size staff)
+   (let* ((grap-obj (gobject self))
+          (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
+          points
+          (params (gparams object))
+          (selec-size 6))
+     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
+     (if (and points (>= (length points) 2)) 
+     
+     (om-with-fg-color nil (fourth params)
+       (om-with-line-size (third params)
+         (if (equal (second params) 'dash)
+             (om-with-dashline
+               (om-draw-line (om-point-h (car points)) (om-point-v (car points)) (om-point-h (second points)) (om-point-v (second points))))
+           (om-draw-line (om-point-h (car points)) (om-point-v (car points)) (om-point-h (second points)) (om-point-v (second points))))))
+
+       (let* ((rect (rectangle grap-obj))
+              (exy (fourth rect))
+              (exx (+ (first rect) (round (- (third rect) (first rect))))))
+         (om-with-fg-color nil *om-red-color*
+           (om-draw-line exx 0 exx (h view)))
+         (setf (rectangle self) (list (- exx 2) 0 (+ exx 2) (h view)))))
+    (when (equal (score-get-extra-mode) 'gliss)
+       (setf (selection-rec self) (list (+ (om-point-h (car points)) (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
+                                        (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2))))
+        (om-with-fg-color nil *om-red-color*
+          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))
 
 
 ;***************
@@ -1744,6 +1853,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod get-trill ((self chord))
   (when (extra-obj-list self)
     (find-if #'trill-p (extra-obj-list self) :from-end t)))
+
+(defmethod get-gliss-extra ((self chord))
+  (when (extra-obj-list self)
+    (find-if #'gliss-extra-p (extra-obj-list self) :from-end t)))
+
 
 (defmethod get-line-extra ((self chord))
   (when (extra-obj-list self)
