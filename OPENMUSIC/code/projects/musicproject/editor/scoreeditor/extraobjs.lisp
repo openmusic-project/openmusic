@@ -1127,16 +1127,24 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
            (funcall fun (om-point-h (car points)) (om-point-h (second points))
                     (om-point-v (car points)) (om-point-v (second points))))))))
      
-     (when (or (equal (score-get-extra-mode) 'cresc) 
-               (equal (score-get-extra-mode) 'decresc) 
-               (equal (score-get-extra-mode) 'trill)
-               (equal (score-get-extra-mode) 'sost-ped)
-               )
+     (if (or (equal (score-get-extra-mode) 'trill)
+             (equal (score-get-extra-mode) 'sost-ped))
+       (progn
        (setf (selection-rec self) (list (+ (om-point-h (car points)) 
-                                           (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
-                                        (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
+                                           ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
+                                           -3)
+                                        (- (om-point-v (car points)) 
+                                           ;(round (- (om-point-v (second points)) (om-point-v (car points))) 2)
+                                            30
+                                           )))
         (om-with-fg-color nil *om-red-color*
-          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))))
+          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))
+       (progn
+         (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+                                           (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
+                                          (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
+         (om-with-fg-color nil *om-red-color*
+           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))))
 
 
 ;***************
