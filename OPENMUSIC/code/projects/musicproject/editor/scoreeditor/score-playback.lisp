@@ -281,7 +281,7 @@
   (when (get-trill self1)
   (let* ((trill (get-trill self1))
          (offs (msoffsets trill))
-         (dur (car (ldur self1)))
+         (dur (- (second offs) (car offs)))
          (ndurs (ceiling (/ (ceiling (/ dur *gdur*)) 2))))
 
     (let* ((step (approx-factor (get-scale-from-approx (approx self1))))
