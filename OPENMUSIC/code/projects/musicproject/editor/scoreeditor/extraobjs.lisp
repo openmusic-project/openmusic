@@ -2001,6 +2001,20 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defmethod get-crescendo ((self chord))
+  (when (extra-obj-list self)
+    (find-if #'crescendo-p (extra-obj-list self) :from-end t)))
+
+(defmethod get-crescendo ((self t))
+  nil)
+
+(defmethod get-diminuendo ((self chord))
+  (when (extra-obj-list self)
+    (find-if #'diminuendo-p (extra-obj-list self) :from-end t)))
+
+(defmethod get-diminuendo ((self t))
+  nil)
+
 (defmethod get-sost-pedal ((self chord))
   (when (extra-obj-list self)
     (find-if #'sost-ped-p (extra-obj-list self) :from-end t)))

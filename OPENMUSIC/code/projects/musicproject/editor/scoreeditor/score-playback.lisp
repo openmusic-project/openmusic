@@ -292,7 +292,7 @@
 ;;;;;;;
 
 (defmethod PrepareToPlay ((player t) (self chord) at &key approx port interval voice)
-  (append
+  (append  
     ;;gracenotes 
    (when (gnotes self)
      (let ((chseq (make-instance 'chord-seq 
@@ -306,6 +306,29 @@
                       :port port
                       :interval interval
                       :voice voice)))
+   ;;crescendo,diminuendo
+   (when (or (get-crescendo self) (get-diminuendo self))
+     (let* ((extra (or (get-crescendo self) (get-diminuendo self)))
+            (offs (msoffsets extra))
+            (start-vel (start-val extra))
+            (end-vel (end-val extra))
+            (timestamps  (arithm-ser (car offs)  (- (second offs) 1)  20))
+            (velvalues (bpf-sample (om-make-bpf 'bpf offs (list start-vel end-vel)
+                                                0)
+                                   (car offs) (second offs) (length timestamps))))
+       (list
+        (loop for off in timestamps
+              for val in velvalues
+              collect(om-midi::make-midi-evt :type :CtrlChange
+                                             :date  off
+                                             :port (or (car (lport self)) *def-midi-out*)
+                                             :chan (car (lchan self))
+                                               ;:ref 0
+                                             :fields (list 7 val));expression = 11
+                )
+           
+        )))
+
       ;;sostpedal (faire une fonction pour les extras);
    (when (get-sost-pedal self)
      (let ((offs (msoffsets (get-sost-pedal self))))
@@ -345,15 +368,16 @@
                                                  0)
                                     (car offs) (second offs) (length timestamps))))
        (x-append
+        
         (om-midi::make-midi-evt :type :CtrlChange
-                                :date (- (car offs) 5)
+                                :date 0;(- (car offs) 5)
                                 :chan (car (lchan self))
                                 :port (or (car (lport self)) *def-midi-out*)
                                 :fields (list 101 0))
 
         
         (om-midi::make-midi-evt :type :CtrlChange
-                                :date (- (car offs) 5)
+                                :date 0;(- (car offs) 5)
                                 :chan (car (lchan self))
                                 :port (or (car (lport self)) *def-midi-out*)
                                 :fields (list 100 0))
@@ -389,8 +413,6 @@
                                 :fields (list 8192))
         
         )))
-
-
    (call-next-method)))
 
 
