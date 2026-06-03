@@ -1619,6 +1619,7 @@ of all its direct subcontainers (supposed adjacent)"
                                 (t 
                                  (setf chord (objfromobjs (or (pop chords) (clone def-chord)) chord-model))))
                                ;(print (list "chord" chord (gnotes chord)))
+                               (when (cont-chord-p chord) (setf (extra-obj-list chord) nil))
                                (setf (offset chord) (offset sub))
                                (InContext sub (setf (extent chord) (extent sub)))
                                (when (and (note-p sub) (eq (tie sub) 'continue))  (push 'tie fringe))
