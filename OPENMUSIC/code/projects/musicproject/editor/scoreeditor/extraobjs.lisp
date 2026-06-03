@@ -1086,7 +1086,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (om-draw-line  x y1  x1 (round (+ y (/ (- y1 y) 2)))))
 
 (defclass grap-d-dynamic-extra (grap-compose-extra) ())
-
+#|
 (defmethod make-graph-extra-obj ((self d-dynamic-extra) gobj)
   (let ((rep (make-instance 'grap-d-dynamic-extra
                             :reference  self
@@ -1132,10 +1132,11 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
        (progn
        (setf (selection-rec self) (list (+ (om-point-h (car points)) 
                                            ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
-                                           -3)
+                                           -15 ;-3
+                                           )
                                         (- (om-point-v (car points)) 
                                            ;(round (- (om-point-v (second points)) (om-point-v (car points))) 2)
-                                            30
+                                            20 ;30
                                            )))
         (om-with-fg-color nil *om-red-color*
           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))
@@ -1143,9 +1144,10 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
          (setf (selection-rec self) (list (+ (om-point-h (car points)) 
                                            (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
                                           (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
+         (when (or (equal (score-get-extra-mode) 'cresc) (equal (score-get-extra-mode) 'decresc))
          (om-with-fg-color nil *om-red-color*
-           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))))
-
+           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))))))
+|#
 
 ;***************
 ;cresc
@@ -1161,6 +1163,43 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod draw-obj-in-rect ((self  crescendo) x x1 y y1 edparams  view)
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
+
+(defclass grap-cresc-extra (grap-compose-extra) ())
+
+(defmethod make-graph-extra-obj ((self crescendo) gobj)
+  (let ((rep (make-instance 'grap-cresc-extra
+                            :reference  self
+                            :gobject gobj)))
+    (setf (graphic-frame self) rep)))
+
+;juste pour cresc et decres
+(defmethod draw-graph-extra-obj ((self grap-cresc-extra) view size staff) 
+  (let* ((grap-obj (gobject self))
+          (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
+          points
+          (params (gparams object))
+          (selec-size 6)
+          fun)
+    (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
+    (setf fun  'draw-cresc)
+     (when points 
+     (om-with-fg-color view (fourth params)
+       (om-with-line-size (third params)
+         (if (equal (second params) 'dash)
+             (om-with-dashline
+               (funcall fun (om-point-h (car points)) (om-point-h (second points))
+                        (om-point-v (car points))  (om-point-v (second points))));todo
+           (funcall fun (om-point-h (car points)) (om-point-h (second points))
+                    (om-point-v (car points)) (om-point-v (second points))))))
+
+       (progn
+         (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+                                           (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
+                                          (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
+         (when (equal (score-get-extra-mode) 'cresc)
+         (om-with-fg-color nil *om-red-color*
+           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'cresc)) pos)
   (let* ((size (staff-size self))
@@ -1230,6 +1269,42 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod draw-obj-in-rect ((self diminuendo) x x1 y y1 edparams  view)
   (om-draw-line x y x1 (round (+ y (/ (- y1 y) 2))))
   (om-draw-line x y1 x1 (round (+ y (/ (- y1 y) 2)))))
+
+(defclass grap-dim-extra (grap-compose-extra) ())
+
+(defmethod make-graph-extra-obj ((self diminuendo) gobj) 
+  (let ((rep (make-instance 'grap-dim-extra
+                            :reference  self
+                            :gobject gobj)))
+    (setf (graphic-frame self) rep)))
+
+(defmethod draw-graph-extra-obj ((self grap-dim-extra) view size staff) 
+  (let* ((grap-obj (gobject self))
+          (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
+          points
+          (params (gparams object))
+          (selec-size 6)
+          fun)
+    (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
+    (setf fun  'draw-decresc)
+     (when points 
+     (om-with-fg-color view (fourth params)
+       (om-with-line-size (third params)
+         (if (equal (second params) 'dash)
+             (om-with-dashline
+               (funcall fun (om-point-h (car points)) (om-point-h (second points))
+                        (om-point-v (car points))  (om-point-v (second points))));todo
+           (funcall fun (om-point-h (car points)) (om-point-h (second points))
+                    (om-point-v (car points)) (om-point-v (second points))))))
+
+       (progn
+         (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+                                           (round (- (om-point-h (second points)) (om-point-h (car points))) 2))
+                                          (+ (om-point-v (car points)) (round (- (om-point-v (second points)) (om-point-v (car points))) 2) -5)))
+         (when (equal (score-get-extra-mode) 'decresc)
+         (om-with-fg-color nil *om-red-color*
+           (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))))))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'decresc)) pos)
   (let* ((size (staff-size self))
@@ -1321,6 +1396,44 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
 
+(defclass grap-trill-extra (grap-compose-extra) ())
+
+(defmethod make-graph-extra-obj ((self trill) gobj)
+  (let ((rep (make-instance 'grap-trill-extra
+                            :reference  self
+                            :gobject gobj)))
+    (setf (graphic-frame self) rep)))
+
+
+(defmethod draw-graph-extra-obj ((self grap-trill-extra) view size staff)
+  (let* ((grap-obj (gobject self))
+          (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
+          points
+          (params (gparams object))
+          (selec-size 6)
+          fun)
+    (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
+    ;(setf fun 'draw-trill)
+     (when points 
+     (om-with-fg-color view (fourth params)
+       (om-with-line-size (third params)
+         (funcall 'draw-trill (trill-string (- (om-point-h (second points)) (om-point-h (car points)))) 
+                                                (om-point-h (car points)) (om-point-h (second points))
+                    (om-point-v (car points)) (om-point-v (second points)))))
+     (progn
+       (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+                                           ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
+                                           -15 ;-3
+                                           )
+                                        (- (om-point-v (car points)) 
+                                           ;(round (- (om-point-v (second points)) (om-point-v (car points))) 2)
+                                            20 ;30
+                                           )))
+       (when (equal (score-get-extra-mode) 'trill)
+        (om-with-fg-color nil *om-red-color*
+          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size))))
+       )))
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'trill)) pos)
   (let* ((size (staff-size self))
@@ -1392,6 +1505,45 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod draw-obj-in-rect ((self sost-ped) x x1 y y1 edparams  view)
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y)
   (om-draw-line x (round (+ y (/ (- y1 y) 2))) x1 y1))
+
+(defclass grap-sost-ped-extra (grap-compose-extra) ())
+
+(defmethod make-graph-extra-obj ((self sost-ped) gobj)
+  (let ((rep (make-instance 'grap-sost-ped-extra
+                            :reference  self
+                            :gobject gobj)))
+    (setf (graphic-frame self) rep)))
+
+
+(defmethod draw-graph-extra-obj ((self grap-sost-ped-extra) view size staff) 
+  (let* ((grap-obj (gobject self))
+          (object (reference self))
+          (zoom (if (typep view 'miniview) 1 (om-round (staff-zoom view) 2)))
+          points
+          (params (gparams object))
+          (selec-size 6)
+          fun)
+    (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
+    ;(setf fun 'draw-sost-ped)
+     (when points 
+     (om-with-fg-color view (fourth params)
+       (om-with-line-size (third params)
+         (funcall 'draw-sost-ped (sost-ped-string (- (om-point-h (second points)) (om-point-h (car points)))) 
+                                                (om-point-h (car points)) (om-point-h (second points))
+                                                (om-point-v (car points)) (om-point-v (second points)))))
+     (progn
+       (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+                                           ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
+                                           -15 ;-3
+                                           )
+                                        (- (om-point-v (car points)) 
+                                           ;(round (- (om-point-v (second points)) (om-point-v (car points))) 2)
+                                            20 ;30
+                                           )))
+       (when (equal (score-get-extra-mode) 'sost-ped)
+        (om-with-fg-color nil *om-red-color*
+          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))
+       ))))
 
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'sost-ped)) pos)
@@ -1490,7 +1642,6 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
     (setf (msoffsets newextra) (list (offset->ms *start-extra-obj-click* (object (om-view-container self)))
                                      (offset->ms (reference target) (object (om-view-container self)))))
     (setf (targetmc newextra) (lmidic (reference target)))
-    (print (list "midic" (lmidic (reference target))))
     (push newextra (extra-obj-list *start-extra-obj-click*));(reference obj)))
     (update-panel self t)))
 
