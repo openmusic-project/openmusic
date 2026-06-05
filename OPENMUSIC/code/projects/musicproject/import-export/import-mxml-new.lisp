@@ -20,7 +20,7 @@
 ;
 ;=========================================================================
 ;;; Music package 
-;;; authors G. Assayag, C. Agon, J. Bresson
+;;; authors G. Assayag, C. Agon, J. Bresson. K. Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -364,6 +364,7 @@ Constructs a POLY object from a MusicXML file.
 
   
 ;;; pitch duration begtie endtie voice staff instrument
+#|
 (defun decode-note (xmlnote) 
   (let* ((pitchtag (get-tagged-elt xmlnote 'pitch))
          (unpitch-tag (get-tagged-elt xmlnote 'unpitched))
@@ -379,10 +380,49 @@ Constructs a POLY object from a MusicXML file.
 	      voice staff instr)
       (xml-import-warning (format nil "One note could not be imported in OM: ~A" xmlnote))
       )))
+|#
 
+(defun decode-note (xmlnote) 
+  (let* ((pitchtag (get-tagged-elt xmlnote 'pitch))
+         (unpitch-tag (get-tagged-elt xmlnote 'unpitched))
+         (alteration (get-tag-contents (get-tagged-elt xmlnote 'accidental)))
+         (pitch (decode-xml-pitch (get-tag-contents (or pitchtag unpitch-tag)) 
+                                  alteration
+                                  unpitch-tag
+                                  ))
+         (dur (get-tag-contents (get-tagged-elt xmlnote 'duration)))
+	 (voice (get-tag-contents (get-tagged-elt xmlnote 'voice)))
+	 (staff (get-tag-contents (get-tagged-elt xmlnote 'staff)))
+         (instr (xml-attribute-value (get-tagged-elt xmlnote 'instrument) 'id)))
+    (if dur
+        (list pitch dur
+              (not (null (get-tagged-elements xmlnote 'tie 'type "start")))
+              (not (null (get-tagged-elements xmlnote 'tie 'type "stop")))
+	      voice staff instr)
+      (xml-import-warning (format nil "One note could not be imported in OM: ~A" xmlnote))
+      )))
 
 (defparameter *halftone-alter* 1.0)
 
+(defparameter *mxml-note-accidentals*
+  '((0 natural)
+    (0.25 natural-up)
+    (0.5 quarter-sharp) 
+    (0.75 sharp-down)
+    (1 sharp)
+    (1.25 sharp-up)
+    (1.5 three-quarters-sharp)
+    (1.75 sharp-three)
+    ;;a verifier
+    (-0.25 natural-down)
+    (-0.5 quarter-flat)
+    (-0.75 flat-up)
+    (-1.0 flat)
+    (-1.25 flat-down)
+    (-1.5 three-quarters-flat)
+    ))
+
+#|
 (defun decode-xml-pitch (xmlpitch &optional unpitched) 
   (when xmlpitch
     (let* ((note (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-step 'step))))
@@ -393,7 +433,20 @@ Constructs a POLY object from a MusicXML file.
       (when (and octave notenum)
         (* 100 (+ (* (1+ octave) 12) notenum (if alt (/ alt *halftone-alter*) 0))))
       )))
+|#
 
+(defun decode-xml-pitch (xmlpitch &optional alteration unpitched) 
+  (when xmlpitch
+    (let* ((note (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-step 'step))))
+           (notenum (and note (position note '("c" nil "d" nil "e" "f" nil "g" nil "a" nil "b") 
+                              :test 'string-equal)))
+           (alt (or 
+                 (car (find alteration *mxml-note-accidentals* :key 'second))
+                 (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-alter 'alter)))))
+           (octave (get-tag-contents (get-tagged-elt xmlpitch (if unpitched 'display-octave 'octave)))))
+      (when (and octave notenum)
+        (* 100 (+ (* (1+ octave) 12) notenum (if alt (/ alt *halftone-alter*) 0))))
+      )))
     
 (defun signature-from-xml (xmllist)
   (list (get-tag-contents (get-tagged-elt xmllist 'beats))
