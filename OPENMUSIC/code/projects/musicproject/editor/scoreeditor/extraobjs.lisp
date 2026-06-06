@@ -1375,20 +1375,22 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
      (setf (lmidic copy) ,(omng-save (lmidic self)))
      copy))
 
-(defun trill-string (n)
-  (let ((strg (repeat-n "5" (1- (round (/ n 13.5)))))
+(defun trill-string (n size)
+  "trill zigzag string"
+  (let* ((fontsize (/ size 24))
+         (strg (repeat-n "5" (1- (floor (/ (/ n 13.5) fontsize)))))
         (rep "5"))
     (loop for i in  strg
           do (setf rep  (concatenate 'string rep i)))
     rep))
 
-(defmethod draw-trill ( string x x1 y y1 )
-  (let* ((fontsize 24)
-         (thefont (om-make-music-font *extras-font* fontsize))
-         (sizetext 3))
-    (om-with-font thefont
-                  (om-draw-string (- x 5) y "*")
-                  (om-draw-string (+ x 10) y string)
+
+(defmethod draw-trill (string x x1 y y1 size)
+  (let* ((thefont (om-make-music-font *extras-font* size))
+         (fontsize (/ size 24)))
+         (om-with-font thefont
+                  (om-draw-string (- x 5) y "*");tr font
+                  (om-draw-string (round (+ x (* 10 fontsize))) y string);zigzag font
                   )))
 
 ;not used?
@@ -1414,13 +1416,12 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (selec-size 6)
           fun)
     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
-    ;(setf fun 'draw-trill)
-     (when points 
+    (when points 
      (om-with-fg-color view (fourth params)
        (om-with-line-size (third params)
-         (funcall 'draw-trill (trill-string (- (om-point-h (second points)) (om-point-h (car points)))) 
+         (funcall 'draw-trill (trill-string (- (om-point-h (second points)) (om-point-h (car points))) size) 
                                                 (om-point-h (car points)) (om-point-h (second points))
-                    (om-point-v (car points)) (om-point-v (second points)))))
+                    (om-point-v (car points)) (om-point-v (second points)) size)))
      (progn
        (setf (selection-rec self) (list (+ (om-point-h (car points)) 
                                            ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
@@ -1484,21 +1485,22 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 (defmethod sost-ped-p ((self t)) nil)
 
 
-(defun sost-ped-string (n)
-  (let ((strg (repeat-n " " (1- (round (/ n 7)))))
-        (rep " "))
+(defun sost-ped-string (n size)
+  (let* ((fontsize (/ size 24))
+         (strg (repeat-n " " (1- (floor (/ (/ n 7) fontsize)))))
+         (rep " "))
     (loop for i in  strg
           do (setf rep  (concatenate 'string rep i)))
     (setf rep (concatenate 'string rep ":"))
     ))
 
-(defmethod draw-sost-ped (string x x1 y y1 )
-  (let* ((fontsize 24)
-         (thefont (om-make-music-font *extras-font* fontsize))
+(defmethod draw-sost-ped (string x x1 y y1 size)
+  (let* ((fontsize (/ size 24))
+         (thefont (om-make-music-font *extras-font* size))
          (sizetext 3))
     (om-with-font thefont
                   (om-draw-string (- x 5) y "q")
-                  (om-draw-string (+ x 10) y string)
+                  (om-draw-string (+ x (* 13 fontsize)) y string)
                   )))
 
 ;not used?
@@ -1524,13 +1526,12 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
           (selec-size 6)
           fun)
     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
-    ;(setf fun 'draw-sost-ped)
-     (when points 
+    (when points 
      (om-with-fg-color view (fourth params)
        (om-with-line-size (third params)
-         (funcall 'draw-sost-ped (sost-ped-string (- (om-point-h (second points)) (om-point-h (car points)))) 
+         (funcall 'draw-sost-ped (sost-ped-string (- (om-point-h (second points)) (om-point-h (car points))) size) 
                                                 (om-point-h (car points)) (om-point-h (second points))
-                                                (om-point-v (car points)) (om-point-v (second points)))))
+                                                (om-point-v (car points)) (om-point-v (second points)) size)))
      (progn
        (setf (selection-rec self) (list (+ (om-point-h (car points)) 
                                            ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
