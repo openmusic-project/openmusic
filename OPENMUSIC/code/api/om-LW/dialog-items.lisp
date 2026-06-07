@@ -87,7 +87,12 @@
                 om-get-slider-range
                 om-get-slider-orientation
 
-                
+                om-zoom-pop-up
+                om-zoom-pop-up-value
+                om-set-zoom-pop-up-value
+                om-zoom-pop-up-presets
+                om-set-zoom-pop-up-presets
+
                 ) :om-api)
 
 ;;;=====================
@@ -940,4 +945,73 @@
  
 
 
+;;;==========================
+;;; OM-ZOOM-POP-UP
+;;;==========================
+
+;Author: Paulo Henrique Raposo
+
+(defclass om-zoom-pop-up (om-view)
+  ((zoom-value     :initarg :value     :initform 100  :accessor zoom-value)
+   (zoom-presets   :initarg :presets   :initform '(50 100 150 200 300 400) :accessor zoom-presets)
+   (zoom-action    :initarg :di-action :initform nil  :accessor zoom-action)
+   (zoom-text-font :initarg :font      :initform nil  :accessor zoom-text-font)
+   (zoom-fg-color  :initarg :fg-color  :initform nil  :accessor zoom-fg-color))
+  (:documentation
+   "Numeric popup that shows the EXACT percent (live, not snapped to a
+preset). Click opens a CAPI menu of preset percentages."))
+
+(defmethod om-draw-contents ((self om-zoom-pop-up))
+  (let* ((w (om-width self))
+         (h (om-height self))
+         (font (or (zoom-text-font self) (om-current-default-font1 self)))
+         (txt (format nil "~D" (zoom-value self))));(format nil "~D%" (zoom-value self))
+    (om-with-focused-view self
+      (om-draw-rect 0 0 (- w 1) (- h 1))
+      (om-with-font font
+        ;; Vertical center via font metrics; y1=-ascent, y2=descent.
+        (multiple-value-bind (x1 y1 x2 y2)
+            (gp::get-string-extent self txt
+                                   (if (gp::font-p font)
+                                       font
+                                     (gp::find-best-font self font)))
+          (declare (ignore x1 x2))
+          (om-draw-string 4 (round (- h y1 y2) 2) txt)))
+      (let* ((ax (- w 10))
+             (ay (- (round h 2) 1)))
+        (om-draw-line ax ay (+ ax 3) (+ ay 3))
+        (om-draw-line (+ ax 3) (+ ay 3) (+ ax 6) ay)))))
+
+(defmethod om-view-click-handler ((self om-zoom-pop-up) where) 
+  (declare (ignore where))
+  (let* ((widget self)
+         (items (loop for pct in (zoom-presets self)
+                      collect
+                      (let ((captured pct))
+                        (make-instance 'capi:menu-item
+                                       :title (format nil "~D" pct);(format nil "~D%" pct)
+                                       :data captured
+                                       :callback
+                                       #'(lambda (data interface)
+                                           ;(declare (ignore data interface))
+                                           (when (zoom-action widget)
+                                             (om-set-zoom-pop-up-value self data)
+                                             (funcall (zoom-action widget) widget captured)
+                                             ))))))
+         (themenu (make-instance 'capi:menu :title "" :items items)))
+    (capi::display-popup-menu themenu :owner self :x 0 :y (om-height self))
+    t))
+
+(defmethod om-zoom-pop-up-value ((self om-zoom-pop-up))
+  (zoom-value self))
+
+(defmethod om-set-zoom-pop-up-value ((self om-zoom-pop-up) new-pct) 
+  (setf (zoom-value self) new-pct)
+  (om-invalidate-view self))
+
+(defmethod om-zoom-pop-up-presets ((self om-zoom-pop-up))
+  (zoom-presets self))
+
+(defmethod om-set-zoom-pop-up-presets ((self om-zoom-pop-up) preset-list)
+  (setf (zoom-presets self) preset-list))
 

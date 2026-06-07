@@ -572,7 +572,9 @@
 ;===========================================================
 
 (defclass omcontrols-view (3dBorder-view) 
-  ((slotedit :initform nil :accessor slotedit))
+  ((slotedit :initform nil :accessor slotedit)
+   (zoom-numbox :initform nil :accessor zoom-numbox)
+   (font-zoom-widget :initform nil :accessor font-zoom-widget))
   (:default-initargs 
    :draw-with-buffer t
     :c++ *controls-color++* :c+ *controls-color+* 
@@ -587,6 +589,61 @@
 (defun editor-tone-list ()
   (loop for item in *scales-list* collect (list (third item) (car item))))
 
+(defmethod make-mus-font-widget ((self omcontrols-view) panel position font font-size-init)
+  "Build the font-size widget for CONTROL-VIEW. Default = legacy pop-up; specialize for zoom-aware variants."
+  (om-make-dialog-item 'om-pop-up-dialog-item
+                       position
+                       (om-make-point 56 22)
+                       ""
+                       :di-action (om-dialog-item-act item
+                                    (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
+                                      (change-editor-size panel newsize)))
+                       :font font
+                       :range (loop for item in *mus-font-size* collect (car item))
+                       :value font-size-init))
+
+(defun build-zoom-font-widget (control-view panel position font)
+  (let* ((initial-size (or (and panel (staff-size panel)) 24))
+         (widget (om-make-view 'om-zoom-pop-up
+                               :position position
+                               :size (om-make-point 56 22)
+                               :value initial-size
+                               :presets (mapcar #'cadr *mus-font-size*)
+                               :font font
+                               :bg-color *om-white-color*
+                               :di-action #'(lambda (w new-size)
+                                              (declare (ignore w))
+                                              (change-editor-size panel new-size)
+                                             ; (om-redisplay-element panel);non effective?
+                                              (om-invalidate-view panel t);non effective?
+                                              ))))
+    (setf (font-zoom-widget control-view) widget)
+    widget))
+
+
+(defun find-score-font-widget (panel)
+  (let* ((ed  (and (typep panel 'om-graphic-object) (editor panel)))
+         (ctr (and ed (slot-exists-p ed 'ctr-view) (ctr-view ed))))
+    (and ctr (slot-exists-p ctr 'font-zoom-widget) (font-zoom-widget ctr))))
+
+;zoom tools (PHR)
+(defun zoom-font-scale (pane scale)
+  (let* ((current  (or (staff-size pane) 24))
+         (new-size (max 8 (min 72 (round (* current scale))))))
+    (unless (= new-size current)
+      (change-editor-size pane new-size)
+      (let ((w (find-score-font-widget pane)))
+        (when w (om-set-zoom-pop-up-value w new-size))))))
+
+(defun zoom-font-step (pane delta &optional resetp)
+  (let* ((cur (or (staff-size pane) 24))
+         (new (cond (resetp                24)
+                    ((plusp delta)         (min 72 (+ cur delta)))
+                    (t                     (max 8  (+ cur delta))))))
+    (unless (= new cur)
+      (change-editor-size pane new)
+      (let ((w (find-score-font-widget pane)))
+        (when w (om-set-zoom-pop-up-value w new))))))
 
 ;-------------INITS
 (defmethod initialize-instance :after ((self omcontrols-view) &rest l 
@@ -616,7 +673,10 @@
                                       :bg-color *om-white-color*
                                       :help-spec ""
                                       ))
-         (realmidics (om-make-dialog-item 'om-check-box (om-make-point 148 (+ c1 0)) (om-make-point 25 15)
+         (realmidics (om-make-dialog-item 'om-check-box 
+                                          #-linux(om-make-point 148 (+ c1 0)) 
+                                          #+linux(om-make-point 148 (+ c1 2)) 
+                                          (om-make-point 20 15)
                                           "" 
                                           :di-action (om-dialog-item-act item 
                                                        (if (associated-box obj)
@@ -650,18 +710,21 @@
                                         (om-make-point 90 16) "Font size"
 					:font *om-default-font1*
                                         :bg-color *controls-color*))
-         (sizebut (om-make-dialog-item 'om-pop-up-dialog-item 
-                                       (om-make-point l1 c2) 
+         #|
+         (sizebut (om-make-dialog-item 'om-pop-up-dialog-item
+                                       (om-make-point l1 c2)
                                        (om-make-point 56 22)
                                        ""
                                        :di-action (om-dialog-item-act item
                                                     (let ((newsize (cadr (nth (om-get-selected-item-index item) *mus-font-size*))))
                                                       (change-editor-size panel newsize)))
-                                       
-                                       :font di-font 
-                                       :range (loop for item in *mus-font-size* collect (car item)) 
+
+                                       :font di-font
+                                       :range (loop for item in *mus-font-size* collect (car item))
                                        :value font-size
                                        ))
+         |#
+         (sizebut (make-mus-font-widget self panel (om-make-point l1 c2) di-font font-size))
          
          ;;; staff
          (staffitem (om-make-dialog-item 'om-static-text (om-make-point (- l2 36) (+ c1 2)) (om-make-point 60 20) "Staff"
@@ -784,6 +847,7 @@
     (add-zoom2control self zoom (om-make-point l1 c1))
     (om-set-bg-color self *controls-color*)))
 
+
 (defmethod meas-count ((self t)))
 
 (defmethod meas-count ((self voice))
@@ -797,22 +861,27 @@
 
 (defun add-zoom2control (control zoom &optional position)
   (setf zoom (if zoom (round (* zoom 100)) 100))
-  (let ((pos (or (om-add-points position (om-make-point 3 2))
-                 (om-make-point 100 2))))
-  (om-add-subviews control 
-                   (om-make-dialog-item 'edit-numbox pos (om-make-point 46 18) (format nil " ~D" zoom)
-                                        :di-action (om-dialog-item-act item
-                                                              (change-editor-zoom (panel (om-view-container (om-view-container item))) (value item)))
-                                        :font *om-default-font1*
-                                        :bg-color *om-white-color*
-                                        :value zoom
-                                        :afterfun #'(lambda (item)
-                                                      (change-editor-zoom (panel (om-view-container (om-view-container item))) (value item)))
-                                        :min-val 1
-                                        :max-val 1000)
-                   (om-make-dialog-item 'om-static-text (om-make-point (- (om-point-h pos) 40) 4) (om-make-point 40 20) "Zoom"
-                                         :font *om-default-font1*
-                                         :bg-color *controls-color*))))
+  (let* ((pos (or (om-add-points position (om-make-point 3 2))
+                  (om-make-point 100 2)))
+         (zoom-nb (om-make-dialog-item 'edit-numbox pos (om-make-point 46 18) (format nil " ~D" zoom)
+                                       :di-action (om-dialog-item-act item
+                                                            (change-editor-zoom (panel (om-view-container (om-view-container item))) (value item)))
+                                       :font *om-default-font1*
+                                       :bg-color *om-white-color*
+                                       :value zoom
+                                       :afterfun #'(lambda (item)
+                                                     (change-editor-zoom (panel (om-view-container (om-view-container item))) (value item)))
+                                       :min-val 1
+                                       :max-val 1000)))
+    (om-add-subviews control
+                     zoom-nb
+                     (om-make-dialog-item 'om-static-text (om-make-point (- (om-point-h pos) 40) 4) (om-make-point 40 20) "Zoom"
+                                          :font *om-default-font1*
+                                          :bg-color *controls-color*))
+    (when (slot-exists-p control 'zoom-numbox)
+      (setf (zoom-numbox control) zoom-nb))
+    zoom-nb))
+
 
 (defmethod additional-port-menu ((self t) &key (pos (om-make-point 410 1)) (color *om-white-color*) (in t) (out t))
   (when in
@@ -1079,6 +1148,23 @@
            (:om-key-tab (change-obj-mode self 1))
           ; (#\r (get-score-tree self)) ;;wait for score-box distribution fix 
            (t (call-next-method))))
+        ;; ZOOM-INPUT: Ctrl+= / Ctrl+- step staff-zoom by 1.1; Ctrl+0 resets to 100%.
+        ((om-command-key-p)
+         (cond
+          ((or (equal char #\=) (equal char #\+))
+           (change-editor-zoom
+            self
+            (max 1 (min 1000 (round (* (staff-zoom self) 110)))))
+           t)
+          ((equal char #\-)
+           (change-editor-zoom
+            self
+            (max 1 (min 1000 (round (/ (* (staff-zoom self) 100) 1.1)))))
+           t)
+          ((equal char #\0)
+           (change-editor-zoom self 100)
+           t)
+          (t (scroll-pane self char))))
         ((edit-cursor self)
          (cond 
           ((and (rythmic? (edit-cursor self)) (char-is-figure char))
@@ -2194,6 +2280,11 @@
       )))
 |#
 
+(defun find-score-zoom-numbox (panel)
+  (let* ((ed  (and (typep panel 'om-graphic-object) (editor panel)))
+         (ctr (and ed (slot-exists-p ed 'ctr-view) (ctr-view ed))))
+    (and ctr (slot-exists-p ctr 'zoom-numbox) (zoom-numbox ctr))))
+
 (defmethod change-editor-zoom ((self scorePanel) newzoom)
   (unless (= (staff-zoom self) newzoom)
     (setf (staff-zoom self) (/ newzoom 100))
@@ -2203,7 +2294,13 @@
     (when (or (score-page-mode self) (in-patch-mode? self))
       (update-panel self )
       #+macosx(update-slot-edit self); maybe also others, linux, etc.?
-      )))
+      )
+    (let ((nb (find-score-zoom-numbox self)))
+      (when (and nb (not (= (value nb) newzoom)))
+        (set-value nb newzoom)))
+    (om-invalidate-view self t)
+    ))
+
 
 #|
 (defmethod change-obj-mode ((self scorePanel) val)
@@ -2508,6 +2605,9 @@
 (defmethod GET-slot-LIST ((self omnote-controls-view)) 
    '(("midic" midic) ("channel" chan) ("dur" dur) ("dyn" dyn) ("port" port)))
 
+(defmethod make-mus-font-widget ((self omnote-controls-view) panel position font font-size-init)
+  (declare (ignore font-size-init))
+  (build-zoom-font-widget self panel position font))
 
 ;PANEL
 (defclass notePanel (scorePanel) ())
@@ -2545,6 +2645,12 @@
         (make-om-menu 'windows :disable nil :editor self)
         (make-om-menu 'help :editor self)))
 
+(defmethod handle-key-event ((self notePanel) char)
+  (cond ((not (om-command-key-p))   (call-next-method))
+        ((member char '(#\= #\+))   (zoom-font-step self 1)    t)
+        ((eql char #\-)             (zoom-font-step self -1)   t)
+        ((eql char #\0)             (zoom-font-step self 0 t)  t)
+        (t                          (call-next-method))))
 ;==================================
 ;CHORD
 ;==================================
@@ -2566,6 +2672,9 @@
 (defmethod GET-slot-LIST ((self omchord-controls-view))
    '(("midic" midic) ("channel" chan) ("dur" dur) ("dyn" dyn) ("port" port) ("offsets" offset)))
 
+(defmethod make-mus-font-widget ((self omchord-controls-view) panel position font font-size-init)
+  (declare (ignore font-size-init))
+  (build-zoom-font-widget self panel position font))
 
 ;=============================================
 ;=============================================
@@ -2603,6 +2712,14 @@
           (("x") "Extra Edition Palette")
           ("space" "Play/Stop"))))
 
+(defmethod handle-key-event ((self chordPanel) char)
+  (cond ((not (om-command-key-p))   (call-next-method))
+        ((member char '(#\= #\+))   (zoom-font-step self 1)    t)
+        ((eql char #\-)             (zoom-font-step self -1)   t)
+        ((eql char #\0)             (zoom-font-step self 0 t)  t)
+        (t                          (call-next-method))))
+
+
 ;==================================
 ;chordseq
 ;==================================
@@ -2615,7 +2732,9 @@
   (declare (ignore l))
   (add-chordseq-control self mode))
 
-
+(defmethod make-mus-font-widget ((self chordseq-controls-view) panel position font font-size-init)
+  (declare (ignore font-size-init))
+  (build-zoom-font-widget self panel position font))
 
 ;VIEW
 (defclass chordseqEditor (scoreEditor) ())
@@ -3025,6 +3144,12 @@
       (om-modal-dialog mydilog)))
 
 
+(defmethod handle-key-event :around ((self chordseqPanel) char)
+  (cond ((not (om-command-key-p))   (call-next-method))
+        ((member char '(#\= #\+))   (zoom-font-step self 1)    t)
+        ((eql char #\-)             (zoom-font-step self -1)   t)
+        ((eql char #\0)             (zoom-font-step self 0 t)  t)
+        (t                          (call-next-method))))
 
 (defmethod handle-key-event ((self chordseqPanel) char)
   (if (analysis-mode? self)
