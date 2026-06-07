@@ -606,7 +606,7 @@
   (let* ((initial-size (or (and panel (staff-size panel)) 24))
          (widget (om-make-view 'om-zoom-pop-up
                                :position position
-                               :size (om-make-point 56 22)
+                               :size (om-make-point 50 22)
                                :value initial-size
                                :presets (mapcar #'cadr *mus-font-size*)
                                :font font
@@ -674,8 +674,7 @@
                                       :help-spec ""
                                       ))
          (realmidics (om-make-dialog-item 'om-check-box 
-                                          #-linux(om-make-point 148 (+ c1 0)) 
-                                          #+linux(om-make-point 148 (+ c1 2)) 
+                                          (om-make-point 148 (+ c1 2)) 
                                           (om-make-point 20 15)
                                           "" 
                                           :di-action (om-dialog-item-act item 
