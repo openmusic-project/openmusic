@@ -956,7 +956,8 @@
    (zoom-presets   :initarg :presets   :initform '(50 100 150 200 300 400) :accessor zoom-presets)
    (zoom-action    :initarg :di-action :initform nil  :accessor zoom-action)
    (zoom-text-font :initarg :font      :initform nil  :accessor zoom-text-font)
-   (zoom-fg-color  :initarg :fg-color  :initform nil  :accessor zoom-fg-color))
+   (zoom-fg-color  :initarg :fg-color  :initform nil  :accessor zoom-fg-color)
+   (display-format :initarg :format-string :initform "~D" :accessor display-format))
   (:documentation
    "Numeric popup that shows the EXACT percent (live, not snapped to a
 preset). Click opens a CAPI menu of preset percentages."))
@@ -965,7 +966,7 @@ preset). Click opens a CAPI menu of preset percentages."))
   (let* ((w (om-width self))
          (h (om-height self))
          (font (or (zoom-text-font self) (om-current-default-font1 self)))
-         (txt (format nil "~D" (zoom-value self))));(format nil "~D%" (zoom-value self))
+         (txt (format nil (display-format self) (zoom-value self))))
     (om-with-focused-view self
       (om-draw-rect 0 0 (- w 1) (- h 1))
       (om-with-font font
@@ -989,7 +990,7 @@ preset). Click opens a CAPI menu of preset percentages."))
                       collect
                       (let ((captured pct))
                         (make-instance 'capi:menu-item
-                                       :title (format nil "~D" pct);(format nil "~D%" pct)
+                                       :title (format nil (display-format self) pct)
                                        :data captured
                                        :callback
                                        #'(lambda (data interface)
