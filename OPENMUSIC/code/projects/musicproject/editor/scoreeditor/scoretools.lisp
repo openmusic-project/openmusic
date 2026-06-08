@@ -1268,7 +1268,7 @@
       (om-with-font (get-font-to-draw 8)
                     (om-draw-string x y (get-string-for-tempo fig)))
       (om-with-font (get-font-to-draw 6) 
-                    (om-draw-string (+ x (round size 3)) y (format nil "=~D" num))))
+                    (om-draw-string (+ x (round size 3)) y (format nil "= ~D" num))))
     (when name
       (om-with-font (get-font-to-draw 6) 
                     (om-draw-string (+ x (round size 2)) (if num (- y (round size 1.8)) y) name)))))
