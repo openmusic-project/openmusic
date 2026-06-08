@@ -643,17 +643,17 @@ returns them with real chords"
             (limy (+ (- y (round size 8)) (third (auxlines self)))))
         (if (equal dir 'dw)
           (progn
-            (setf topy (+ topy (round size 4))) 
+            (setf topy (+ topy (floor size 4))) 
             (loop while (<= topy limy) do
                   (om-draw-line (- realpos (round size 8) -4) topy 
                                 (+  headsizex  realpos -8) topy)
-                  (setf topy (+ topy (round size 4)))))
+                  (setf topy (+ topy (floor size 4)))))
           (progn
-            (setf topy (- topy (round size 4))) 
+            (setf topy (- topy (floor size 4))) 
             (loop while (>= topy limy) do
                   (om-draw-line (- realpos (round size 8) -4) topy 
                                 (+  headsizex  realpos -4) topy);here should find a scaling factor related to fontsize
-                  (setf topy (- topy (round size 4))))))))))
+                  (setf topy (- topy (floor size 4))))))))))
 
 
 
