@@ -2292,7 +2292,7 @@
       (om-redraw-view self))
     (when (or (score-page-mode self) (in-patch-mode? self))
       (update-panel self )
-      #+macosx(update-slot-edit self); maybe also others, linux, etc.?
+      (update-slot-edit self); maybe also others, linux, etc.?
       )
     (let ((nb (find-score-zoom-numbox self)))
       (when (and nb (not (= (value nb) newzoom)))
