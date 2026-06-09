@@ -566,7 +566,7 @@ returns them with real chords"
 ;size here is the fontsize !
 (defmethod draw-head-grace ((self t) x y zoom minx maxx miny maxy slot size linear? staff chnote) 
   (declare (ignore minx maxx miny maxy linear? grille-p))
-  (let* ((new-size (round size *grace-factor*))
+  (let* ((new-size (/ size *grace-factor*));(round size *grace-factor*))
          ;(realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
          (realpos (round  (+  x 5  (* zoom (x self)))));;; (cf. if 5 is a good value)
          (altpos (if (alteration self) 
@@ -691,7 +691,7 @@ returns them with real chords"
 
 (defmethod draw-head-grace-gn ((self t) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (declare (ignore minx maxx miny maxy linear? grille-p))
-  (let* ((new-size (round size *grace-factor*))
+  (let* ((new-size (/ size *grace-factor*)) ;(round size *grace-factor*))
          (realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
          (realpos (round realrealpos))
          (altpos (if (alteration self) 
