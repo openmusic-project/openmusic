@@ -1732,11 +1732,12 @@
   (declare (ignore linear? maxy slot staff miny minx maxx))
   (let* ((realpos (round (+ x  (* zoom (x self)))))
          (str (headchar self))
-         (line (cond
-                ((equal (elt str 0) (code-char 90)) 0)
-                ((or (equal (elt str 0) (code-char 91))
-                     (equal (elt str 0) (code-char 92))
-                     (equal (elt str 0) (code-char 93))) (round size 4))))
+         (line (when (equal (sysname staff) 'empty);only if staff = empty!
+                  (cond
+                   ((equal (elt str 0) (code-char 90)) 0)
+                   ((or (equal (elt str 0) (code-char 91))
+                        (equal (elt str 0) (code-char 92))
+                        (equal (elt str 0) (code-char 93))) (round size 4)))))
          (strsizex (get-name-size str (get-font-to-draw 0))) ;c'est cher
          delta-y delta-h )
     (cond
