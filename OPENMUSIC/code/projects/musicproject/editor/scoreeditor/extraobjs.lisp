@@ -1386,7 +1386,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 
 (defmethod draw-trill (string x x1 y y1 size)
-  (let* ((thefont (om-make-music-font *extras-font* size))
+  (let* ((thefont (om-make-font-object (om-make-music-font *extras-font* size)))
          (fontsize (/ size 24)))
          (om-with-font thefont
                   (om-draw-string (- x 5) y "*");tr font
@@ -1496,7 +1496,7 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod draw-sost-ped (string x x1 y y1 size)
   (let* ((fontsize (/ size 24))
-         (thefont (om-make-music-font *extras-font* size))
+         (thefont (om-make-font-object (om-make-music-font *extras-font* size)))
          (sizetext 3))
     (om-with-font thefont
                   (om-draw-string (- x 5) y "q")
