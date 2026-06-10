@@ -536,6 +536,11 @@ returns them with real chords"
 ;=====================================================================
 
 
+;once fixed, include in init-fonts-to-draw (scoreeditors.lisp)
+(defmethod grace-font (size)
+  (om-make-font-object (om-make-music-font *micron-font* size)))
+
+
 (defmethod draw-object-ryth ((self grap-grace-notes) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (om-with-fg-color nil *grace-color*
     (draw-grace-notes self x y zoom minx maxx miny maxy slot size linear?  staff chnote)))
@@ -557,8 +562,9 @@ returns them with real chords"
       (loop for item in thenotes do
               (draw-head-grace item (+ x off) y zoom minx maxx miny maxy slot size linear? staff chnote))
       (collect-rectangles self)
-      (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
+      (om-with-font (grace-font (round size *grace-factor*)) ;ici
                     (draw-chord-grace-stem self x y zoom (beams-num self) dir (round size *grace-factor*))))))
+
 
 
 ;make-graph
@@ -579,10 +585,10 @@ returns them with real chords"
          (altstr (string (alt-char self)))  
          tie)
     (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
-      (om-with-font (om-make-music-font *heads-font* new-size) 
+      (om-with-font (grace-font new-size) ;ici
                     (om-draw-string  realpos (+ y (y self))  str)) 
       (when (alteration self)
-        (om-with-font (om-make-music-font *micron-font* new-size) 
+        (om-with-font (grace-font new-size) ;ici
                       (om-draw-string altpos (+ y (y self)) altstr)))
       
       (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
@@ -678,12 +684,13 @@ returns them with real chords"
             (collect-rectangles chord))
     (collect-rectangles self)
     (let ((dire (dirgroup self)))
-      (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
+      (om-with-font (om-make-font-object (om-make-music-font *heads-font* (round size *grace-factor*))) ;ici
                     (group-draw-stems-gn self dire  x y (rectangle self)  zoom (round size *grace-factor*))
                     (draw-beams-note-in-group self dire (+ 2 x) -1 (rectangle self)  zoom (round size *grace-factor*))
                     (if (string-equal dire "up")
                         (om-draw-char  (+ (car (rectangle self)) (round size 3.8)) (+ (second (rectangle self)) (round size 2.6)) (code-char 111))
-                      (om-draw-char  (- (third (rectangle self)) (round size 2.2)) (+ (fourth (rectangle self)) (round size 3.5)) (code-char 111)))))))
+                      (om-draw-char  (- (third (rectangle self)) (round size 2.2)) (+ (fourth (rectangle self)) (round size 3.5)) (code-char 111)))))
+    ))
 
 
 
@@ -691,7 +698,7 @@ returns them with real chords"
 
 (defmethod draw-head-grace-gn ((self t) x y zoom minx maxx miny maxy slot size linear?  staff chnote)
   (declare (ignore minx maxx miny maxy linear? grille-p))
-  (let* ((new-size (/ size *grace-factor*)) ;(round size *grace-factor*))
+  (let* ((new-size (round size *grace-factor*)) ;(round size *grace-factor*))
          (realrealpos (+ 1 x (* (/ new-size 4) (delta-head self)) (* zoom (- (x self) (* (/ new-size 4) (delta-head self))))))
          (realpos (round realrealpos))
          (altpos (if (alteration self) 
@@ -703,13 +710,13 @@ returns them with real chords"
          (note-color *grace-color*);(get-mus-color note))
          (altstr (string (alt-char self)))  
          tie)
+    
     (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
-      (om-with-font (om-make-music-font *heads-font* new-size) 
+      (om-with-font (om-make-font-object (om-make-music-font *heads-font* new-size))
                     (om-draw-string  realpos (+ y (y self))  str)) 
       (when (alteration self)
-        (om-with-font (om-make-music-font *micron-font* new-size) 
+        (om-with-font (grace-font new-size) ;ici
                       (om-draw-string altpos (+ y (y self)) altstr)))
-      
       (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
                                    (+ realpos (round new-size 3)) (+ y (round new-size 8) (y self)))))
     (draw-auxiliar-grace-lines self x y  size (- realpos 5) headsizex)))
@@ -1262,3 +1269,9 @@ An OM object representing a group in a rhythm.
     (if (gnotes self)
         (list (grap-grace-notes new-chr) new-chr)
       new-chr)))
+
+;;;;;;PAGE MODE
+
+(defmethod page-draw-object-ryth ((self grap-grace-notes) score pagenum x y zoom  slot size staff chnote)
+  (om-with-fg-color nil *grace-color*
+    (draw-grace-notes self x y zoom 0 0 0 0 slot size nil  staff chnote)))

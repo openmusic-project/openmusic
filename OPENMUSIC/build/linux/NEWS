@@ -13,6 +13,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Graces notes in page mode
 - musicxml import fixed microintervals from sibelius
 - musicxml export fixed ties in group
 - tree2ratio old format tree issue fixed
