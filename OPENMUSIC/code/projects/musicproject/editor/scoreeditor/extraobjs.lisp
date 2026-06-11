@@ -1431,13 +1431,14 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
          points
          (params (gparams object))
          (selec-size 6)
+         (pageoffset (if (typep view 'capi:metafile-port) 5 0))
          fun)
     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
     (when points 
       (om-with-fg-color view (fourth params)
         (om-with-line-size (third params)
           (funcall 'draw-trill (trill-string (- (om-point-h (second points)) (om-point-h (car points))) size) 
-                   (om-point-h (car points)) (om-point-h (second points))
+                   (- (om-point-h (car points)) pageoffset) (om-point-h (second points))
                    (om-point-v (car points)) (om-point-v (second points)) size)))
       (progn
         (setf (selection-rec self) (list (+ (om-point-h (car points)) 
@@ -1536,36 +1537,37 @@ They can be added and manipulated thanks to the Extra package functions (add-ext
 
 (defmethod draw-graph-extra-obj ((self grap-sost-ped-extra) view size staff zoom) 
   (let* ((grap-obj (gobject self))
-          (object (reference self))
-          (zoom (cond 
+         (object (reference self))
+         (zoom (cond 
                 ((typep view 'scorepanel) 
                  (om-round (staff-zoom view) 2))
                 ((typep view 'miniview) 1)
                 (t zoom)))
-          points
-          (params (gparams object))
-          (selec-size 6)
-          fun)
+         points
+         (params (gparams object))
+         (selec-size 6)
+         (pageoffset (if (typep view 'capi:metafile-port) 5 0))
+         fun)
     (setf points (convert-delta-to-points-zoom grap-obj (p-points object) size zoom))
     (when points 
-     (om-with-fg-color view (fourth params)
-       (om-with-line-size (third params)
-         (funcall 'draw-sost-ped (sost-ped-string (- (om-point-h (second points)) (om-point-h (car points))) size) 
-                                                (om-point-h (car points)) (om-point-h (second points))
-                                                (om-point-v (car points)) (om-point-v (second points)) size)))
-     (progn
-       (setf (selection-rec self) (list (+ (om-point-h (car points)) 
+      (om-with-fg-color view (fourth params)
+        (om-with-line-size (third params)
+          (funcall 'draw-sost-ped (sost-ped-string (- (om-point-h (second points)) (om-point-h (car points))) size) 
+                   (- (om-point-h (car points)) pageoffset)(om-point-h (second points))
+                   (om-point-v (car points)) (om-point-v (second points)) size)))
+      (progn
+        (setf (selection-rec self) (list (+ (om-point-h (car points)) 
                                            ;(round (- (om-point-h (second points)) (om-point-h (car points))) 2)
-                                           -15 ;-3
-                                           )
-                                        (- (om-point-v (car points)) 
+                                            -15 ;-3
+                                            )
+                                         (- (om-point-v (car points)) 
                                            ;(round (- (om-point-v (second points)) (om-point-v (car points))) 2)
                                             20 ;30
-                                           )))
-       (when (equal (score-get-extra-mode) 'sost-ped)
-        (om-with-fg-color nil *om-red-color*
-          (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))
-       ))))
+                                            )))
+        (when (equal (score-get-extra-mode) 'sost-ped)
+          (om-with-fg-color nil *om-red-color*
+            (om-draw-rect (car (selection-rec self)) (second (selection-rec self)) selec-size selec-size)))
+        ))))
 
 
 (defmethod do-release-extra-action ((self scorepanel) (mode (eql 'sost-ped)) pos)
