@@ -540,9 +540,9 @@
                              (setf (object item) (reference self))
                              (make-graph-extra-obj item self))))))
 
-(defmethod draw-extras ((self simple-graph-container) view size  staff)
+(defmethod draw-extras ((self simple-graph-container) view size staff zoom)
    (loop for item in (extras self) collect
-         (draw-graph-extra-obj item view size staff)))
+         (draw-graph-extra-obj item view size staff zoom)))
 
 
 ;=========================================
@@ -552,7 +552,7 @@
 (defmethod draw-object ((self grap-container) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
    (loop for item in (inside self) do
          (draw-object item view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote))
-   (draw-extras self view size staff))
+   (draw-extras self view size staff zoom))
 
 
 (defmethod set-parent ((self grap-container) list)
@@ -664,7 +664,7 @@
         (draw-stem self (chordpos self) y (selected self) (stem self))
         )))
   (collect-rectangles self)
-  (draw-extras self view size staff)
+  (draw-extras self view size staff zoom)
   )
 
 (defmethod draw-stem ((self grap-chord) x y sel stemsize)
@@ -843,7 +843,7 @@
     (draw-auxiliar-lines self x y  size realpos headsizex)
     (write-note-slot self realpos 
                      (+ y (y self)) slot size zoom)
-    (draw-extras self view size staff)
+    (draw-extras self view size staff zoom)
     ))
 
 ;;; PHR
@@ -1048,7 +1048,7 @@
                                                 (/ size -8))
                                     (name (reference self)))))
     (collect-rectangles self)
-    (draw-extras self view size staff)))
+    (draw-extras self view size staff zoom)))
 
 
 (defmethod draw-rectangle ((self grap-chord-seq) system size &optional fill) 
@@ -1096,7 +1096,7 @@
                          zoom minx maxx miny maxy slot size linear? (nth i staff) grille-p chnote)
             (setf posy (+ posy (get-delta-system system size view i))))
       (collect-rectangles self)
-      (draw-extras self view size staff)))
+      (draw-extras self view size staff zoom)))
 
 
 
@@ -1175,7 +1175,7 @@
       (collect-rectangles self)
       (last-aling-measures self  minx maxx zoom)
       (draw-aligned-measures self meas-list staff size  positions)
-      (draw-extras self view size staff)
+      (draw-extras self view size staff zoom)
       )))
 
 #|
@@ -1337,7 +1337,7 @@
                     (om-draw-string (+ (- x 10) (om-h-scroll-position view)) (+ y (line2pixel (+ namedir (posy (last-elem (staff-list staff))))
                                                               t (/ size 4)) (/ size -8))
                                     (name (reference self)))))
-    (draw-extras self view size staff)))
+    (draw-extras self view size staff zoom)))
 
 ;;; GRILLE
 (defmethod draw-object :before ((self grap-voice) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
@@ -1355,7 +1355,7 @@
 
 (defmethod draw-object-ryth ((self t) view x y zoom minx maxx miny maxy slot size linear?  staff chnote)
    (draw-object self view x y zoom minx maxx miny maxy slot size linear? staff nil chnote)
-   (draw-extras self view size staff)
+   (draw-extras self view size staff zoom)
   )
 
 (defmethod draw-object-ryth ((self grap-container) view x y zoom minx maxx miny maxy slot size linear? staff chnote)
@@ -1366,7 +1366,7 @@
 (defmethod draw-object-ryth ((self voice) view x y zoom minx maxx miny maxy slot size linear? staff chnote)
    (call-next-method)
    (remake-measures (inside self))
-   (draw-extras self view size staff)
+   (draw-extras self view size staff zoom)
   )
 
 
@@ -1451,7 +1451,7 @@
                                                               t (/ size 4)) (/ size -8))
                                     (name (reference self)))))
     
-    (draw-extras self view size staff)))
+    (draw-extras self view size staff zoom)))
 
 (defun draw-tempi-for-mes (self mesnum tempilist cur-mes size staff y dynamicpos last-dyn-x)
   (let ((pos (position mesnum tempilist :key 'caar))
@@ -1570,7 +1570,7 @@
                                (car (rectangle self)) (+ ys size))))))
     
     
-    (draw-extras self view size staff)
+    (draw-extras self view size staff zoom)
     ))
 
 
@@ -1753,7 +1753,7 @@
      (t (setf delta-y (* (round size 4) (delta-beams-rest (beams-num self)))
               delta-h (if (= (beams-num self) 1) (round size 4) (round size 2)))))
     (draw-one-rest self str strsizex size realpos (+ y (y self)) line delta-y delta-h)
-    (draw-extras self view size staff)))
+    (draw-extras self view size staff zoom)))
      
 
 (defmethod draw-one-rest ((self grap-rest) str strsizex size xpos ypos line delta-y delta-h) ;ypos = y + (y self) xpos = realpos
@@ -1898,7 +1898,7 @@
         (when (stem self)
           (draw-chord-beams self x y zoom (beams-num self) dir size)
           ))
-      (draw-extras self view size staff))
+      (draw-extras self view size staff zoom))
     (when *om-tonalite*
       (draw-chiffrage self x y zoom size))))
 
@@ -2059,7 +2059,7 @@
          (group-draw-stems self dire (- x 1) y (rectangle self) zoom size)
          (draw-beams-note-in-group self dire x -1 (rectangle self) zoom size)
          (draw-num-denom-s self x size (rectangle self)))))
-   (draw-extras self view size staff))
+   (draw-extras self view size staff zoom))
 
 
 (defmethod draw-num-denom-s ((self t) x size recttop) t)

@@ -366,7 +366,7 @@
     (when (stem self) 
       (draw-stem  self  (round (+  x (/ size 3.5) (* zoom (x self)))) y (selected self) (stem self)))
   ; (collect-rectangles self)
-    (draw-extras self (om-get-current-port) size staff)))
+    (draw-extras self (om-get-current-port) size staff zoom)))
 
 (defmethod draw-prop-note ((self grap-note) score pagenum linenum x y linesizex linesizey zoom  slot size  staff  chnote)
   (let ((deltaxy (compute-delta-x-y score pagenum linenum linesizex linesizey)))
@@ -478,7 +478,7 @@
           (draw-measure-number self (car (rectangle self)) y size staff))
       (when last-of-line
         (draw-measure-bar (round (+ (/ size 4) (* size (score-left-margin score))  (score-widht score size))) y staff size)))
-    (draw-extras self (om-get-current-port) size staff)))
+    (draw-extras self (om-get-current-port) size staff zoom)))
 
 ;No page view for Measure editors
 (defmethod draw-page-one-line ((self grap-measure) score pagenum linenum x y linesizex linesizey zoom  slot size  staff chnote numvoice)
@@ -497,7 +497,7 @@
         (group-draw-stems self dire x y (rectangle self) zoom size)
         (draw-beams-note-in-group self dire x -1 (rectangle self) zoom size)
         (draw-num-denom-s self x size (rectangle self)))))
-   (draw-extras self (om-get-current-port) size staff))
+   (draw-extras self (om-get-current-port) size staff zoom))
 
 
 ;----Draw a chord
@@ -516,7 +516,7 @@
            (when (figure-? self) 
              (when (stem self)
                (draw-chord-beams self x y zoom (beams-num self) dir size)))
-           (draw-extras self (om-get-current-port) size staff)
+           (draw-extras self (om-get-current-port) size staff zoom)
          (when *om-tonalite*
            (draw-chiffrage self x y zoom size)))
       (page-draw-action-boxes self score)))
@@ -572,7 +572,7 @@
             (setf posy (+ posy (get-delta-system (nth i staff) size score i))))
     (setf allmesures (mat-trans (reverse allmesures)))
     (page-draw-aligned-measures self score allmesures staff (+ y (* linenum  deltaline ) ) (+ y (* linenum  deltaline ) (- linesize size)) size)
-    (draw-extras self (om-get-current-port) size staff)))
+    (draw-extras self (om-get-current-port) size staff zoom)))
 
 (defmethod page-draw-aligned-measures ((self grap-poly) score list staff y0 y1 size)
   (om-with-font (get-font-to-draw 5)
