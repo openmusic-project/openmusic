@@ -312,6 +312,7 @@
 (load-om-projects '("space"))
 (load-om-projects '("harmonicproject"))
 (load-om-projects '("sheet"))
+(load-om-projects '("zoom"))
 ;(load-om-projects '("fluid"))
 
 

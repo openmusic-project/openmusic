@@ -74,6 +74,8 @@
 (mapc #'(lambda (filename) (compile&load (make-pathname :directory *api-directory* :name filename))) *api-files*)
 
 
+(load (make-pathname :directory (append (pathname-directory (truename *load-pathname*)) '("zoom")) :name "load-zoom" :type "lisp"))
+
 
 (pushnew :om-api *features*)
 

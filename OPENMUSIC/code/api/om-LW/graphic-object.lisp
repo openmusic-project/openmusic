@@ -75,6 +75,7 @@
   `(defclass ,name ,superclass ,slots ,.class-options))
 
 
+#|
 (defclass om-graphic-object ()
   ((vcontainer :initform nil :initarg :vcontainer :accessor vcontainer)
    (vsubviews :initform nil :initarg :vsubviews :accessor vsubviews)
@@ -88,6 +89,26 @@
    (highlight :initform nil :accessor highlight)
    (temp-data :initform nil :accessor temp-data)
    (images :initarg :images :accessor images :initform nil))
+|#
+
+(defclass om-graphic-object ()
+  ((vcontainer :initform nil :initarg :vcontainer :accessor vcontainer)
+   (vsubviews :initform nil :initarg :vsubviews :accessor vsubviews)
+   (locked :initform nil :initarg :locked :accessor locked)
+   (vx :initform 0 :initarg :vx :accessor vx)
+   (vy :initform 0 :initarg :vy :accessor vy)
+   (vw :initform 32 :initarg :vw :accessor vw)
+   (vh :initform 32 :initarg :vh :accessor vh)
+   (help-spec :initform nil :initarg :help-spec :accessor help-spec)
+   (initialized-p :initform nil :accessor initialized-p)
+   (highlight :initform nil :accessor highlight)
+   (temp-data :initform nil :accessor temp-data)
+   (images :initarg :images :accessor images :initform nil)
+   ;; ZOOM-CTX: per-frame logical snapshots, set lazily on first zoom.
+  ; (om-zoom-logical-pos  :initform nil :accessor om-zoom-logical-pos)
+  ; (om-zoom-logical-size :initform nil :accessor om-zoom-logical-size)
+  ; (om-zoom-logical-font :initform nil :accessor om-zoom-logical-font)
+   )
   (:default-initargs 
    :color-mode :aqua
    :create-callback 'om-create-callback
@@ -145,6 +166,12 @@
                    
 		  (:gesture-spec om-char-spec-callback)
                   ;(:character  om-char-callback nil)
+
+                  ;; ZOOM-INPUT: touch gesture bindings (Cocoa/Win32 only).
+                  ;((:touch :zoom)   om-zoom-touch-handler)
+                  ;#+win32 ((:touch :rotate) om-shift-wheel-hscroll-handler)
+                  ;((:touch :swipe)  om-zoom-touch-swipe-handler)
+                  ;#+win32 ((:touch :pan) om-zoom-touch-pan-handler)
 		  )
    ))
  
