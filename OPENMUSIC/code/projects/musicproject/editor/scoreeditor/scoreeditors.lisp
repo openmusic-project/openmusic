@@ -589,8 +589,10 @@
 (defun editor-tone-list ()
   (loop for item in *scales-list* collect (list (third item) (car item))))
 
+(defgeneric make-mus-font-widget (control-view panel position font font-size-init)
+  (:documentation "Build the font-size widget for CONTROL-VIEW. Default = legacy pop-up; specialize for zoom-aware variants."))
+
 (defmethod make-mus-font-widget ((self omcontrols-view) panel position font font-size-init)
-  "Build the font-size widget for CONTROL-VIEW. Default = legacy pop-up; specialize for zoom-aware variants."
   (om-make-dialog-item 'om-pop-up-dialog-item
                        position
                        (om-make-point 56 22)
@@ -1002,7 +1004,9 @@
     (timebpf :accessor timebpf :initarg :timebpf :initform nil))
    (:default-initargs :field-size (om-make-point 20000 10000)
     :scrollbars t
-    :scroll-bar-type :always-visible))
+    :scroll-bar-type :always-visible
+    :input-model '(((:touch :zoom) score-zoom-touch-handler))
+    ))
 
 (defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
 
@@ -1111,6 +1115,30 @@
                     ("space" "Play/Stop")))
 
 (defmethod get-help-list ((self scorepanel)) (list *scorehelp*))
+
+;----------------ZOOM HANDLER
+
+;;;CAPI (:touch :zoom) callback ----------
+
+(defun score-zoom-touch-handler (panel &rest args)
+  "Input-model callback for (:touch :zoom).
+   SCALE is the last numeric argument (pinch magnification)."
+  (let ((scale (find-if #'numberp (reverse args))))
+    (when (and scale (typep panel 'scorePanel))
+      (score-touch-zoom panel scale))))
+;;;;
+
+
+(defgeneric score-touch-zoom (panel scale)
+  (:documentation
+   "Apply pinch SCALE (>1 grows, <1 shrinks) to PANEL's musical-font zoom.
+    Score-local: never calls the canvas zoom engine."))
+
+(defmethod score-touch-zoom ((self scorePanel) scale)
+  ;;; Base score panel uses the percentage-based staff-zoom path.
+  (let* ((current (or (staff-zoom self) 1))
+         (new-pct (max 1 (min 1000 (round (* current scale 100))))))
+    (change-editor-zoom self new-pct)))
 
 ;-----------------EVENTS
 
@@ -2650,6 +2678,13 @@
         ((eql char #\-)             (zoom-font-step self -1)   t)
         ((eql char #\0)             (zoom-font-step self 0 t)  t)
         (t                          (call-next-method))))
+
+
+;----------ZOOM HANDLER
+
+(defmethod score-touch-zoom ((self notePanel) scale) 
+  (zoom-font-scale self scale))
+
 ;==================================
 ;CHORD
 ;==================================
@@ -2718,6 +2753,10 @@
         ((eql char #\0)             (zoom-font-step self 0 t)  t)
         (t                          (call-next-method))))
 
+;----------ZOOM HANDLER
+
+(defmethod score-touch-zoom ((self chordPanel) scale) 
+  (zoom-font-scale self scale))
 
 ;==================================
 ;chordseq
@@ -3270,6 +3309,11 @@
           (("w") "Stop Midi Record")
           ("esc" "Stop  + Reset")
 	  )))
+
+;----------ZOOM HANDLER
+
+(defmethod score-touch-zoom ((self chordseqPanel) scale) 
+  (zoom-font-scale self scale))
 
 
 ;==========================================================
