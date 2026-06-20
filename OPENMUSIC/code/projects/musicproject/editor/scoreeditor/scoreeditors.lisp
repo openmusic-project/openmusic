@@ -1005,8 +1005,57 @@
    (:default-initargs :field-size (om-make-point 20000 10000)
     :scrollbars t
     :scroll-bar-type :always-visible
-    :input-model '(((:touch :zoom) score-zoom-touch-handler))
-    ))
+    :input-model '(
+                (:post-menu oa::om-context-menu-callback)
+
+                ((:button-1 :motion :shift #+macosx :hyper #-macosx :control :meta)  oa::om-clic-motion-callback (:shift :alt :cmd))
+                ((:button-1 :motion :shift #+macosx :hyper #-macosx :control)  oa::om-clic-motion-callback (:shift :cmd))
+                ((:button-1 :motion :shift :meta)  oa::om-clic-motion-callback (:shift :alt))
+                ((:button-1 :motion :meta #+macosx :hyper #-macosx :control)  oa::om-clic-motion-callback (:alt :cmd))
+                ((:button-1 :motion :shift)  oa::om-clic-motion-callback (:shift))
+                ((:button-1 :motion #+macosx :hyper #-macosx :control)  oa::om-clic-motion-callback (:cmd))
+                ((:button-1 :motion :meta)  oa::om-clic-motion-callback (:alt))
+                ((:button-1 :motion)  oa::om-clic-motion-callback nil)
+
+                ((:button-1 :press :shift #+macosx :hyper #-macosx :control :meta) oa::om-clic-callback (:shift :alt :cmd))
+                ((:button-1 :press :shift #+macosx :hyper #-macosx :control) oa::om-clic-callback (:shift :cmd))
+                ((:button-1 :press :shift :meta) oa::om-clic-callback (:shift :alt))
+                ((:button-1 :press :meta #+macosx :hyper #-macosx :control) oa::om-clic-callback (:alt :cmd))
+                ((:button-1 :press :shift) oa::om-clic-callback (:shift))
+                ((:button-1 :press #+macosx :hyper #-macosx :control) oa::om-clic-callback (:cmd))
+                ((:button-1 :press :meta) oa::om-clic-callback (:alt))
+                ((:button-1 :press) oa::om-clic-callback nil)
+
+                ((:motion :shift #+macosx :hyper #-macosx :control) oa::om-motion-callback (:shift :cmd))
+                ((:motion :shift) oa::om-motion-callback (:shift))
+                ((:motion #+macosx :hyper #-macosx :control) oa::om-motion-callback (:cmd))
+                (:motion oa::om-motion-callback nil)
+
+                ((:button-1 :release :shift #+macosx :hyper #-macosx :control :meta)  oa::om-clic-release-callback (:shift :alt :cmd))
+                ((:button-1 :release :shift #+macosx :hyper #-macosx :control)  oa::om-clic-release-callback (:shift :cmd))
+                ((:button-1 :release :shift :meta)  oa::om-clic-release-callback (:shift :alt))
+                ((:button-1 :release :meta #+macosx :hyper #-macosx :control)  oa::om-clic-release-callback (:alt :cmd))
+                ((:button-1 :release :shift)  oa::om-clic-release-callback (:shift))
+                ((:button-1 :release #+macosx :hyper #-macosx :control)  oa::om-clic-release-callback (:cmd))
+                ((:button-1 :release :meta)  oa::om-clic-release-callback (:alt))
+                ((:button-1 :release)  oa::om-clic-release-callback nil)
+
+                ((:button-3 :release)  oa::om-clic-release-callback nil)
+
+                ((:button-1 :second-press :shift #+macosx :hyper #-macosx :control :meta) oa::om-double-clic-callback (:shift :alt :cmd))
+                ((:button-1 :second-press :shift #+macosx :hyper #-macosx :control) oa::om-double-clic-callback (:shift :cmd))
+                ((:button-1 :second-press :shift :meta) oa::om-double-clic-callback (:shift :alt ))
+                ((:button-1 :second-press :meta #+macosx :hyper #-macosx :control) oa::om-double-clic-callback (:alt :cmd))
+                ((:button-1 :second-press :shift ) oa::om-double-clic-callback (:shift))
+                ((:button-1 :second-press #+macosx :hyper #-macosx :control) oa::om-double-clic-callback (:cmd))
+                ((:button-1 :second-press :meta) oa::om-double-clic-callback (:alt))
+                ((:button-1 :second-press) oa::om-double-clic-callback nil)
+
+                (:gesture-spec oa::om-char-spec-callback)
+
+                ((:touch :zoom) score-zoom-touch-handler)
+                 )
+             ))
 
 (defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
 
