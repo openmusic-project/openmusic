@@ -1005,7 +1005,6 @@
    (:default-initargs :field-size (om-make-point 20000 10000)
     :scrollbars t
     :scroll-bar-type :always-visible
-    :input-model '(((:touch :zoom) score-zoom-touch-handler))
     ))
 
 (defmethod get-score-class-panel ((self scoreEditor)) 'scorePanel)
@@ -1120,12 +1119,12 @@
 
 ;;;CAPI (:touch :zoom) callback ----------
 
-(defun score-zoom-touch-handler (panel &rest args)
+(defmethod om-zoom-touch-callback ((self scorepanel) &rest args)
   "Input-model callback for (:touch :zoom).
    SCALE is the last numeric argument (pinch magnification)."
   (let ((scale (find-if #'numberp (reverse args))))
-    (when (and scale (typep panel 'scorePanel))
-      (score-touch-zoom panel scale))))
+    (when scale 
+      (score-touch-zoom self scale))))
 ;;;;
 
 

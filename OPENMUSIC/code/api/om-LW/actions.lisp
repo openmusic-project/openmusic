@@ -53,6 +53,7 @@
           
           om-char-spec-callback
           
+          om-zoom-touch-callback
           ) :om-api)
 
 
@@ -283,6 +284,12 @@
 ;;; version SETF   (LW style)
 (defmethod om-set-view-cursor ((self om-graphic-object) cursor) 
   (setf (capi::simple-pane-cursor (om-get-view self)) cursor))
+
+;;;=====================
+;;; ZOOM
+;;;=====================
+
+(defmethod om-zoom-touch-callback ((self om-graphic-object) &rest args) nil)
 
 ;;;=====================
 ;;; KEYBOARD

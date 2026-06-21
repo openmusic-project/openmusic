@@ -145,6 +145,9 @@
                    
 		  (:gesture-spec om-char-spec-callback)
                   ;(:character  om-char-callback nil)
+                  
+                   ;;zoom touch
+                  ((:touch :zoom) om-zoom-touch-callback)
 		  )
    ))
  
@@ -161,6 +164,8 @@
 (defmethod om-clic-motion-callback (self x y mods))
 (defmethod om-double-clic-callback (self x y mods))
 ;;;(defmethod om-right-clic-callback (self x y))
+
+(defmethod om-zoom-touch-callback (self &rest args))
 
 (defmethod om-char-callback (self x y c mods))
 (defmethod om-char-spec-callback (self x y spec))
