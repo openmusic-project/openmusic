@@ -60,7 +60,7 @@
    (vel :initform 80 :accessor vel :initarg :vel :type number :documentation "velocity (0-127)")
    (dur :initform 1000 :accessor dur :initarg :dur :type number :documentation "duration (ms)")
    (chan :initform 1 :accessor chan :initarg :chan :type integer :documentation "MIDI channel (1-16)")
-   (port :initform nil :accessor port)
+   (port :initform 0 :accessor port)
    (tie :initform nil :accessor tie)
    (approx :initform *global-midi-approx* :accessor approx :type integer)
    (symb-info :initform nil :accessor symb-info))
@@ -316,11 +316,21 @@ Extraction methods.
 (defmethod midic ((self note))
   ;(setf (approx self) (get-approx self))
   (approx-m (slot-value self 'midic) (approx self)))
-|#
+
 
 (defmethod midic ((self note))
   (slot-value self 'midic))
+|#
 
+;;IMPORTANT NOTE: avec ce systeme (get-approx-from-edparam),
+;;l'approx n'est pas sauve avec omng-save (ie dans le patch) mais plutot on l'obtient
+;;via l'editeur!
+
+(defmethod midic ((self note))
+  (let* ((box (associated-box self))
+         (approx (if box (get-approx-from-edparam self) (approx self))))
+    (setf (approx self) approx)
+    (slot-value self 'midic)))
 
 ;enlever la premiere definition ?
 (defmethod (setf dur) ((dur number) (self note))
@@ -350,6 +360,7 @@ Extraction methods.
     (if (consp (vel self)) (setf (vel self) (car (vel self))))
     (if (consp (dur self)) (setf (dur self) (car (dur self))))
     (if (consp (chan self)) (setf (chan self) (car (chan self))))
+    (if (consp (approx self)) (setf (approx self) (car (approx self))));necessaire?
     )
       
   (unless empty 

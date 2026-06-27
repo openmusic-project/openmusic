@@ -203,6 +203,11 @@ Floating values are allowed for <approx>.
 ;EDITOR's APPROX
 ;==================================
 
+(defmethod get-approx-from-edparam ((self note))
+  (let ((box (associated-box self)))
+    (when box 
+      (cdr (assoc 'approx (edition-params box))))))
+
 (defmethod get-approx-from-edparam ((self chord))
   (let ((box (associated-box self)))
     (when box 

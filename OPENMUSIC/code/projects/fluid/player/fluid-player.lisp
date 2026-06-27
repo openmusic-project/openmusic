@@ -46,11 +46,19 @@
 (defun get-gen-port (self)
   (let ((ports (remove-duplicates  (flat (get-port self)))))
     (if (= 1 (length ports)) (car ports))))
-|#
+
 
 (defun get-gen-port (self)
   (let ((ports (remove-duplicates  (flat (get-port self)))))
     (car ports)))
+|#
+
+(defmethod get-gen-port ((self t))
+  (let ((ports (remove-duplicates  (flat (get-port self)))))
+    (car ports)))
+
+(defmethod get-gen-port ((self note))
+  (get-port self))
 
 (defmethod prepare-to-play ((engine (eql :fluidsynth)) (player omplayer) object at interval params)
   (let ((approx (if (caller player) 
