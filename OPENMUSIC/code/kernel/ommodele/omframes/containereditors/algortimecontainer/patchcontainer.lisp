@@ -199,9 +199,14 @@ Elements of patchPanels are instace of the boxframe class.#enddoc#
                        ("alt+box" "box and connection selection")
                        #-macosx("alt+1-9" "Insert box in selected connection")
                        #+macosx("cmd+1-9" "Insert box in selected connection")
+                       #-macosx("box+shiftctrlclic" "connect sel. boxes to list func.")
+                       #+macosx("box+shiftcmdclic" "connect sel. boxes to list func.")
                        ))
 
-(defvar *patchhelp2* '((("'" "|") "Zoom in/out Class Boxes")
+(defvar *patchhelp2* '(
+                       #-macosx("box+shiftctrlaltclic" "connect sel. boxes to new x-append")
+                       #+macosx("box+shiftcmdaltclic" "connect sel. boxes to new x-append")
+                       (("'" "|") "Zoom in/out Class Boxes")
                        (("d") "show Documentation")
                        (("e") "Edit lisp code")
                        (("g") "output lisp expression in listener")
@@ -330,7 +335,7 @@ because digit-char-p will not accept backspace and special om keys!"
              ))
       (#\h  (show-help-window (format nil "Commands for ~A Editor" 
                                       (string-upcase (class-name (class-of (object (editor self))))))
-                              (get-help-list (editor self)) 410)) 
+                              (get-help-list (editor self)) 460)) 
       (#\H (mapc 'open-helpfile actives))
       ;;; in the menu
       (#\k (mapc 'add-keywords actives))
