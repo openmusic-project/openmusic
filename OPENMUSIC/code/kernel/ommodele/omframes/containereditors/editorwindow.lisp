@@ -173,9 +173,9 @@
     (om-add-menu-to-win win)  
     #+win32(sleep 0.1)
     (when winshow (om-select-window win))
-     #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
+     #-(and linux lispworks8.1)(om-set-view-size editor (om-interior-size win))
      ;fix pour la taille a l'ouverture (linux lw81)
-     #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
+     #+(and linux lispworks8.1)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
     (cond
      ((scoreeditor-p object)
       (om-set-bg-color (panel (editor win)) *score-bg-color*))

@@ -483,7 +483,7 @@
 (defun om-namestring (path)
   (namestring path))
 
-(defun OM-directory (path &key (type nil) (directories t) (files t) (resolve-aliases nil) (hidden-files nil))
+(defun OM-directory (path &key (type nil) (directories t) (files t) (resolve-aliases nil) (hidden-files nil) (sorted? t))
  (let ((rep (directory (namestring path) :link-transparency resolve-aliases)))
    (when (not files)
      (setf rep (remove-if-not 'directoryp rep)))
@@ -503,7 +503,9 @@
             (setf rep (loop for item in rep when (or (directoryp item) 
                                                      (member (pathname-type item) type :test 'string-equal)) collect item)))
            (t nil)))
-   rep))
+(if sorted?
+(sort rep #'string< :key #'namestring)
+   rep)))
               
 
 (defun om-read-line (file)
