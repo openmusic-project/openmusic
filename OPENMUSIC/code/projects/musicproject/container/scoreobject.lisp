@@ -610,7 +610,7 @@ Extraction methods.
   (unless Empty
     (do-initialize self :tree (slot-value self 'tree) 
                    :chords (slot-value self 'chords)
-                   :tempo (tempo self)
+                   :tempo (slot-value self 'tempo) ;(tempo self)
                    :legato (slot-value self 'legato)
                    :ties (slot-value self 'ties)))
   ;initialize measures tempo slot
@@ -739,7 +739,7 @@ Extraction methods.
     (do-initialize self 
                    :tree (slot-value self 'tree) 
                    :chords (slot-value self 'chords)
-                   :tempo (tempo self)
+                   :tempo (slot-value self 'tempo) ;(tempo self)
                    ))
   (setf (slot-value self 'chords) nil)
   self)
@@ -1213,13 +1213,14 @@ Extraction methods.
     (tempo-voice->measures rem)))
              
 (defmethod export-voice-tempo ((self voice))
+  (unless (atom (slot-value self 'tempo));a voir...
   (if (second (slot-value self 'tempo))
   (let* ((format (temp-meas-changes self))
          (grp (grp-tempo-measures format))
          (rem (remove-meas-indx grp)))
     (tempo-voice->measures rem))
     (temp-meas-changes self)
-    ))
+    )))
 
 (defmethod tempo->qtempo ((self measure))
   (let ((tempo (slot-value self 'tempo)))
