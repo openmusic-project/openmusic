@@ -613,10 +613,6 @@ Extraction methods.
                    :tempo (slot-value self 'tempo) ;(tempo self)
                    :legato (slot-value self 'legato)
                    :ties (slot-value self 'ties)))
-  ;initialize measures tempo slot
-  (loop for i in (inside self)
-        for tp in (export-voice-tempo self)
-        do (setf (tempo i) tp))
   (setf (slot-value self 'chords) nil  (slot-value self 'ties) nil)
   self)
 
@@ -1024,6 +1020,14 @@ Extraction methods.
 
 
 ;---tempo
+
+(defmethod propagate-tempo ((Self voice)) 
+  (loop for object in (inside self)
+        for tp in (translate-tempo self)
+        do (setf (Qtempo object) (Qtempo self))
+           (setf (tempo object) tp)
+        (propagate-tempo object)))
+
 (defmethod tempo-a-la-noire ((tempo number)) tempo)
 
 (defmethod tempo-a-la-noire ((tempo list))

@@ -148,12 +148,7 @@
 
 ;(ordered-cadr-tempo '(((119 0) (1/4 96 nil)) ((10 1 2) (1/4 160 nil)) ((0 0) (1/4 160 nil)) ((0 1) (1/4 160 nil))))
 
-
-
-
-
-
-
+#|
 (defmethod fix-frst-tempo ((self voice))
   "fixes first measure, when it has tempo changes.Should be fixed at the source of the factory!"
   (let* ((tempo (tempo self))
@@ -170,6 +165,25 @@
                 ))
          )
     (list head fix)))
+|#
+
+(defmethod fix-frst-tempo ((self voice)) 
+  "fixes first measure, when it has tempo changes.Should be fixed at the source of the factory!"
+  (if (atom (tempo self))
+      (list (list 1/4 (tempo self)))
+  (let* ((tempo (tempo self))
+         (head (car tempo))
+         (other (cadr tempo))
+         (fix (if other
+                  (loop for i in other
+                        collect 
+                        (let ((tete (car i))
+                              (queue (second i)))
+                           (if (= 2 (length queue))        
+                        (list (car i) (flat (list (second i) nil)))
+                             i)))
+                )))
+    (list head fix))))
 
 (defmethod cadr-tempo ((self list))
   "pushes init tempo in cadr tempo list if there are cadr tempo list doesnot start as ((0 0) ....)"
@@ -246,26 +260,24 @@
                     x)
                   (reset-offsets x))))
 
-        
+
 (defmethod! translate-tempo ((self voice))
   (let ((tempi (group-tempi-by-meas
                  (meas-tempo self))))
-
-         (loop for i in tempi
-               collect (if (= 1 (length i))
-                           (list (butlast (second (car i))) nil)
-                         (let* ((cr (car i))
-                                (head (butlast (second cr)))
-                                (cd (cdr i))
-                                (tail (loop for i in cd
-                                            collect (cons 
-                                                     (list 0 (second (car i)))
-                                                     (cdr i)))))
-                           
-                           (list head tail)
-                           ))))
-                         
-         )
+    (loop for i in tempi
+          collect (if (= 1 (length i))
+                      (list (butlast (second (car i))) nil)
+                    (let* ((cr (car i))
+                           (head (butlast (second cr)))
+                           (cd (cdr i))
+                           (tail (loop for i in cd
+                                       collect (cons 
+                                                     ;(list 0 (second (car i)));ici le prob!!
+                                                (list (second (car i)))
+                                                (cdr i)))))
+                      
+                      (list head tail)
+                      )))))
 
 
 
