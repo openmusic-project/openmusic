@@ -154,7 +154,7 @@
   (when (and (interface-visible-p self) (om-get-view self))
     ;(capi::with-atomic-redisplay ((om-get-view self))
     (capi::apply-in-pane-process (om-get-view self) 'gp::invalidate-rectangle (om-get-view self))
-    #+win32 (mapcar 'om-invalidate-view (om-subviews self))
+    #+(or win32 linux) (mapcar 'om-invalidate-view (om-subviews self))
     ;)
     ))
 

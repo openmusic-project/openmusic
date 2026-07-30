@@ -13,6 +13,7 @@ IMPROVEMENTS
 
 FIXES
 
+- fixed invalidate-view (for n-cercle update and others)
 - Graces notes and extraobjs in page mode
 - musicxml import fixed microintervals from sibelius
 - musicxml export fixed ties in group
