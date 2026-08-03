@@ -326,6 +326,13 @@
                                                ;:ref 0
                                              :fields (list 7 val));expression = 11
                 )
+        ;reset volume
+        (om-midi::make-midi-evt :type :CtrlChange
+                                :date  (last-elem offs)
+                                :port (or (car (lport self)) *def-midi-out*)
+                                :chan (car (lchan self))
+                                :fields (list 7 100)
+                                )
            
         )))
 
