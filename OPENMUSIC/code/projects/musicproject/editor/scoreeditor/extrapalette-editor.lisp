@@ -423,7 +423,7 @@
                                (om-make-point 100 20) "Shape"
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 55)
-                               (om-make-point 85 20) ""
+                               (om-make-point 85 15) ""
                                :range '("Rectangle" "Circle" "Line" "Polygon")
                                :value (nth (position (nth 0 params) '(rect circ line polyg)) '("Rectangle" "Circle" "Line" "Polygon"))
                                :di-action (om-dialog-item-act item
@@ -435,7 +435,7 @@
                                (om-make-point 100 20) "Line"
                                :font *om-default-font1*)
           (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 85)
-                               (om-make-point 85 20) ""
+                               (om-make-point 85 15) ""
                                :range '("Normal" "Dashed")
                                :value (nth (position (nth 1 params) '(plain dash)) '("Normal" "Dashed"))
                                :di-action (om-dialog-item-act item
@@ -446,8 +446,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 120)
                                (om-make-point 100 20) "Pen Size"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 70 115)
-                               (om-make-point 75 20) ""
+          (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 60 120)
+                               (om-make-point 75 15) ""
                                :range '("1" "2" "3" "4" "5" "6" "7" "8")
                                :value (nth (position (nth 2 params) '(1 2 3 4 5 6 7 8)) '("1" "2" "3" "4" "5" "6" "7" "8"))
                                :di-action (om-dialog-item-act item
@@ -455,10 +455,10 @@
                                             (set-extra-param *extramanager* value params)
                                             ;(om-invalidate-view (preview (win *extramanager*)))
                                             ))
-          (om-make-dialog-item 'om-static-text (om-make-point 10 150)
+          (om-make-dialog-item 'om-static-text (om-make-point 10 160)
                                (om-make-point 100 20) "Color"
                                :font *om-default-font1*)
-          (om-make-view 'om-color-view :position (om-make-point 75 150)
+          (om-make-view 'om-color-view :position (om-make-point 65 160)
                                :size (om-make-point 60 16) 
                                :color (nth 3 params)
                                :after-fun #'(lambda (item)
@@ -471,8 +471,8 @@
           (om-make-dialog-item 'om-static-text (om-make-point 10 180)
                                (om-make-point 100 20) "Fill"
                                :font *om-default-font1*)
-          (om-make-dialog-item 'om-check-box (om-make-point 70 175)
-                               (om-make-point 100 20) ""
+          (om-make-dialog-item 'om-check-box (om-make-point 65 180)
+                               (om-make-point 20 20) ""
                                :checked-p (nth 4 params)
                                :di-action (om-dialog-item-act item
                                             (setf (nth 4 params) (om-checked-p item))
@@ -621,7 +621,7 @@
                                             ))
           )))
 
-
+(defparameter *no-extra-vel-repetition* t)
 
 (defmethod get-extra-items ((value (eql :dyn))) 
   (let ((params (cadr (find value (params *extramanager*) :key 'car)))
@@ -644,30 +644,57 @@
                                               (loop for obj in (selection? (panel (current-editor *extramanager*))) do
                                                       (when (or (container-p obj) (simple-container-p obj))
                                                         (if (container-p obj) 
-                                                           (loop for i in (inside obj) 
-                                                                   do (setf (vel i) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*))))
-                                                        (setf (vel obj) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*))))
+                                                            (loop for i in (inside obj) 
+                                                                  do (setf (vel i) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*))))
+                                                          (setf (vel obj) (third (nth (om-get-selected-item-index item) *dynamics-symbols-list*))))
                                                         (add-vel-extra obj)))
                                               (update-panel (panel (current-editor *extramanager*))))))
                                          
-          (om-make-dialog-item 'om-button (om-make-point 50 118)
+          (om-make-dialog-item 'om-button (om-make-point 50 100)
                                (om-make-point 65 20) "Show"
                                :di-action (om-dialog-item-act item
                                             (when (selection? (panel (current-editor *extramanager*)))
                                               (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                   (when (or (container-p obj) (simple-container-p obj))
-                                                     (add-vel-extra obj)))
+                                                      (when (or (container-p obj) (simple-container-p obj))
+                                                        (add-vel-extra obj)))
                                               (update-panel (panel (current-editor *extramanager*)))
-                                            )))
+                                              )))
           
-          (om-make-dialog-item 'om-button (om-make-point 50 150)
+          (om-make-dialog-item 'om-button (om-make-point 50 132)
                                (om-make-point 65 20) "Hide"
                                :di-action (om-dialog-item-act item
                                             (when (selection? (panel (current-editor *extramanager*)))
-                                            (loop for obj in (selection? (panel (current-editor *extramanager*))) do
-                                                    (when (or (container-p obj) (simple-container-p obj))
-                                                      (delete-extras (get-extras obj "vel"))))
-                                            (update-panel (panel (current-editor *extramanager*)))
+                                              (loop for obj in (selection? (panel (current-editor *extramanager*))) do
+                                                      (when (or (container-p obj) (simple-container-p obj))
+                                                        (delete-extras (get-extras obj "vel"))))
+                                              (update-panel (panel (current-editor *extramanager*)))
+                                              )))
+
+          (om-make-dialog-item 'om-button (om-make-point 50 180)
+                               (om-make-point 65 20) "All"
+                               :di-action (om-dialog-item-act item
+                                            (print (list "things" (panel (current-editor *extramanager*))
+                                                         *no-extra-vel-repetition*
+                                                         ))
+                                            (let ((panel (panel (current-editor *extramanager*))))
+                                            (display-extra-dyn panel (not *no-extra-vel-repetition*))
+                                            (update-panel panel t)
+                                            )))
+                   
+          (om-make-dialog-item 'om-check-box (om-make-point 120 186)
+                               (om-make-point 20 20) ""
+                               :checked-p *no-extra-vel-repetition*
+                               :di-action (om-dialog-item-act item
+                                            (setf *no-extra-vel-repetition* (om-checked-p item))
+                                            ))
+
+          (om-make-dialog-item 'om-button (om-make-point 50 212)
+                               (om-make-point 65 20) "Hide All"
+                               :di-action (om-dialog-item-act item
+                                            (let* ((panel (panel (current-editor *extramanager*)))
+                                                  (object (object (om-view-container panel))))
+                                              (remove-extras object "vel")
+                                            (update-panel panel t)
                                             )))
           )))
 

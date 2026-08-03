@@ -121,7 +121,8 @@
 (AddClass2Pack '(text-extra vel-extra head-extra line-extra) *extrapackage* )
 
 (AddGenFun2Pack '(add-extra add-extra-list get-extras delete-extras remove-extras
-                            put-extra-text  put-extra-dyn index-voice-pulses) *extrapackage*)
+                            put-extra-text put-extra-dyn display-extra-dyn
+                            index-voice-pulses) *extrapackage*)
 
 (addPackage2Pack *extrapackage* *scorepackage*)
 

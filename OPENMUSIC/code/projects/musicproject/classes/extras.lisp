@@ -569,6 +569,92 @@ Removes all EXTRA objects from <self>.
 ;;;;=====================
 
 
+(defun return-pos-of-diffdyn (list)
+  (let ((buff (car list))
+        (res (list 0)))   
+    (loop for i in (cdr list)
+          for pos from 1 to (length list)
+          do (if (not (equal i buff))
+                 (progn
+                   (push pos res)
+                   (setf buff i))))
+    (reverse res)))
+
+
+(defmethod* display-extra-dyn ((self voice) &optional (all nil))
+            :initvals (list t nil) 
+            :indoc '("self" "all")
+            :icon 162
+            :doc "Displays vel-extras of self. If all is nil will skip repeated vels (default)."
+  (let* ((chords (get-real-chords self))
+         (vels (mapcar #'lvel chords))
+         (pos (return-pos-of-diffdyn vels))
+         (sel (posn-match chords pos)))
+    (if all
+        (loop for obj in chords
+              do
+                (when (or (container-p obj) (simple-container-p obj))
+                  (add-vel-extra obj)))
+      (loop for obj in sel 
+            do
+              (when (or (container-p obj) (simple-container-p obj))
+                (add-vel-extra obj))))))
+
+(defmethod display-extra-dyn ((self measure) &optional (all nil))
+ (let* ((chords (get-real-chords self))
+         (vels (mapcar #'lvel chords))
+         (pos (return-pos-of-diffdyn vels))
+         (sel (posn-match chords pos)))
+    (if all
+        (loop for obj in chords
+              do
+                (when (or (container-p obj) (simple-container-p obj))
+                  (add-vel-extra obj)))
+      (loop for obj in sel 
+            do
+              (when (or (container-p obj) (simple-container-p obj))
+                (add-vel-extra obj))))))
+
+(defmethod* display-extra-dyn ((self poly) &optional (all nil))
+  (let ((voices (inside self)))
+    (loop for i in voices
+    do (display-extra-dyn i all))))
+
+(defmethod display-extra-dyn ((self chord-seq) &optional (all nil))
+ (let* ((chords (inside self))
+         (vels (mapcar #'lvel chords))
+         (pos (return-pos-of-diffdyn vels))
+         (sel (posn-match chords pos)))
+    (if all
+        (loop for obj in chords
+              do
+                (when (or (container-p obj) (simple-container-p obj))
+                  (add-vel-extra obj)))
+      (loop for obj in sel 
+            do
+              (when (or (container-p obj) (simple-container-p obj))
+                (add-vel-extra obj))))))
+
+;;;;;;;;
+
+(defmethod display-extra-dyn ((self chordseqpanel) &optional (all nil))
+  (let ((chrdseq (object (om-view-container self))))
+    (display-extra-dyn chrdseq all)))
+
+(defmethod display-extra-dyn ((self voicepanel) &optional (all nil))
+  (let ((voice (object (om-view-container self))))
+    (display-extra-dyn voice all)))
+
+(defmethod display-extra-dyn ((self measurepanel) &optional (all nil))
+  (let ((measure (object (om-view-container self))))
+    (display-extra-dyn measure all)))
+
+(defmethod display-extra-dyn ((self polypanel) &optional (all nil))
+  (let* ((poly (object (om-view-container self)))
+         (voices (inside poly)))
+    (loop for i in voices
+    do (display-extra-dyn i all))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;TOOLS;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
