@@ -562,7 +562,7 @@ returns them with real chords"
       (loop for item in thenotes do
               (draw-head-grace item (+ x off) y zoom minx maxx miny maxy slot size linear? staff chnote))
       (collect-rectangles self)
-      (om-with-font (grace-font (round size *grace-factor*)) ;ici
+      (om-with-font (om-make-music-font *heads-font* (round size *grace-factor*))
                     (draw-chord-grace-stem self x y zoom (beams-num self) dir (round size *grace-factor*))))))
 
 
@@ -585,10 +585,10 @@ returns them with real chords"
          (altstr (string (alt-char self)))  
          tie)
     (om-with-fg-color nil (if chnote (nth (chan (reference self)) *16-color-list*) note-color)
-      (om-with-font (grace-font new-size) ;ici
+      (om-with-font (om-make-music-font *heads-font* new-size) ;ici
                     (om-draw-string  realpos (+ y (y self))  str)) 
       (when (alteration self)
-        (om-with-font (grace-font new-size) ;ici
+        (om-with-font (om-make-music-font *micron-font* new-size)
                       (om-draw-string altpos (+ y (y self)) altstr)))
       
       (setf (rectangle self) (list altpos (+ y (- (y self) (round new-size 8)))
