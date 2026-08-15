@@ -470,6 +470,9 @@
 
 (defmethod get-obj-dur ((self arp-chord)) (extent self))
 
+(defmethod get-gen-port ((self arp-chord))
+  (car (mapcar #'port (notes self))))
+
 (defmethod play-obj? ((self arp-chord)) t)
 
 (defmethod chord-obj-to-play ((self chord) mode)
