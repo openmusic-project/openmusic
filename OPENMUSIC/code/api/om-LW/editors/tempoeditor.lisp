@@ -283,6 +283,7 @@ t)
     (setf *tempo-editor-text* (capi:editor-pane-text tempo-editor-pane))
     (setf (sel interface) *tempo-editor-text*)
     (apply (intfunc interface) (list (score interface) *tempo-editor-text*))
+    (apply (intfunc interface) (list (score interface) *tempo-editor-text*));why?
     ;(om::set-tree-tempo (score interface) *tempo-editor-text*)
     ))
 
