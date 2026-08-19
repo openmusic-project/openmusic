@@ -75,7 +75,9 @@
                       )
                      (t (get-edit-param (caller player) 'approx)))
                   ;(nth (1+ (position :approx params)) params)
-                  (approx object)
+                  (if (and (typep player 'omplayer) (typep object 'midifile)) 
+                      2
+                    (approx object))
                   ))
         (port (if (caller player)
                   (if (trackspanel-p (om-view-container (caller player)))
@@ -85,8 +87,10 @@
                 (get-gen-port object))
                 (get-gen-port object))));peut mieux faire...
  ;(print (list "params"  player (caller player) (object (caller player))  approx params port))
-    (if (and port *fluid-auto-microtune* approx)
-      (change-tuning port approx))
+    (cond
+   ((typep object 'midifile) (change-tuning *def-midi-out* approx))
+   ((and port *fluid-auto-microtune* approx) (change-tuning port approx))
+   (t nil))
  ; (if (equal port :default) (setf port *def-midi-out*))
     (mapcar #'(lambda (evt) 
               ;  (call-next-method engine player evt (+ (or (car interval) 0) (om-midi::midi-evt-date evt)) interval params)
