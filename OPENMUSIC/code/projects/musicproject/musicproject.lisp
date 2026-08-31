@@ -118,6 +118,7 @@
         "functions;quantifyom"      
         "functions;gkant"      
         "functions;maquette2obj"    
+        "functions;edo-n-mc-tables"
         "functions;conversions"       
         
         "editor;scoreeditor;pagination"

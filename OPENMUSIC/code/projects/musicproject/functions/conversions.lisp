@@ -815,9 +815,9 @@ Subset EDOs
 ;;; mc->EDO-n
 ;;;=======================================
 
-;;; ─────────────────────────────────────────────
+;;;=======================================
 ;;; ALTERATION COMBINATIONS
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defparameter *alteration-combinations*
   '((0 . ("" "+" "#" "^" "v" "#+" "#^" "#v" "^^" "vv" "#^^" "#vv" "^^^" "vvv" "#^^^" "#vvv" "##" "#^^^^" "#vvvv" "^^^^" "vvvv" "+^" "+v"))
@@ -825,9 +825,9 @@ Subset EDOs
     (2 . ("" "b" "#" "d" "+" "v" "^" "db" "#+" "bv" "b^" "#v" "#^" "vv" "^^" "bb" "##" "bvv" "b^^" "#vv" "#^^" "vvv" "^^^" "bvvv" "b^^^" "#vvv" "#^^^" "vvvv" "^^^^" "bvvvv" "b^^^^" "#vvvv" "#^^^^" "dv" "d^" "+v" "+^"))))
 
 
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 ;;; CACHES
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defvar *naturals-cache*       (make-hash-table :test #'eql))
 (defvar *valid-alts-cache*     (make-hash-table :test #'equal))
@@ -841,9 +841,9 @@ Subset EDOs
 (defvar *fifth-chain-ht-built* nil)
 
 
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 ;;; CACHE BUILDERS
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defun build-fifth-chain-ht ()
   (clrhash *fifth-chain-ht*)
@@ -969,9 +969,9 @@ Subset EDOs
   (clrhash *use-fifth-cache*))
 
 
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 ;;; BINARY SEARCH
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defun grid-lower-bound (vec target)
   "Return index of first entry in VEC with candidate-mc >= TARGET."
@@ -984,9 +984,9 @@ Subset EDOs
     lo))
 
 
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 ;;; CORE SEARCH
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defun find-best-match (midicent tk mc preference)
   (multiple-value-bind (tk pref) (ensure-caches tk preference)
@@ -1038,9 +1038,9 @@ Subset EDOs
                 (round (- midicent (aref result 4)))))))))  ; deviation
 
 
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 ;;; OUTPUT FORMATTING
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defun format-pitch-symbol (nat alt-string octave deviation include-deviation)
   (let* ((nat-str (string-upcase (symbol-name nat)))
@@ -1054,9 +1054,9 @@ Subset EDOs
     (intern sym-str :om)))
 
 
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 ;;; PUBLIC INTERFACE
-;;; ─────────────────────────────────────────────
+;;;======================================= 
 
 (defun mc-to-pitch (midicent tk mc preference include-deviation)
   (let ((match (find-best-match midicent tk mc preference)))
