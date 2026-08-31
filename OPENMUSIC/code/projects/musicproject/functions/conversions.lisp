@@ -561,6 +561,585 @@ Gradations smaller than a quartertone are expressed as the closest  quartertone 
   (n->mc (string symb) middle-C))
 
 ;;;=======================================
+;;; EDO-n->mc
+;;;=======================================
+
+(defun lookup-natural (letter tk)
+  (let* ((entry (assoc tk *natural-tables* :test #'equal))
+         (subtable (when entry (cdr entry))))
+    (when subtable
+      (let ((match (assoc (string-upcase (string letter)) subtable
+                          :key (lambda (s) (string-upcase (symbol-name s)))
+                          :test #'string=)))
+        (when match (second match))))))
+
+
+(defun lookup-alteration (alt-char tk)
+  (let* ((entry (assoc tk *alteration-tables* :test #'equal))
+         (subtable (when entry (cdr entry)))
+         (alt-str (string-upcase (string alt-char))))
+    (when subtable
+      (let ((match (assoc alt-str subtable
+                          :key (lambda (s) (string-upcase (symbol-name s)))
+                          :test #'string=)))
+        (when match (second match))))))
+
+
+(defun sum-alterations (alt-string tk)
+  (let ((total 0))
+    (loop for ch across alt-string
+          for val = (lookup-alteration ch tk)
+          do (if val
+                 (incf total val)
+                 (return-from sum-alterations nil)))
+    total))
+
+
+(defun parse-pitch-string-v2 (str)
+  (let* ((s (string str))
+         (len (length s))
+         (i 0))
+    (unless (and (< i len)
+                 (find (char-upcase (char s i)) "ABCDEFG"))
+      (error "expected pitch letter at start of ~S" s))
+    (let ((letter (char-upcase (char s 0))))
+      (incf i)
+      (loop while (and (< i len)
+                       (find (char s i) "#bBvV^+dDxX"))
+            do (incf i))
+      (let* ((alt-string (string-downcase (subseq s 1 i)))
+             (oct-start i))
+        (when (and (< i len) (find (char s i) "+-"))
+          (incf i))
+        (loop while (and (< i len) (digit-char-p (char s i)))
+              do (incf i))
+        (when (= i oct-start)
+          (error "expected octave integer in ~S" s))
+        (let ((octave (parse-integer (subseq s oct-start i)))
+              (cents 0))
+          (when (and (< i len) (find (char s i) "+-"))
+            (let ((cent-start i))
+              (incf i)
+              (loop while (and (< i len) (digit-char-p (char s i)))
+                    do (incf i))
+              (setf cents (parse-integer (subseq s cent-start i)))))
+          (values letter alt-string octave cents))))))
+
+
+(defun octave-base (oct mc)
+  (let ((offset (if (= mc 4) 1200 2400)))
+    (+ offset (* oct 1200))))
+
+
+(defun pitch-to-midicents-v2 (pitch-token tk mc)
+  (multiple-value-bind (letter alt-string octave cents)
+      (parse-pitch-string-v2 pitch-token)
+    (let ((natural (lookup-natural letter tk))
+          (alteration (sum-alterations alt-string tk)))
+      (if (or (null natural) (null alteration))
+          nil
+          (let* ((pitch-class (+ natural alteration))
+                 (result (+ pitch-class (octave-base octave mc) cents)))
+            (if (< result 0) nil result))))))
+
+
+(defun convert-v2 (item tk mc)
+  (cond
+    ((null item) nil)
+    ((or (symbolp item) (stringp item))
+     (pitch-to-midicents-v2 item tk mc))
+    ((listp item)
+     (mapcar (lambda (x) (convert-v2 x tk mc)) item))
+    (t (error "unexpected input ~S" item))))
+
+
+(defmethod! edo-n->mc ((self list) EDO &optional (middle-c 3))
+  :initvals '(("C3") 72 3)
+  :indoc '("symbolic pitch value or list of symbolic pitch values" "EDO" "octave of middle C")
+  :menuins '((2 (("middle-C = 3" 3) ("middle-C = 4" 4))))
+  :icon 141
+  :doc "
+Converts symbolic pitch values to midicent values according to a specified equal-division-of-the-octave (EDO) tuning system.
+
+------------------------
+Arguments
+------------------------
+
+1. Pitch values - A list, or list of lists, of symbolic pitch values. See 'Pitch value syntax' below.
+2. EDO - The equal division of the octave, as an integer from 3 to 96.
+3. Middle C octave - The octave number assigned to middle C: 3 or 4.
+
+Middle C (midicent value 6000) is the fixed reference pitch by which all pitch values are calculated. Depending on the middle C octave argument, it is represented symbolically as either C3 or C4.
+
+------------------------
+Pitch value syntax
+------------------------
+
+A pitch value consists of a note name, optional alterations, an octave number, and an optional cent deviation:
+
+<note name>[alterations]<octave>[cent deviation]
+
+Example:
+C#^^3-10 
+This represents C-sharp, raised by two EDO steps, in the specified octave, with an additional deviation of -10 cents.
+
+The optional cent deviation is added to or subtracted from the final calculated midicent value.
+
+Supported alteration symbols:
+
+^ = Arrow up
+v = Arrow down
+# = Sharp
+b = Flat
++ = Half sharp
+d = Half flat
+x = Double sharp
+
+Any number of alteration symbols may be combined arbitrarily (e.g. G#+3, Gbb^3, G##vvv3 are all valid inputs).
+
+------------------------
+Calculation logic
+------------------------
+
+Midicent values are calculated in the following way:
+M = O + N + A + D
+
+Where:
+M = resulting midicent value
+O = midicent value of C in the specified octave
+N = octave-reduced pitch definition of the note name
+A = sum of the pitch definitions of all alterations
+D = optional cent deviation
+
+------------------------
+The role of the chain of fifths
+------------------------
+
+Standard staff notation is deeply rooted in the chain of fifths. For this reason, this function uses the chain of fifths in the specified EDO to calculate the pitch definition of all notes names (C, D, E, F, G, A, and B) and alterations (except ^ and v, as explained further below).
+
+For each EDO, the 'fifth' (i.e. the interval that represents the frequency ratio of 3/2) is selected according to the following rules:
+
+- For 13-EDO and 18-EDO, the second-closest (i.e. flatter) approximation of 3/2 in absolute cents is used. 
+- For all other EDOs, the closest approximation of 3/2 in absolute cents is used.
+
+Exception: 3-, 4-, 6-, and 8-EDO do not have a useful approximation of 3/2 for the purpose of the chain-of-fifths notation. These EDOs are therefore notated as subsets of larger EDOs, as described further below.
+
+------------------------
+Pitch definitions of note names
+------------------------
+
+The pitch definitions of note names (C, D, E, F, G, A, and B) are derived from their positions in the chain of fifths.
+
+C is the reference pitch, so its octave-reduced pitch definition is 0 cents. Each other note name is defined by moving up or down by the appropriate number of fifths from C and octave-reducing the result.
+
+For the calculations below, p denotes the size of the fifth, in cents.
+
+For example, in 17-EDO, the fifth is ten EDO steps:
+p = (10/17) x 1200 ~ 705.882 cents
+
+D is two fifths above C:
+2p ~ 1411.765 cents
+
+Octave-reducing this gives:
+1411.765 - 1200 ~ 211.765 cents
+
+Thus, the octave-reduced pitch definition of D in 17-EDO is approximately 211.765 cents.
+
+The octave-reduced pitch definitions of the remaining note names are calculated in the same way according to their positions in the chain.
+
+------------------------
+Pitch definitions of alterations
+------------------------
+
+The ^ and v alterations raise and lower the pitch by one EDO step respectively; all other alterations (#, b, +, d, and x) are defined by the chain of fifths in the specified EDO.
+
+Sharps are defined by moving upward by seven fifths and octave-reducing the result:
+sharp = 7p mod 1200
+
+Therefore, in 17-EDO:
+7p ~ 4941.176 cents
+
+Octave-reducing this gives:
+4941.176 - (4 x 1200) ~ 141.176 cents
+
+Thus, the sharp alteration in 17-EDO is approximately +141.176 cents.
+
+A flat is defined analogously by moving seven fifths downward.
+
+------------------------
+Half sharps and half flats
+------------------------
+
+Half sharps (+) and half flats (d) span exactly half the number of EDO steps of the corresponding sharp or flat. They are therefore only available when the corresponding sharp or flat spans an even number of EDO steps.
+
+For example, in 24-EDO, a sharp spans two EDO steps (100 cents), so a half sharp spans one EDO step (50 cents):
+
+# = +100 cents
++ = +50 cents
+b = -100 cents
+d = -50 cents
+
+------------------------
+Multiple sharps/flats
+------------------------
+
+Multiple sharps and flats are treated as successive applications of the corresponding single alteration. Their pitch definitions are therefore summed.
+
+------------------------
+Special cases
+------------------------
+
+'Perfect' EDOs (7, 14, 21, 28, 35):
+Because the fifth is exactly 4/7 of an octave, the chain forms a closed cycle through the seven natural notes. Consequently, sharps and flats have no effect.
+
+'Pentatonic' EDOs (5, 10, 15, 20, 25, 30):
+Because the fifth is exactly 3/5 of an octave, the chain causes E to coincide with F and B to coincide with C.
+
+'Superflat' EDOs (9, 11, 13, 16, 18, and 23):
+Because the fifth is narrower than 4/7 of an octave, accidentals function inversely in the chain-of-fifths system: sharps lower the pitch while flats raise the pitch.
+
+------------------------
+Subset EDOs
+------------------------
+
+3-, 4-, and 6-EDO are notated as subsets of 12-EDO.
+8-EDO is notated as a subset of 24-EDO.
+"
+
+  (handler-case (convert-v2 self EDO middle-c)
+    (error (e)
+      (format t "edo-n->mc error: ~A~%" e)
+      nil)))
+
+;;;=======================================
+;;; mc->EDO-n
+;;;=======================================
+
+;;; ─────────────────────────────────────────────
+;;; ALTERATION COMBINATIONS
+;;; ─────────────────────────────────────────────
+
+(defparameter *alteration-combinations*
+  '((0 . ("" "+" "#" "^" "v" "#+" "#^" "#v" "^^" "vv" "#^^" "#vv" "^^^" "vvv" "#^^^" "#vvv" "##" "#^^^^" "#vvvv" "^^^^" "vvvv" "+^" "+v"))
+    (1 . ("" "d" "b" "^" "v" "db" "b^" "bv" "^^" "vv" "b^^" "bvv" "^^^" "vvv" "b^^^" "bvvv" "bb" "b^^^^" "bvvvv" "^^^^" "vvvv" "d^" "dv"))
+    (2 . ("" "b" "#" "d" "+" "v" "^" "db" "#+" "bv" "b^" "#v" "#^" "vv" "^^" "bb" "##" "bvv" "b^^" "#vv" "#^^" "vvv" "^^^" "bvvv" "b^^^" "#vvv" "#^^^" "vvvv" "^^^^" "bvvvv" "b^^^^" "#vvvv" "#^^^^" "dv" "d^" "+v" "+^"))))
+
+
+;;; ─────────────────────────────────────────────
+;;; CACHES
+;;; ─────────────────────────────────────────────
+
+(defvar *naturals-cache*       (make-hash-table :test #'eql))
+(defvar *valid-alts-cache*     (make-hash-table :test #'equal))
+(defvar *fifth-chain-ht*       (make-hash-table :test #'equal))
+;; Grid cache: (tk pref offset) -> vector of #(prank nat-sym alt-string octave candidate-mc fifth-step)
+;; fifth-step is an integer in [-6,10] if the entry passes the fifth-chain filter, otherwise :NONE.
+;; Sorted by candidate-mc asc, then prank asc within same mc.
+(defvar *grid-cache*           (make-hash-table :test #'equal))
+;; use-fifth cache: tk -> t or nil (whether fifth-chain tier applies for this EDO)
+(defvar *use-fifth-cache*      (make-hash-table :test #'eql))
+(defvar *fifth-chain-ht-built* nil)
+
+
+;;; ─────────────────────────────────────────────
+;;; CACHE BUILDERS
+;;; ─────────────────────────────────────────────
+
+(defun build-fifth-chain-ht ()
+  (clrhash *fifth-chain-ht*)
+  (loop for (sym step) in *fifth-chain*
+        do (setf (gethash (symbol-name sym) *fifth-chain-ht*) step))
+  (setf *fifth-chain-ht-built* t))
+
+(defun ensure-fifth-chain-ht ()
+  (unless *fifth-chain-ht-built* (build-fifth-chain-ht)))
+
+(defun alteration-char-value (ch alt-alist)
+  (let* ((sym  (find-symbol (string-upcase (string ch)) :om))
+         (pair (when sym (assoc sym alt-alist))))
+    (when (and pair (not (zerop (second pair))))
+      (second pair))))
+
+(defun compute-alt-value (alt-string alt-alist)
+  (if (string= alt-string "")
+      0
+      (let ((total 0))
+        (loop for ch across alt-string
+              for val = (alteration-char-value ch alt-alist)
+              if val do (incf total val)
+              else do (return-from compute-alt-value nil))
+        total)))
+
+(defun blacklisted-p (alt-string tk)
+  (let ((has-arrow (some (lambda (c) (find c "^v")) alt-string))
+        (has-half  (some (lambda (c) (find c "+d")) alt-string)))
+    (or (and has-arrow (member tk '(8 24)))
+        (and has-half  (member tk '(10 11 14 18 20 28 30))))))
+
+(defun build-naturals-cache-for (tk)
+  (let* ((entry    (assoc tk *natural-tables* :test #'=))
+         (nat-list (cdr entry))
+         (vec      (make-array (length nat-list))))
+    (loop for (sym val) in nat-list for i from 0
+          do (setf (aref vec i) (cons sym val)))
+    (setf (gethash tk *naturals-cache*) vec)))
+
+(defun build-valid-alts-cache-for (tk preference)
+  (let* ((alt-entry (assoc tk *alteration-tables* :test #'=))
+         (alt-alist (cdr alt-entry))
+         (alt-list  (cdr (assoc preference *alteration-combinations* :test #'=)))
+         (result    '()))
+    (loop for alt-string in alt-list
+          unless (blacklisted-p alt-string tk)
+          do (let ((val (compute-alt-value alt-string alt-alist)))
+               (when val (push (cons alt-string val) result))))
+    (setf (gethash (cons tk preference) *valid-alts-cache*)
+          (coerce (nreverse result) 'vector))))
+
+(defun compute-fifth-step (nat-sym alt-string)
+  "Return the fifth-chain step for (nat-sym, alt-string) if it falls within
+   [-6, 10], otherwise :NONE.  Called only at cache-build time."
+  (let* ((filtered (remove-if-not (lambda (c) (find c "#b")) alt-string))
+         (lookup   (concatenate 'string
+                                (string-upcase (symbol-name nat-sym))
+                                (string-upcase filtered)))
+         (step     (gethash lookup *fifth-chain-ht*)))
+    (if (and step (<= -6 step 10)) step :none)))
+
+(defun build-grid-cache-for (tk pref offset)
+  "Precompute every (alt, nat, octave) combination as a flat sorted vector.
+   Each entry: #(prank nat-sym alt-string octave candidate-mc fifth-step)
+   prank      = alt-idx*1000 + nat-idx, encodes preference order.
+   fifth-step = integer in [-6,10] if entry passes fifth-chain filter, else :NONE.
+   Sorted by candidate-mc ascending, then prank ascending within same mc."
+  (let* ((naturals   (gethash tk *naturals-cache*))
+         (valid-alts (gethash (cons tk pref) *valid-alts-cache*))
+         (n-alts     (length valid-alts))
+         (n-nats     (length naturals))
+         (n-octaves  12)  ; octaves -2 to 9 inclusive
+         (vec        (make-array (* n-alts n-nats n-octaves)))
+         (i          0))
+    (loop for alt-idx from 0
+          for (alt-string . alt-val) across valid-alts
+          do (loop for nat-idx from 0
+                   for (nat-sym . nat-val) across naturals
+                   do (let ((base       (round (+ nat-val alt-val offset)))
+                            (prank      (+ (* 1000 alt-idx) nat-idx))
+                            (fifth-step (compute-fifth-step nat-sym alt-string)))
+                        (loop for octave from -2 to 9
+                              do (setf (aref vec i)
+                                       (vector prank nat-sym alt-string octave
+                                               (+ base (* octave 1200))
+                                               fifth-step))
+                                 (incf i)))))
+    (sort vec (lambda (a b)
+                (let ((mc-a (aref a 4)) (mc-b (aref b 4)))
+                  (if (= mc-a mc-b)
+                      (< (aref a 0) (aref b 0))
+                      (< mc-a mc-b)))))
+    (setf (gethash (list tk pref offset) *grid-cache*) vec)))
+
+(defun ensure-caches (tk preference)
+  "Lazily build all caches for TK and PREFERENCE on first use.
+   Coerces both to integers so float inputs from OM are handled correctly."
+  (ensure-fifth-chain-ht)
+  (let ((tk   (round tk))
+        (pref (round preference)))
+    (unless (gethash tk *naturals-cache*)
+      (build-naturals-cache-for tk))
+    (unless (gethash (cons tk pref) *valid-alts-cache*)
+      (build-valid-alts-cache-for tk pref))
+    (dolist (offset '(1200 2400))
+      (unless (gethash (list tk pref offset) *grid-cache*)
+        (build-grid-cache-for tk pref offset)))
+    (unless (nth-value 1 (gethash tk *use-fifth-cache*))
+      (setf (gethash tk *use-fifth-cache*)
+            (not (member tk '(16 19 23 26 31)))))
+    (values tk pref)))
+
+(defun init-edo-caches ()
+  "Call this if you redefine *alteration-tables*, *natural-tables*, or
+   *fifth-chain* at runtime.  Do NOT call at load time -- tables may not
+   be defined yet."
+  (setf *fifth-chain-ht-built* nil)
+  (clrhash *fifth-chain-ht*)
+  (clrhash *naturals-cache*)
+  (clrhash *valid-alts-cache*)
+  (clrhash *grid-cache*)
+  (clrhash *use-fifth-cache*))
+
+
+;;; ─────────────────────────────────────────────
+;;; BINARY SEARCH
+;;; ─────────────────────────────────────────────
+
+(defun grid-lower-bound (vec target)
+  "Return index of first entry in VEC with candidate-mc >= TARGET."
+  (let ((lo 0) (hi (length vec)))
+    (loop while (< lo hi)
+          do (let ((mid (floor (+ lo hi) 2)))
+               (if (< (aref (aref vec mid) 4) target)
+                   (setf lo (1+ mid))
+                   (setf hi mid))))
+    lo))
+
+
+;;; ─────────────────────────────────────────────
+;;; CORE SEARCH
+;;; ─────────────────────────────────────────────
+
+(defun find-best-match (midicent tk mc preference)
+  (multiple-value-bind (tk pref) (ensure-caches tk preference)
+    (let* ((offset    (if (= mc 4) 1200 2400))
+           (grid      (gethash (list tk pref offset) *grid-cache*))
+           (n         (length grid))
+           (idx       (grid-lower-bound grid midicent))
+           (use-fifth (gethash tk *use-fifth-cache*))
+           (min-dev   most-positive-fixnum)
+           (tier1     nil)   ; best entry passing fifth-chain filter
+           (tier2     nil))  ; best entry by preference order (fallback)
+
+      ;; Scan right from binary search point
+      (loop for i from idx below n
+            for entry = (aref grid i)
+            for abs-dev = (abs (- midicent (aref entry 4)))
+            while (<= abs-dev min-dev)
+            do (when (< abs-dev min-dev)
+                 (setf min-dev abs-dev
+                       tier1   nil
+                       tier2   nil))
+               (when (null tier2)
+                 (setf tier2 entry))
+               (when (and use-fifth (null tier1)
+                          (not (eq (aref entry 5) :none)))
+                 (setf tier1 entry)))
+
+      ;; Scan left from binary search point
+      (loop for i from (1- idx) downto 0
+            for entry = (aref grid i)
+            for abs-dev = (abs (- midicent (aref entry 4)))
+            while (<= abs-dev min-dev)
+            do (when (< abs-dev min-dev)
+                 (setf min-dev abs-dev
+                       tier1   nil
+                       tier2   nil))
+               (when (or (null tier2) (< (aref entry 0) (aref tier2 0)))
+                 (setf tier2 entry))
+               (when (and use-fifth
+                          (not (eq (aref entry 5) :none))
+                          (or (null tier1) (< (aref entry 0) (aref tier1 0))))
+                 (setf tier1 entry)))
+
+      (let ((result (or tier1 tier2)))
+        (when result
+          (list (aref result 1)                         ; nat-sym
+                (aref result 2)                         ; alt-string
+                (aref result 3)                         ; octave
+                (round (- midicent (aref result 4)))))))))  ; deviation
+
+
+;;; ─────────────────────────────────────────────
+;;; OUTPUT FORMATTING
+;;; ─────────────────────────────────────────────
+
+(defun format-pitch-symbol (nat alt-string octave deviation include-deviation)
+  (let* ((nat-str (string-upcase (symbol-name nat)))
+         (dev-str (when (and include-deviation (not (= deviation 0)))
+                    (format nil "~@D" deviation)))
+         (sym-str (concatenate 'string
+                               nat-str
+                               alt-string
+                               (format nil "~D" octave)
+                               (or dev-str ""))))
+    (intern sym-str :om)))
+
+
+;;; ─────────────────────────────────────────────
+;;; PUBLIC INTERFACE
+;;; ─────────────────────────────────────────────
+
+(defun mc-to-pitch (midicent tk mc preference include-deviation)
+  (let ((match (find-best-match midicent tk mc preference)))
+    (when match
+      (destructuring-bind (nat alt octave deviation) match
+        (format-pitch-symbol nat alt octave deviation include-deviation)))))
+
+(defun convert-mc (item tk mc preference include-deviation)
+  (cond
+    ((null item)    nil)
+    ((numberp item) (mc-to-pitch item tk mc preference include-deviation))
+    ((listp item)   (mapcar (lambda (x) (convert-mc x tk mc preference include-deviation)) item))
+    (t              nil)))
+
+(defmethod! mc->edo-n ((self list) EDO
+                       &optional (middle-c 3) (preference 2) (include-deviation 0))
+  :initvals '((6000) 72 3 2 1)
+  :indoc    '("midicent value or list of midicent values" "EDO"
+              "octave of middle C" "enharmonic spelling preference" "include cent deviations")
+  :menuins  '((2 (("middle-C = 3" 3) ("middle-C = 4" 4)))
+              (3 (("sharps" 0) ("flats" 1) ("simplest" 2)))
+              (4 (("exclude" 0) ("include" 1))))
+  :icon 141
+  :doc "
+Converts midicent values to symbolic pitch values according to a specified equal-division-of-the-octave (EDO) tuning system.
+
+The pitch definitions of note names and alterations for each EDO follow the rules described in edo-n->mc. See the edo-n->mc documentation for more information.
+
+------------------------
+Arguments
+------------------------
+
+1. Midicent values - A list, or list of lists, of midicent values.
+2. EDO - The equal division of the octave, as an integer from 3 to 96.
+3. Middle C octave - The octave number assigned to middle C: 3 or 4.
+4. Enharmonic spelling mode - Determines how enharmonically equivalent spellings are selected:
+0 = Sharps only; 1 = Flats only; 2 = Simplest spelling
+5. Include cent deviations - Determines whether cent deviations are included in the output:
+0 = No; 1 = Yes
+
+------------------------
+Conversion logic
+------------------------
+
+Each input midicent value is matched to the symbolic pitch value whose pitch definition is closest in absolute cents. Normal rounding rules are used to resolve ties.
+
+------------------------
+Enharmonic spelling
+------------------------
+
+Some pitches can be represented by more than one symbolic pitch value. The enharmonic spelling mode determines which spelling is selected.
+
+Mode 0 uses sharp spellings, mode 1 uses flat spellings, and mode 2 uses the simplest spelling. In mode 2, spellings are prioritised in the following order:
+
+\"\"  b  #  d  +  v  ^  
+db  #+  bv  b^  #v  #^  vv  ^^  bb  ##
+bvv  b^^  #vv  #^^  vvv  ^^^  
+bvvv  b^^^  #vvv  #^^^  vvvv  ^^^^
+bvvvv  b^^^^  #vvvv  #^^^^  
+dv  d^  +v  +^
+
+For example, in 17-EDO, C+ and Db are enharmonically equivalent. Db is selected because b has higher priority than +.
+
+------------------------
+Cent deviations
+------------------------
+
+When 'Include cent deviations' is enabled (1), the difference between the input midicent value and the selected EDO pitch is included in the output.
+
+For example, in 12-EDO:
+6003 -> C3+3
+
+When 'Include cent deviations' is disabled (0), the cent deviation is omitted:
+6003 -> C3
+"
+
+  (handler-case
+      (convert-mc self (round EDO) (round middle-c) (round preference) (= include-deviation 1))
+    (error (e)
+      (format t "mc->edo-n error: ~A~%" e)
+      nil)))
+
+;;;=======================================
 ;;; TEMPO UTILS
 ;;;=======================================
 
