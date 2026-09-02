@@ -14,7 +14,7 @@ Existing CommonLisp/CLOS code can easily be used in OM, and new code can be deve
 
 Designed and developed by the IRCAM [Music Representation research group](http://repmus.ircam.fr)
 
-© 1998 - 2025 Carlos Agon, Gérard Assayag, Jean Bresson, Karim Haddad.
+© 1998 - 2026 Carlos Agon, Gérard Assayag, Jean Bresson, Karim Haddad.
 
 
 ## Sources and Licensing
