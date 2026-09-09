@@ -549,10 +549,10 @@ The box output will return the selected item. One (and only one) item can be sel
 (defclass! single-item-list-box (single-item-list) ()) 
 
 (defmethod get-slot-in-out-names ((self single-item-list))
-   (values '("items") 
-           '(("uno" "dos" "tres"))
-           '("list of choices" )
-           '(nil)))
+   (values '("items" "sel") 
+           '(("uno" "dos" "tres") 0)
+           '("list of choices" "selection")
+           '(nil nil)))
 
 (defmethod omng-save ((self single-item-list) &optional (values? nil))
   `(let ((rep (om-make-dialog-item 'single-item-list (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
@@ -570,13 +570,27 @@ The box output will return the selected item. One (and only one) item can be sel
 
 
 (defmethod set-dialog-item-params ((self single-item-list) box args)
-  (setf (di-data self) (car args))
-  (om-set-item-list self (process-item-list (car args)))
-  self)
+  (let  ((val (omNG-box-value (second (inputs box)))))
+    (setf (di-data self) (car args))
+    (om-set-item-list self (process-item-list (car args)))
+    (if (> val (1- (length (di-data self))))
+        (om-select-item-index self (1- (length (di-data self))))
+      (om-select-item-index self val))
+    self))
+
 
 (defmethod rep-editor ((self single-item-list) num)
-  (let ((i (om-get-selected-item-index self)))
-    (nth i (di-data self))))
+  (let* ((box (object (om-view-container self)))
+        (n (omNG-box-value (second (inputs box)))))
+    (if (string-equal (allow-lock box) "x")
+        ;if locked in x mode output clicked selection:
+          (let ((i (om-get-selected-item-index self)))
+            (nth i (di-data self)))
+      ;else output nth second input selection
+    (if (> n (1- (length (di-data self))))
+        ;if second input > than items, output last elem
+        (last-elem (di-data self))
+      (nth n (di-data self))))))
 
 
 ;==================
