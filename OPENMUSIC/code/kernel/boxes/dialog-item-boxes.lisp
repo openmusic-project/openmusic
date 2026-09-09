@@ -679,21 +679,20 @@ Any selection in the menu will automatically call this function or patch passing
 
 (defmethod get-super-default-value ((type (eql 'pop-up-menu)))
   (om-make-dialog-item 'pop-up-menu 
-                       #-linux(om-make-point 1 4) 
-                       #+linux(om-make-point 1 2) 
-                       (om-make-point 50 20) 
+                       #-linux(om-make-point 1 4) #+linux(om-make-point 1 2) 
+                       #-linux(om-make-point 50 20) #+linux(om-make-point 20 35) 
                        "untitled" :range '("yes" "no")))
 
 (defmethod update-di-size ((self pop-up-menu) container)
-  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
-  (om-set-view-size self (om-make-point (- (w container) 20) 24)))
+  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) #-linux 11 #+linux 18)))
+  (om-set-view-size self (om-make-point (- (w container) 20) #-linux 24 #+linux 35)))
 
 (defmethod set-dialog-item-params  ((self pop-up-menu) box args)
   (let* ((boxframe (om-view-container self))
         (newpop (om-make-dialog-item 'pop-up-menu 
                                      #-linux(om-make-point 1 4) 
                                      #+linux(om-make-point 1 2) 
-                                     (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
+                                     (om-make-point (if boxframe (- (w boxframe) 20) 80) #-linux 20 #+linux 35) 
                                      "untitled" 
                                      :range (if (and (pathnamep (car args)) (directoryp (car args)))
                                                 (om-directory (car args))
