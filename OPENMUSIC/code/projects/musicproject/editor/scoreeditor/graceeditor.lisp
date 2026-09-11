@@ -298,7 +298,7 @@
 
 (defmethod scorepanel-draw-object ((self gracepanel) x0 y0 deltax deltay size)
   (draw-object (graphic-obj self) self deltax 
-                                     (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4)))) 
+                                     (- deltay (* (posy (car (staff-list (staff-sys self)))) (/ size 4))) 
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self))
                                      (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self)))
 
