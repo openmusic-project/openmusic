@@ -218,7 +218,17 @@
   (update-di-size (value (object self)) self)
   #+linux(update-for-subviews-changes (om-view-container self) t))
 
-(defmethod om-view-doubleclick-handler ((self DIEditorframe) pos) nil)
+(defmethod om-view-click-handler ((self dieditorframe) pos)
+  (call-next-method)
+  ;;In order to edit!
+  #+linux
+  (if (om-shift-key-p)
+      (capi::set-pane-focus (iconview self))))
+
+(defmethod om-view-doubleclick-handler ((self DIEditorframe) pos)
+  (when (typep  (iconview self) 'text-view)
+    (text-view-editor (iconview self))))
+
 
 ;==================
 ; The object
@@ -841,4 +851,61 @@ Evaluating the 5th output will also call and get the result of the function with
   (set-function value (omNG-box-value (fifth (inputs self))) self))
 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;TEXT-VIEW EDITOR
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmethod text-view-editor ((self text-view))
+  (declare (ignore i))
+  (let* ((Dec 10)
+         (Xsize (max 60 (* 10 dec)))
+         (textcontents (capi::text-input-pane-text self))
+         (win (om-make-window 'om-window
+                              :size (om-make-point (+ xsize 380) 380)
+                              :window-title "VIEW-TEXT EDITOR"
+                              :maximize nil :minimize nil :resizable nil
+                              ))
+         (editor (om-make-view 'om-view
+                                ;:ref ref
+                               :owner win
+                                ;:object (editor-object-from-value object)
+                               :position (om-make-point 0 0)
+                               :size (om-interior-size win)
+                               ))
+          
+         (textpane (om-make-dialog-item 'om-text-edit-view 
+                                        (om-make-point 10 20) 
+                                        (om-make-point 460 320)
+                                        ""
+                                        :scrollbars :v
+                                        ))
+         (cancel (om-make-dialog-item 'om-button 
+                                      (om-make-point 10 345)
+                                      (om-make-point 90 25)
+                                      "CANCEL"
+                                      :font *om-default-font1*
+                                      :di-action 
+                                      (om-dialog-item-act item
+                                        (declare (ignore item))
+                                        (om-close-window editor)
+                                        )))
+         (setbutton (om-make-dialog-item 'om-button 
+                                         (om-make-point 380 345)
+                                         (om-make-point 90 25)
+                                         "SET"
+                                         :font *om-default-font1*
+                                         :di-action 
+                                         (om-dialog-item-act item
+                                           (declare (ignore item))
+                                           (setf (capi::text-input-pane-text self) 
+                                                 (capi::text-input-pane-text textpane))
+                                           (om-close-window editor)
+                                           ))))
+                                         
+    (om-set-dialog-item-text textpane textcontents)
+    (om-add-subviews win editor textpane cancel setbutton )
+    (om-set-bg-color win *om-gray-color*)
+    win
+    ))
 
