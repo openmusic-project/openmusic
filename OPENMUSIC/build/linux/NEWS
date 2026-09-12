@@ -8,12 +8,14 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- single-item-list selection input
 - Extras are MIDI aware
 - Empty SDIFFILE, MIDIFILE obj warning on double-click 
 - Now grid view in CHORD-SEQ shows milliseconds
 
 FIXES
 
+- fix size of pop-up-menu di-box (linux)
 - fixed invalidate-view (for n-cercle update and others)
 - Graces notes and extraobjs in page mode
 - musicxml import fixed microintervals from sibelius

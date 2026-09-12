@@ -549,10 +549,10 @@ The box output will return the selected item. One (and only one) item can be sel
 (defclass! single-item-list-box (single-item-list) ()) 
 
 (defmethod get-slot-in-out-names ((self single-item-list))
-   (values '("items") 
-           '(("uno" "dos" "tres"))
-           '("list of choices" )
-           '(nil)))
+   (values '("items" "sel") 
+           '(("uno" "dos" "tres") 0)
+           '("list of choices" "selection")
+           '(nil nil)))
 
 (defmethod omng-save ((self single-item-list) &optional (values? nil))
   `(let ((rep (om-make-dialog-item 'single-item-list (om-make-point 1 1 ) (om-make-point ,(om-width self) ,(om-height self) ) "untitled"
@@ -570,18 +570,39 @@ The box output will return the selected item. One (and only one) item can be sel
 
 
 (defmethod set-dialog-item-params ((self single-item-list) box args)
-  (setf (di-data self) (car args))
-  (om-set-item-list self (process-item-list (car args)))
-  self)
+  (let  ((val (omNG-box-value (second (inputs box)))))
+    (setf (di-data self) (car args))
+    (om-set-item-list self (process-item-list (car args)))
+    (if (> val (1- (length (di-data self))))
+        (om-select-item-index self (1- (length (di-data self))))
+      (om-select-item-index self val))
+    self))
+
 
 (defmethod rep-editor ((self single-item-list) num)
-  (let ((i (om-get-selected-item-index self)))
-    (nth i (di-data self))))
+  (let* ((box (object (om-view-container self)))
+        (n (omNG-box-value (second (inputs box)))))
+    (if (string-equal (allow-lock box) "x")
+        ;if locked in x mode output clicked selection:
+          (let ((i (om-get-selected-item-index self)))
+            (nth i (di-data self)))
+      ;else output nth second input selection
+    (if (> n (1- (length (di-data self))))
+        ;if second input > than items, output last elem
+        (last-elem (di-data self))
+      (nth n (di-data self))))))
 
+(defmethod (setf value) :after ((value om-single-item-list) (self omdiebox)) 
+  (let ((val (omNG-box-value (second (inputs self)))))
+    (when val
+    (if (> val (1- (length (di-data value))))
+        ;if second input > than items, output last elem
+        (om-set-selected-item value (last-elem (di-data value)))
+  (om-select-item-index value val)))))
 
-;==================
+;=======================
 ; LIST (MULTI-SELECTION)
-;==================
+;=======================
 
 (defclass! multi-item-list (om-multi-item-list d-i-box)  ()
    (:icon 296)
@@ -679,21 +700,20 @@ Any selection in the menu will automatically call this function or patch passing
 
 (defmethod get-super-default-value ((type (eql 'pop-up-menu)))
   (om-make-dialog-item 'pop-up-menu 
-                       #-linux(om-make-point 1 4) 
-                       #+linux(om-make-point 1 2) 
-                       (om-make-point 50 20) 
+                       #-linux(om-make-point 1 4) #+linux(om-make-point 1 2) 
+                       #-linux(om-make-point 50 20) #+linux(om-make-point 20 35) 
                        "untitled" :range '("yes" "no")))
 
 (defmethod update-di-size ((self pop-up-menu) container)
-  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) 11)))
-  (om-set-view-size self (om-make-point (- (w container) 20) 24)))
+  (om-set-view-position self (om-make-point 10 (- (round (h container) 2) #-linux 11 #+linux 18)))
+  (om-set-view-size self (om-make-point (- (w container) 20) #-linux 24 #+linux 35)))
 
 (defmethod set-dialog-item-params  ((self pop-up-menu) box args)
   (let* ((boxframe (om-view-container self))
         (newpop (om-make-dialog-item 'pop-up-menu 
                                      #-linux(om-make-point 1 4) 
                                      #+linux(om-make-point 1 2) 
-                                     (om-make-point (if boxframe (- (w boxframe) 20) 80) 20) 
+                                     (om-make-point (if boxframe (- (w boxframe) 20) 80) #-linux 20 #+linux 35) 
                                      "untitled" 
                                      :range (if (and (pathnamep (car args)) (directoryp (car args)))
                                                 (om-directory (car args))
