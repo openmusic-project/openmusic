@@ -607,7 +607,7 @@
                            (let (notegrap)
                              (cond
                               ((= mode 0)
-                               (setf notegrap (make-graph-form-obj item (round (+ x (* linespace pos))) top linespace 0 scale sel system stem))
+                               (setf notegrap (make-graph-form-obj item (+ x (* linespace pos)) top linespace 0 scale sel system stem))
                                (setf (delta-head notegrap) pos)
                                (when (natural-alt-char notegrap)
                                  (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list)))          
@@ -619,7 +619,7 @@
                                  (when (natural-alt-char notegrap)
                                    (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list))))
                                  ))
-                              (t (setf notegrap (make-graph-form-obj item (round (+ x (* 8 linespace i))) top linespace 0 scale sel system stem))
+                              (t (setf notegrap (make-graph-form-obj item (+ x (* 8 linespace i)) top linespace 0 scale sel system stem))
                                  (when (alt-char notegrap)
                                    (setf (alteration notegrap) -1))))
                               
@@ -1003,7 +1003,7 @@
 (defmethod make-graph-form-obj ((self chord-seq)  x top linespace mode scale sel system stem)
    (let* ((chordlist (loop for item in (chords self)
                            for off in (notEndLOnset self) collect
-                           (make-graph-form-obj item (+ x (ms2pixel off linespace 1)) top linespace mode scale sel system stem)))
+                           (make-graph-form-obj item (+ x (/ (* off linespace 4 *onesec*) 1000)) top linespace mode scale sel system stem)))
           (newc-s (make-instance 'grap-chord-seq
                     :reference self
                     :inside chordlist)))
