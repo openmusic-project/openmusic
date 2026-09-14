@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- Text-View editor (double-click)
 - display-extra-dyn: displays all extra dynamics, with or without repetition
 - Scoreeditors continuous font zoom (P.H. Raposo)
 - New extras: trill, sost. pedal, glissando
@@ -15,6 +16,7 @@ IMPROVEMENTS
 
 FIXES
 
+- Text-View editing (gtk3) bug (to edit in linux shift-clic box)
 - fix size of pop-up-menu di-box (linux)
 - fixed invalidate-view (for n-cercle update and others)
 - Graces notes and extraobjs in page mode
