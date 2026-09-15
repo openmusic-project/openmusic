@@ -149,10 +149,10 @@
         (draw-tempo 1/4 showtempo (+ x 15)  (- y (round fontsize 2)) fontsize name)))
     (let ((startpos (posy (car (staff-list self)))))
       (loop for staff in (staff-list self) do
-            (draw-one-staff staff (+ 6 x)  (+ y  (* (round fontsize 4) (- (posy staff) startpos)))
+            (draw-one-staff staff (+ 6 x)  (+ y  (round (* fontsize (- (posy staff) startpos)) 4))
                             width fontsize  select (= (numlines staff) 0))
             (when *om-tonalite* 
-              (draw-armure staff (armure self) x (top-in-midi self) width fontsize (- y (* (round fontsize 4)  startpos) ))))
+              (draw-armure staff (armure self) x (top-in-midi self) width fontsize (- y (round (* fontsize startpos) 4)))))
       (unless (= (numlines (car (staff-list self))) 0)
         (om-draw-line (+ 6 x) (round y) (+ 6 x) (round (+ y (get-system-size self fontsize))))
         ;(om-draw-line (- width 1) (round y) (- width 1) (round (+ y (get-system-size self fontsize))))
@@ -248,8 +248,9 @@
              (null (remove nil (staff-list system)))) 0)
         ((= 1 (length  (staff-list system))) 
          (round (* size (staff-h (car (staff-list system))))))
-        (t (round (+ size (* (- (posy (car (last (staff-list system)))) 
-                                (posy (car (staff-list system)))) (round size 4)))))))
+        (t (+ size (round (* size (- (posy (car (last (staff-list system)))) 
+                                 (posy (car (staff-list system)))))
+                   4)))))
 
 ;size of the system plus system-space
 (defun get-delta-system (system size score i)
@@ -411,7 +412,7 @@
 (defmethod posy-to-midic (score-topmargin staffsize y (sys omsystem) yOffset)
   (let* ((up (round (* score-topmargin staffsize)) )
          (midic (delta-to-name staffsize (- (* -1 (- y up))
-                                            (- (round (* (posy (car (staff-list sys))) (/ staffsize 4))) yOffset)
+                                            (- (* (posy (car (staff-list sys))) (/ staffsize 4)) yOffset)
                                          )
                                (* 100 (- (top-in-midi sys) 3)))))
     midic)
@@ -606,7 +607,7 @@
                            (let (notegrap)
                              (cond
                               ((= mode 0)
-                               (setf notegrap (make-graph-form-obj item (round (+ x (* linespace pos))) top linespace 0 scale sel system stem))
+                               (setf notegrap (make-graph-form-obj item (+ x (* linespace pos)) top linespace 0 scale sel system stem))
                                (setf (delta-head notegrap) pos)
                                (when (natural-alt-char notegrap)
                                  (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list)))          
@@ -618,7 +619,7 @@
                                  (when (natural-alt-char notegrap)
                                    (setf (alteration notegrap) (correct-alteration notegrap (pop zigzag-list))))
                                  ))
-                              (t (setf notegrap (make-graph-form-obj item (round (+ x (* 8 linespace i))) top linespace 0 scale sel system stem))
+                              (t (setf notegrap (make-graph-form-obj item (+ x (* 8 linespace i)) top linespace 0 scale sel system stem))
                                  (when (alt-char notegrap)
                                    (setf (alteration notegrap) -1))))
                               
@@ -760,7 +761,7 @@
 			       :alt-char alt-char
 			       :alteration alteration
 			       :rectangle (list x (- ypos (round linespace 2)) (round (+ x linespace)) (+ ypos (round linespace 2)))
-			       :main-point (list x (- ypos (round linespace 2)))
+			       :main-point (list x (- ypos (/ linespace 2)))
 			       :selected (member self sel :test 'equal)
 			       :auxlines (get-aux-lines self system top scale linespace ypos)))
       (make-graphic-extras rep)
@@ -1002,7 +1003,7 @@
 (defmethod make-graph-form-obj ((self chord-seq)  x top linespace mode scale sel system stem)
    (let* ((chordlist (loop for item in (chords self)
                            for off in (notEndLOnset self) collect
-                           (make-graph-form-obj item (+ x (ms2pixel off linespace 1)) top linespace mode scale sel system stem)))
+                           (make-graph-form-obj item (+ x (/ (* off linespace 4 *onesec*) 1000)) top linespace mode scale sel system stem)))
           (newc-s (make-instance 'grap-chord-seq
                     :reference self
                     :inside chordlist)))
@@ -1092,7 +1093,7 @@
       (loop for item in (inside self)
             for i = 0 then (+ i 1)
             for system in staff do
-            (draw-object item view x (- posy (round (* (posy (car (staff-list system))) (/ size 4)))) 
+            (draw-object item view x (- posy (* (posy (car (staff-list system))) (/ size 4))) 
                          zoom minx maxx miny maxy slot size linear? (nth i staff) grille-p chnote)
             (setf posy (+ posy (get-delta-system system size view i))))
       (collect-rectangles self)
@@ -1166,7 +1167,7 @@
             for system in staff do
             (push posy positions)
             
-            (draw-object item view x (- posy (round (* (posy (car (staff-list system))) (/ size 4))))
+            (draw-object item view x (- posy (* (posy (car (staff-list system))) (/ size 4)))
                          zoom minx maxx miny maxy slot size linear? system grille-p chnote)
             
             (setf posy (+ posy (get-delta-system system size view i)))
@@ -1617,7 +1618,7 @@
              :alt-char alt-char
              :alteration alteration
              :durtot durtot
-             :main-point (list 0 (- ypos (round linespace 2)))
+             :main-point (list 0 (- ypos (/ linespace 2)))
              :selected (member self sel :test 'equal)
              :auxlines (get-aux-lines self staffsys top scale linespace ypos)))
      (make-graphic-extras thenote)

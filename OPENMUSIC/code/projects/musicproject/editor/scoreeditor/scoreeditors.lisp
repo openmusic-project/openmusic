@@ -1814,7 +1814,7 @@
                     (draw-system-only self)
                     (when (graphic-obj self)
                       (draw-object (graphic-obj self) self deltax 
-                                   (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4))))
+                                   (- deltay (* (posy (car (staff-list (staff-sys self)))) (/ size 4)))
                                    (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                    (slots-mode self) size (linear? self) 
                                    (staff-sys self) nil (noteaschan? self))
@@ -2907,7 +2907,7 @@
 
 (defmethod scorepanel-draw-object ((self chordseqPanel) x0 y0 deltax deltay size)
   (draw-object (graphic-obj self) self deltax 
-                                     (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4)))) 
+                                     (- deltay (* (posy (car (staff-list (staff-sys self)))) (/ size 4))) 
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self))
                                      (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self)))
 
@@ -3622,7 +3622,7 @@
                     (when (graphic-obj self)
                       (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
                         (draw-object (graphic-obj self) self deltax 
-                                     (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4))))
+                                     (- deltay (* (posy (car (staff-list (staff-sys self)))) (/ size 4)))
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                      (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self))
                         ;#+linux (draw-system-only self)              
@@ -3857,7 +3857,7 @@
                     (when (graphic-obj self)
                       (om-with-clip-rect self (om-make-rect (+ x0 (- deltax (round size 2))) y0  (+ x0 (w self)) (+ y0 (h self)))
                         (draw-object (graphic-obj self) self deltax 
-                                     (- deltay (round (* (posy (car (staff-list (staff-sys self)))) (/ size 4))))
+                                     (- deltay (* (posy (car (staff-list (staff-sys self)))) (/ size 4)))
                                      (staff-zoom self) x0 (+ x0 (w self)) y0 (+ y0 (h self)) 
                                      (slots-mode self) size (linear? self) (staff-sys self) (grille-step-p self) (noteaschan? self))
                         ;#+linux (draw-system-only self)              
@@ -5418,7 +5418,7 @@
   (declare (ignore obj))
   (let* ((up (round (* (score-top-margin self) (staff-size self)) ))
          (midic (delta-to-name  (staff-size self)  (- (* -1 (-  (om-point-v where) up )) 
-                                                      (round (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4))) )
+                                                      (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4)) )
                                 (* 100 (- (top-in-midi (staff-sys self)) 3))))
          (thenote (object (om-view-container self))))
     (setf (midic thenote) midic)
@@ -5430,7 +5430,7 @@
     (om-beep-msg "Insert notes not allowed in arpeggio mode")
     (let* ((up (round (* (score-top-margin self) (staff-size self)) ))
            (midic (delta-to-name (staff-size self)  (- (* -1 (-  (om-point-v where) up))
-                                                       (round (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4))))
+                                                       (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4)))
                                  (* 100 (- (top-in-midi (staff-sys self)) 3))))
            (thechord (objectfromeditor self))
            (extras (loop for note in (inside thechord) collect (clone (extra-obj-list note)))))
@@ -5461,7 +5461,7 @@
       (when whattime
         (let* ((up (* (score-top-margin self) (staff-size self)) )
                (midic (delta-to-name (staff-size self)  (- (* -1 (-  (om-point-v where) numstaff up)) 
-                                                           (round (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4))))
+                                                           (* (posy (car (staff-list (staff-sys self)))) (/ (staff-size self) 4)))
                                      (* 100 (- (top-in-midi (staff-sys self)) 3))))
                (chordseq (object (om-view-container self)))
                (new-chord (mki 'chord  :Lmidic (list midic)))
@@ -6002,11 +6002,11 @@
             (midic (pos-pitch (edit-cursor self)))
             (top (top-in-midi (staff-sys self)))
             (scale (get-approx-scale self))
-            (off-y (round (* (posy (car (staff-list system))) (/ size 4))))
+            (off-y (* (posy (car (staff-list system))) (/ size 4)))
             (sysstart (system-start-in-pix self (assoc-staff (edit-cursor self))))
             (y0 (+ sysstart deltay (round size -2) ))
             pitch-pix auxlines alteration)
-       (setf pitch-pix (- (+ deltay sysstart (midi2pixel midic top (round size 4) scale)) off-y))
+       (setf pitch-pix (- (+ deltay sysstart (midi2pixel midic top (/ size 4) scale)) off-y))
        (setf alteration (second (give-alteration scale (approx-scale scale midic))))   
        (cond
         ((> midic max)
@@ -6021,12 +6021,12 @@
          (om-draw-rect (- x (round size 8)) y0 (round size 2) h))
        
        (om-with-fg-color self *om-gray-color*
-         (om-draw-string x (- pitch-pix (round size 8)) (head-1/4)))
+         (om-draw-string x (- pitch-pix (/ size 8)) (head-1/4)))
      
        (when alteration
         (om-with-fg-color self *om-gray-color*
           (om-with-font (om-make-music-font *micron-font* size)
-                        (om-draw-char (- x (round size 3)) (- pitch-pix (round size 8)) (coerce alteration 'character)))))
+                        (om-draw-char (- x (round size 3)) (- pitch-pix (/ size 8)) (coerce alteration 'character)))))
        (when auxlines
          (om-with-fg-color self  *system-color* 
            (let ((dir (car auxlines))

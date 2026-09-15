@@ -67,7 +67,7 @@
      (om-with-clip-rect score (om-make-rect 0 0 1 1)
      (om-with-font  (get-font-to-draw 0)
                    (draw-object graph-obj score deltax 
-                                (- deltay (round (* (posy (car (staff-list  system))) (/ size 4))))
+                                (- deltay (* (posy (car (staff-list  system))) (/ size 4)))
                                 (staff-zoom score) 0 10000000 0 10000000 
                                 (slots-mode score) size t 
                                 system nil (noteaschan? score)))))
@@ -96,7 +96,7 @@
       (om-with-clip-rect score (om-make-rect 0 0 1 1)
         (om-with-font (get-font-to-draw 0)
                    (draw-object graph-obj score deltax 
-                                (- deltay (round (* (posy (car (staff-list  (car system)))) (/ size 4))))
+                                (- deltay (* (posy (car (staff-list  (car system)))) (/ size 4)))
                                 (staff-zoom score) 0 10000000 0 10000000 
                                 (slots-mode score) size t 
                                 system nil (noteaschan? score)))))
@@ -399,7 +399,7 @@
           for voice = 0 then (+ voice 1) do
           (let ((elements (get-page-line-elements  chord-seq fdoc pagenum linenum voice)))
             (loop for chord in elements do
-                  (draw-prop-chord chord score pagenum linenum x (- posy (round (* (posy (car (staff-list (nth voice staff)))) (/ size 4))))
+                  (draw-prop-chord chord score pagenum linenum x (- posy (* (posy (car (staff-list (nth voice staff)))) (/ size 4)))
                                    linesizex linesizey zoom  slot size staff chnote)))
           (setf posy (+ posy (get-delta-system (nth voice staff) size score voice))))))
 
@@ -566,7 +566,7 @@
             (loop for measure in elements 
                   for k = 0 then (+ k 1) do
                   (draw-page-measure measure score pagenum linenum  (+ deltax (round (* zoom-line (- x  delta-mes)))) 
-                                     (- posy (round (* (posy (car (staff-list (nth i staff)))) (/ size 4)))) 
+                                     (- posy (* (posy (car (staff-list (nth i staff)))) (/ size 4))) 
                                      linesizex linesizey (* zoom zoom-line)  slot size (nth i staff) chnote
                                      (= k 0) (= (+ k 1) (length elements)))))
             (setf posy (+ posy (get-delta-system (nth i staff) size score i))))
