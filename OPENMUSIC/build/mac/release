@@ -199,6 +199,7 @@ else
 	echo "-p = pack delivered app as a separate folder (including fonts) "
 	echo "-dp = deliver and pack"
 	echo "-n = deliver, pack, create DMG, codesign and notorize"
+	echo "-npkg = deliver, pack, create PKG, codesign and notorize"
 	echo "-sign = sign delivered package"
 	echo "-zip = create ZIP from previously packed app"
 	echo "-dmg = create DMG from previously packed app"
