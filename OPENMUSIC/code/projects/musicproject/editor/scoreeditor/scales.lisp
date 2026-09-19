@@ -327,16 +327,14 @@
 
 (defvar *5-EDO_i*
 (make-instance 'scale
-:alteration-list
-(list nil nil nil nil nil)
+:alteration-list (list nil (t-S2) (t-F1) (t-S1) (t-S6))
 :lines-list (list 0 1 3 4 5)
 :approx-factor 1200/5))
 
 
 (defvar *5-EDO_ii*
 (make-instance 'scale
-:alteration-list
-(list nil nil nil nil nil)
+:alteration-list (list nil (t-S2) (t-F1) (t-S1) (t-F10))
 :lines-list (list 6 1 2 4 5)
 :approx-factor 1200/5))
 
@@ -384,15 +382,13 @@
 
 (defvar *9-EDO_i*
 (make-instance 'scale
-:alteration-list
-(list nil nil nil (t-S8) nil nil nil nil (t-S8))
+:alteration-list (list nil (t-S9) (t-S7) nil (t-S1) (t-F1) (t-S8) (t-S1) (t-F1))
 :lines-list (list 0 1 2 3 3 4 5 6 7)
 :approx-factor 1200/9))
 
 (defvar *9-EDO_ii*
 (make-instance 'scale
-:alteration-list
-(list nil nil nil (t-F8) nil nil nil nil (t-F8))
+:alteration-list (list nil (t-F7) (t-F9) nil (t-S1) (t-F1) (t-F8) (t-S1) (t-F1))
 :lines-list (list 0 1 2 2 3 4 5 6 6)
 :approx-factor 1200/9))
 
