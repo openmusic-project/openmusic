@@ -602,6 +602,7 @@ The box output will return the selected item. One (and only one) item can be sel
         (last-elem (di-data self))
       (nth n (di-data self))))))
 
+#|
 (defmethod (setf value) :after ((value om-single-item-list) (self omdiebox)) 
   (let ((val (omNG-box-value (second (inputs self)))))
     (when val
@@ -609,6 +610,16 @@ The box output will return the selected item. One (and only one) item can be sel
         ;if second input > than items, output last elem
         (om-set-selected-item value (last-elem (di-data value)))
   (om-select-item-index value val)))))
+|#
+
+(defmethod (setf value) :after ((value om-single-item-list) (self omdiebox)) 
+  (om-set-dialog-item-action-function value #'(lambda (x) 
+                                                (let ((val (omNG-box-value (second (inputs self)))))
+                                                  (when val
+                                                    (if (> val (1- (length (di-data value))))
+                                                ;if second input > than items, output last elem
+                                                        (om-set-selected-item value (last-elem (di-data value)))
+                                                      (om-select-item-index value val)))))))
 
 ;=======================
 ; LIST (MULTI-SELECTION)
