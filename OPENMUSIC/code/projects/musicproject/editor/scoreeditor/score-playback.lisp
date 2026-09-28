@@ -461,12 +461,17 @@
 ;-----------ARP-CHORD
 
 (defclass arp-chord ()
-  ((notes :initform nil :initarg :notes :accessor notes)))
+  ((notes :initform nil :initarg :notes :accessor notes)
+   (approx :initform *global-midi-approx* :accessor approx :type integer)))
 
-(add-player-for-object 'arp-chord '(:midi-player :osc-scoreplayer :microplayer))
+(add-player-for-object 'arp-chord '(:midi-player :osc-scoreplayer :microplayer :fluidsynth))
 
 (defmethod extent ((self arp-chord))
    (* (length (notes self)) 500))
+
+(defmethod approx ((self arp-chord))
+  (setf (slot-value self 'approx) (approx (car (notes self)))))
+
 
 (defmethod get-obj-dur ((self arp-chord)) (extent self))
 
