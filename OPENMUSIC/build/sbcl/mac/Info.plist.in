@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>{asdf:system-long-name asdf:component-name}</string>
+    <key>CFBundleIconFile</key>
+    <string>{asdf:system-long-name asdf:component-name}</string>
+    <key>CFBundleIdentifier</key>
+    <string>fr.ircam.repmus.openmusic.sbcl</string>
+    <key>CFBundleName</key>
+    <string>{asdf:system-long-name asdf:component-name}</string>
+    <key>CFBundleDisplayName</key>
+    <string>{asdf:system-long-name asdf:component-name}</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>{asdf:component-version}</string>
+    <key>CFBundleVersion</key>
+    <string>{asdf:component-version}</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+        <string>MacOSX</string>
+    </array>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSHumanReadableCopyright</key>
+    <string>{asdf:system-author}</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Patch</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>omp</string></array>
+            <key>CFBundleTypeIconFile</key>
+            <string>patch.icns</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Maquette</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>omm</string></array>
+            <key>CFBundleTypeIconFile</key>
+            <string>maq.icns</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Sheet</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>oms</string></array>
+            <key>CFBundleTypeIconFile</key>
+            <string>sheet.icns</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Class</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>omc</string></array>
+            <key>CFBundleTypeIconFile</key>
+            <string>class.icns</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Method</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>ome</string></array>
+            <key>CFBundleTypeIconFile</key>
+            <string>meth.icns</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Workspace</string>
+            <key>CFBundleTypeExtensions</key>
+            <array><string>omws</string></array>
+            <key>CFBundleTypeIconFile</key>
+            <string>{asdf:system-long-name asdf:component-name}</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+    </array>
+</dict>
+</plist>

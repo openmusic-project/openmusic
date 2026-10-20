@@ -15,7 +15,7 @@
 
 (in-package :cl-user)
 
-(defpackage :juce)
+(defpackage :juce #+sbcl (:use :common-lisp))
 
 (push :omaudiolib *features*)
 

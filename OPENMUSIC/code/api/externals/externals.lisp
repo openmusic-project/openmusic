@@ -10,7 +10,9 @@
 ;(handler-case (require :asdf)				    ;use what lw provides if it's there
 ;  (error () (load (make-pathname :directory (append *externals-directory* '("ASDF")) :name "asdf"))))
 
-(load (make-pathname :directory (append *externals-directory* '("ieee-floats")) :name "ieee-floats"))
+;; skip the bundled copy when quicklisp already provided ieee-floats
+(unless (find-package :ieee-floats)
+  (load (make-pathname :directory (append *externals-directory* '("ieee-floats")) :name "ieee-floats")))
 
 (defun load-external-libs (&optional libs)
   
@@ -28,13 +30,20 @@
   
   (when (member :opengl libs)
     (load (make-pathname :directory (append *externals-directory* '("OpenGL")) :name "load-opengl")))
-  
+
   (when (find :udp libs)
-    (load (make-pathname :directory (append *externals-directory* '("lispworks-udp")) :name "lispworks-udp.asd"))
-    (asdf:operate 'asdf:load-op 'lispworks-udp))
+    #+lispworks
+    (progn
+      (load (make-pathname :directory (append *externals-directory* '("lispworks-udp")) :name "lispworks-udp.asd"))
+      (asdf:operate 'asdf:load-op 'lispworks-udp))
+    #+sbcl
+    (require :sb-bsd-sockets))
 
   (when (and (find :udp libs) (find :osc libs))
-    (load (make-pathname :directory (append *externals-directory* '("OSC")) :name "om-osc.lisp")))
+    #+lispworks
+    (load (make-pathname :directory (append *externals-directory* '("OSC")) :name "om-osc.lisp"))
+    #+sbcl
+    (load (make-pathname :directory (append *externals-directory* '("OSC")) :name "om-osc-sbcl.lisp")))
   
   (when (member :xml libs)
     (load (make-pathname :directory (append *externals-directory* '("XML")) :name "load-xml")))

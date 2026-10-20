@@ -35,20 +35,33 @@
 ;;; (om::gen-om-reference)
 
 ;;;=======================================
+(defvar *om-src-directory*  
+  (make-pathname :directory (butlast (pathname-directory *load-pathname*))
+                 :device (pathname-device *load-pathname*) #+win32 :host #+win32 (pathname-host *load-pathname*)))
+
+;;; om-SBCL desktop substrate: load before the OM-API bridge.
+;;; LispWorks starts BUILD-OM with its desktop/runtime services already present;
+;;; on SBCL ALLOY-DESKTOP provides the corresponding reusable substrate.
+#+sbcl
+(load (make-pathname :directory (append (pathname-directory *om-src-directory*)
+                                       '("code" "api" "om-SBCL"))
+                     :name "load-alloy" :type "lisp"))
+
 (defparameter *app-name* "OM")
 
 (defparameter *version* 8.010000)
-
 
 (defparameter *beta-release* nil) 
 ;(defparameter *rc-release* nil)
 (defparameter *version-str* "")
 (defparameter *version-str-full* "")
 (defparameter *release-language* :en)
-(defparameter *release-date* (subseq (sys::date-string nil nil) 0 10))
-(defparameter *release-author* "K. Haddad ")
+(defparameter *release-date* #+lispworks(subseq (sys::date-string nil nil) 0 10)
+                             #+sbcl(subseq (alloy-desktop:date-string nil nil) 0 10))
+(defparameter *release-author* "K. Haddad")
 
 (defun version-to-string (num &optional (full nil) (show-beta nil))
+ (declare (ignorable full))
   (let* ((str (format nil "~,6f" num))
          (pos (position #\. str))
          (v (read-from-string (subseq str 0 pos)))
@@ -72,21 +85,20 @@
 ;;;=======================================
 
 (defvar *this-file* *load-pathname*)
-(defvar *om-src-directory*  
-  (make-pathname :directory (butlast (pathname-directory *load-pathname*))
-                 :device (pathname-device *load-pathname*) #+win32 :host #+win32 (pathname-host *load-pathname*)))
 
 (defvar *compile-type* "xfasl")
 ;;; should be : "xfasl" on MacIntel, "nfasl" on MacPPC, "ofasl" on Win32, "ufasl" on 32bit linux ("64ufasl" on 64bit linux)
 (setf *compile-type* (pathname-type (cl-user::compile-file-pathname "")))
 
-#+win32(editor::bind-key "Find Source" "Control-." :global :pc)
+#+(and win32 lispworks) (editor::bind-key "Find Source" "Control-." :global :pc)
+;;; #+(and win32 sbcl) TODO IF NEEDED 
 
 
 (defvar *remove-error-fasl* nil)
 
 ;;; equivalent to LW'w CURRENT-PATHNAME, allowing other reference path like in om-relative-path
 (defun decode-local-path (path &optional (relative-path :current))
+ (declare (ignorable relative-path))
   (labels ((string-until-char (string char)
              (let ((index (search char string)))
                (if index (values (subseq string 0 index) (subseq string (+ index 1)))
@@ -105,21 +117,23 @@
        :directory (append (pathname-directory ref) (butlast decoded-path))
        :name (car (last decoded-path))))))
 
-
+#+lispworks
 (defun compile&load (file &optional (verbose t) (force-compile nil))
-   (let* ((lisp-file (truename (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
-          (fasl-file (probe-file (merge-pathnames (make-pathname :type *compile-type*) lisp-file)))
+   (let* ((lisp-file (probe-file (if (pathname-type file) file (concatenate 'string (namestring file) ".lisp"))))
+          (fasl-file (and lisp-file
+                          (probe-file (merge-pathnames (make-pathname :type *compile-type*) lisp-file))))
 	  (load-file (make-pathname :directory (pathname-directory file) :name (pathname-name file)
                                     :host (pathname-host file) :device (pathname-device file)))
 	  (fasl-outofdate (and fasl-file
-                               (or (not (file-write-date lisp-file))
-                                   (not (file-write-date fasl-file))
+(or (null lisp-file)
+                                    (null (file-write-date lisp-file))
+                                    (null (file-write-date fasl-file))
                                    (> (file-write-date lisp-file) (file-write-date fasl-file))))))
      (when (and (not (member :om-deliver *features*))
                 (or force-compile (not fasl-file) fasl-outofdate))
        (compile-file file :verbose verbose)
        (setf fasl-outofdate nil))
-     (if fasl-outofdate
+(if fasl-outofdate
          (progn (print (format nil "WARNING: File ~A is older than the LISP source file. File ~A will be loaded instead."
                                fasl-file lisp-file))
            (load lisp-file :verbose verbose))
@@ -132,12 +146,53 @@
                                                           (load load-file :verbose verbose))
                                                       (progn 
                                                         (print (format nil "FASL error: ~s ..." fasl-file))
-                                                        (when *remove-error-fasl* (delete-file fasl-file nil))
+(when *remove-error-fasl* (delete-file fasl-file))
                                                         (load lisp-file :verbose verbose)))
                                                     (throw 'faslerror t)
                                                     )))
-           (load load-file :verbose verbose)
-           )))))
+           (load load-file :verbose verbose))
+           ))))
+
+#+sbcl
+(defun compile&load (file &optional (verbose t) (force-compile nil))
+  (let* ((lisp-file (probe-file (if (pathname-type file)
+                                    file
+                                  (concatenate 'string (namestring file) ".lisp"))))
+         (source-external-format (alloy-desktop:detect-cr-only-external-format lisp-file))
+         (fasl-pathname (and lisp-file
+                             (alloy-desktop:variant-compiled-file-pathname
+                              lisp-file (and source-external-format "om-cr"))))
+         (fasl-file (and fasl-pathname (probe-file fasl-pathname)))
+         (load-file (make-pathname :directory (pathname-directory file)
+                                   :name (pathname-name file)
+                                   :host (pathname-host file)
+                                   :device (pathname-device file)))
+         (fasl-outofdate (and fasl-file
+                              (or (null (file-write-date lisp-file))
+                                  (null (file-write-date fasl-file))
+                                  (> (file-write-date lisp-file)
+                                     (file-write-date fasl-file)))))
+         (compile-p (or force-compile (not fasl-file) fasl-outofdate)))
+    (when compile-p
+      (setf fasl-file
+            (alloy-desktop:compile-source-checked
+             lisp-file fasl-pathname
+             :external-format source-external-format :verbose verbose)))
+    (catch 'faslerror
+      (handler-bind
+          ((sb-ext:invalid-fasl
+             #'(lambda (condition)
+                 (declare (ignore condition))
+                 (when lisp-file
+                   (print (format nil "FASL error: ~s -- recompiling..." fasl-file))
+                   (when (and *remove-error-fasl* (probe-file fasl-file))
+                     (delete-file fasl-file))
+                   (alloy-desktop:compile-source-checked
+                    lisp-file fasl-pathname
+                    :external-format source-external-format :verbose verbose)
+                   (load fasl-pathname :verbose verbose)
+                   (throw 'faslerror t)))))
+        (load (or fasl-file load-file) :verbose verbose)))))
 
 (export 'compile&load :cl-user)
 
@@ -146,15 +201,18 @@
 
 (defparameter *macdylibfolder* "mac/")
 
-#+cocoa
+#+darwin
 (let ((mac-arch
-       (multiple-value-bind (out pid)
-           (sys:run-shell-command "bash -l -c 'uname -p'"
-                                  :wait nil
-                                  :output :stream
-                                  :error-output nil)
-         (with-open-stream (out out)
-           (values (read-line out) )))))
+      #+lispworks
+      (multiple-value-bind (out pid)
+       (sys:run-shell-command "bash -l -c 'uname -p'" :wait nil :output :stream :error-output nil)
+       (declare (ignore pid))
+       (with-open-stream (out out)
+        (string-trim '(#\Newline #\Space #\Tab) (read-line out))))
+      #+sbcl
+      (string-trim '(#\Newline #\Space #\Tab)
+       (uiop:run-program (list "bash" "-l" "-c" "uname -p")
+                               :output :string :error-output nil))))
   (if (equal mac-arch "arm")
       (setf *macdylibfolder* "m1/")
     (setf *macdylibfolder* "mac/")))
@@ -179,18 +237,20 @@
 (defun clean-svn (&optional dir)
   (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*))))))
     (mapc #'(lambda (file) 
-             
-              (if (system::directory-pathname-p file)
+              (if #+lispworks(system::directory-pathname-p file)
+                  #+sbcl(uiop:directory-pathname-p file)
                   (if (string-equal ".svn" (car (last (pathname-directory file))))
-                      (system::call-system (concatenate 'string "rm -Rf \"" (namestring file) "\""))
+                      #+lispworks(system::call-system (concatenate 'string "rm -Rf \"" (namestring file) "\""))
+                      #+sbcl(alloy-desktop:run-shell-command (concatenate 'string "rm -Rf \"" (namestring file) "\"") :wait t)
                     (clean-svn file))
                 (when (and (pathname-type file)
                            (find (pathname-type file) '("lisp~" "DS_STORE" "docx") :test 'string-equal))
-                  (delete-file file))
-                ))
-          (directory (namestring src-root) :directories t))))
+                  (delete-file file))))
+          #+lispworks(directory (namestring src-root) :directories t)
+          #+sbcl(alloy-desktop:directory-entries src-root))))
               
 ; (clean-svn (make-pathname :directory (append (butlast (pathname-directory *load-pathname*) 3) '("OM-FORUM-LIBRARIES" "OMChroma"))))
+
 
 (defun clean-sources (&optional dir keep-fasl-types verbose)
   (let ((src-root (or dir (make-pathname :directory (butlast (pathname-directory *load-pathname*)))))
@@ -198,7 +258,8 @@
                    #'(lambda (ext) (find ext keep-fasl-types :test 'string-equal))
                    '("xfasl" "64xfasl" "fasl" "DS_STORE" "nfasl" "ofasl" "ufasl" "lisp~"))))
     (mapc #'(lambda (file) 
-              (if (system::directory-pathname-p file)
+              (if #+lispworks(system::directory-pathname-p file)
+                  #+sbcl(uiop:directory-pathname-p file)
                   (clean-sources file keep-fasl-types verbose)
                 (when (and (pathname-type file)
                            (or (find (pathname-type file) ext-list :test 'string-equal)
@@ -207,7 +268,8 @@
                   (when verbose (print (concatenate 'string "Deleting " (namestring file) " ...")))
                   (delete-file file)
                   )))
-          (directory (namestring src-root) :directories t))
+          #+lispworks(directory (namestring src-root) :directories t)
+          #+sbcl(alloy-desktop:directory-entries src-root))
     ))
 
 
@@ -238,7 +300,8 @@
         (src-root (or dir (make-pathname :directory (append (butlast (pathname-directory *load-pathname*)) '("code")))))
         (types '("lisp")))
     (mapc #'(lambda (file) 
-              (if (system::directory-pathname-p file)
+              (if #+lispworks(system::directory-pathname-p file)
+                  #+sbcl(uiop:directory-pathname-p file)
                   (let ((count (count-sources file)))
                     (setf nfiles (+ nfiles (car count)))
                     (setf nlines (+ nlines (caDr count))))
@@ -248,7 +311,8 @@
                   (setf nlines (+ nlines (count-lines file)))
                   )
                   ))
-          (directory (namestring src-root) :directories t))
+          #+lispworks(directory (namestring src-root) :directories t)
+          #+sbcl(alloy-desktop:directory-entries src-root))
     (list nfiles nlines)
     ))
 
@@ -265,7 +329,7 @@
 ;;;; LOAD OM
 
 
-(load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "om-LW"))
+(load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" #+lispworks "om-LW" #+sbcl "om-SBCL"))
                        :name "load-api" :type "lisp"))
 
 (load (make-pathname :directory (append (pathname-directory *om-src-directory*) '("code" "api" "foreign-interface")) :name "foreign-interface"))
@@ -279,12 +343,22 @@
 
 
 (defpackage "OpenMusic"
-    (:use "COMMON-LISP" "CL-USER" "OM-API" "LISPWORKS" "HCL" "OM-LISP" "OM-EDIT")
-    (:import-from "CL-USER")
+    (:use "COMMON-LISP"
+          "CL-USER"
+          "OM-API"
+          #+lispworks "LISPWORKS"
+          #+lispworks "HCL"
+          "OM-LISP"
+          "OM-EDIT")
+    (:import-from "CL-USER" "SPLIT-SEQUENCE")
     (:nicknames "OM" "OPENMUSIC"))
 
 
 (in-package :om)
+
+#+sbcl (compile&load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*)
+                                               '("code" "api" "om-SBCL"))
+                            :name "kernel-patch-before" :type "lisp"))
 
 (defun load-om-kernel ()
   (load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*) '("code" "kernel"))
@@ -294,32 +368,53 @@
   (let ((project-dir (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*) '("code" "projects"))))
         (projects-list (if projects projects (oa::om-directory project-dir
                                               :files nil :directories t))))
-    (mapc #'(lambda (x) 
-              (let ((file (if (numberp (read-from-string (subseq x 0 2))) (subseq x 3) x))) 
-                (load (make-pathname :directory (append (pathname-directory project-dir) (list x)) :name file :type "lisp") :if-does-not-exist nil)))
+    (mapc #'(lambda (x)
+              (let* ((file (if (numberp (read-from-string (subseq x 0 2))) (subseq x 3) x))
+                     (path (make-pathname :directory (append (pathname-directory project-dir) (list x)) :name file :type "lisp")))
+                #+sbcl (handler-case
+                           (alloy-desktop:with-default-external-format (:latin-1)
+                             (load path :if-does-not-exist nil))
+                         (serious-condition (c)
+                           (format *error-output* "~&[load-om-projects] SKIPPED project ~S (needs SBCL porting): ~A~%" x c)
+                           (finish-output *error-output*)))
+                #-sbcl (load path :if-does-not-exist nil)))
           projects-list)))
 
 
 
-(load-om-kernel)
-  
+#+sbcl (alloy-desktop:with-default-external-format (:latin-1) (load-om-kernel))
+#-sbcl (load-om-kernel)
+
 (load-om-projects '("basicproject" "musicproject"))
-(load-om-projects '("midi"))
-(load-om-projects '("sdif"))
-(load-om-projects '("mathtools"))
-(load-om-projects '("omsounds"))
-(load-om-projects '("fluid"))
-(load-om-projects '("space"))
-(load-om-projects '("harmonicproject"))
-(load-om-projects '("sheet"))
+#-lispworks-personal-edition (load-om-projects '("midi"))
+#-lispworks-personal-edition (load-om-projects '("sdif"))
+#-lispworks-personal-edition (load-om-projects '("mathtools"))
+#-lispworks-personal-edition (load-om-projects '("omsounds"))
+#-lispworks-personal-edition (load-om-projects '("fluid"))
+#-lispworks-personal-edition (load-om-projects '("space"))
+#-lispworks-personal-edition (load-om-projects '("harmonicproject"))
+#-lispworks-personal-edition (load-om-projects '("sheet"))
 ;(load-om-projects '("fluid"))
 
+
+#+sbcl (compile&load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*)
+                                               '("code" "api" "om-SBCL"))
+                            :name "kernel-patch-after" :type "lisp"))
+
+#+(and sbcl win32) (compile&load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*)
+                                               '("code" "api" "om-SBCL"))
+                            :name "kernel-patch-win32" :type "lisp"))
+
+#+(and sbcl darwin) (compile&load (make-pathname :directory (append (pathname-directory cl-user::*om-src-directory*)
+                                               '("code" "api" "om-SBCL"))
+                            :name "kernel-patch-darwin" :type "lisp"))
 
 (push :om *features*)
 
 (defvar om::*om-startup* nil)
 
 
+#+lispworks
 (defun start-openmusic ()
   (setf om::*om-startup* t)
   (oa::om-api-init)
@@ -328,7 +423,7 @@
   #+cocoa(objc:make-autorelease-pool)
   (clos::set-clos-initarg-checking nil)
   (editor:setup-indent "defmethod!" 2 2 2)
-  (editor:setup-indent "defmethod*" 2 2 2)  
+  (editor:setup-indent "defmethod*" 2 2 2)
   (init-root-definition-pathname cl-user::*om-src-directory* om::*om-root*)
 
   (setf *print-case* :downcase)
@@ -336,13 +431,38 @@
   (in-package :om)
   (om::set-language *release-language*)
   (oa::om-init-funcall)
-    
+
   #+(or linux win32) (define-action "Confirm when quitting image" "Prompt for confirmation" 'om::quit-om-callback)
   #+(and lispworks8.1 linux) (capi:force-dark-mode :no :screen (capi:convert-to-screen))
   (om::show-workspaces-dialog)
   (when om::*om-workspace-win* (capi::execute-with-interface om::*om-workspace-win* #'(lambda () (in-package :om))))
   (setf om::*om-startup* nil)
   )
+
+#+sbcl
+(defun start-openmusic ()
+  (setf om::*om-startup* t)
+  (oa::om-api-init)
+  (oa::om-with-screen
+    (om-lisp::set-om-debugger)
+    (om::load-modif-patches)
+    (init-root-definition-pathname cl-user::*om-src-directory* om::*om-root*)
+
+    (setf *print-case* :downcase)
+    ;; a launcher REPL may hold thread-local bindings: force the true global too
+    (setf (sb-ext:symbol-global-value 'cl:*print-case*) :downcase)
+    (setf *msg-error-label-on* nil)
+    (in-package :om)
+    (om::set-language *release-language*)
+    (oa::om-init-funcall)
+
+    (pushnew 'om::quit-om-callback oa::*om-quit-actions*)
+    (om::show-workspaces-dialog)
+    (when om::*om-workspace-win*
+      (alld:post-to-ui-thread (lambda () (in-package :om))))
+    (setf om::*om-startup* nil)
+    ;; CAPI's event loop is implicit on LW; on GLFW block here until all windows close.
+    (oa::om-run-loop)))
 
 (defun cl-user::start-openmusic () (start-openmusic))
 
@@ -355,7 +475,8 @@
           ;; (om-lisp::check-buffers-before-close)
           (om::save-ws-contents)
           (om::save-preferences)
-        #+macosx(mapcar 'oa::om-close-window (oa::om-get-all-windows 'capi::interface))
+        #+(and macosx lispworks) (mapcar 'oa::om-close-window (oa::om-get-all-windows 'capi::interface))
+        #+(and darwin sbcl) (mapcar 'oa::om-close-window (oa::om-get-all-windows 'om-graphic-object))
         )
         T) ;;; quit !
       )))
@@ -382,5 +503,12 @@
 ;;; MAC :
 ;;; INSTALL OM FONTS IN /Library/Fonts/
 
-
-
+;;; Build OM in LispWorks Personal Edition (heap-size restriction)
+#+lispworks-personal-edition
+(progn
+ (in-package :om)
+ (defmethod sound-p ((self t)) nil)
+ (defmethod 3dc-p ((self t)) nil)
+ (defmethod 3dc-lib-p ((self t)) nil)
+ (defvar *default-score-player* nil)
+ (defvar *force-score-player* nil))

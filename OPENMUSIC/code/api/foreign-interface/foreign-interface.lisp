@@ -12,7 +12,9 @@
    :om-load-foreign-library
    :om-load-foreign-libs))
 
-(load (merge-pathnames "ffi/load-cffi" *load-pathname*))
+;; SBCL: CFFI is already loaded from quicklisp by the alloy stack; the bundled copy is LW-only.
+#+lispworks (load (merge-pathnames "ffi/load-cffi" *load-pathname*))
+#+sbcl (pushnew :cffi *features*)
 (compile&load (merge-pathnames "dereference" *load-pathname*))
 
 (in-package :om-fi)
@@ -59,7 +61,8 @@
 ; cl-user::*om-src-directory*
 
 ;(defvar *load-folder* cl-user::*om-src-directory*)
-(defvar *load-folder* (lw-tools::lisp-image-name))
+(defvar *load-folder* #+lispworks (lw-tools::lisp-image-name)
+                      #+sbcl sb-ext:*runtime-pathname*)
 
 ;;; dans le dossier de l'appli
 (defun om-foreign-libraries-directory () *load-folder*)

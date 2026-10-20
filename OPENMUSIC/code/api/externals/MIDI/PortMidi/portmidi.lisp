@@ -35,22 +35,30 @@
 
 (defvar *libportmidi* nil)
 
-#-linux 
+#-linux
 (defun load-portmidi-lib ()
   (print (concatenate 'string "Loading PortMIDI library: " (namestring *libportmidi-pathname*)))
   (if (probe-file *libportmidi-pathname*)
-      (setf *libportmidi* (fli:register-module "PortMidi" 
-                                               :real-name (namestring *libportmidi-pathname*)
-                                               :connection-style :immediate)
-            )
+      (setf *libportmidi*
+            #+lispworks (fli:register-module "PortMidi"
+                                             :real-name (namestring *libportmidi-pathname*)
+                                             :connection-style :immediate)
+            #+sbcl (cffi:load-foreign-library (namestring *libportmidi-pathname*)))
     (print (format nil "Library PortMIDI not found!! [~A]" (namestring *libportmidi-pathname*)))
     ))
 
-#+linux 
+#+linux
 (defun load-portmidi-lib ()
 	  (print (concatenate 'string "Loading PortMIDI library: " (namestring *libportmidi-pathname*)))
-	  (setf *libportmidi* (fli:register-module (namestring *libportmidi-pathname*) 
-						   :connection-style :immediate)))
+	  (setf *libportmidi*
+                #+lispworks (fli:register-module (namestring *libportmidi-pathname*)
+						 :connection-style :immediate)
+                #+sbcl (handler-case
+                           (cffi:load-foreign-library (namestring *libportmidi-pathname*))
+                         (cffi:load-foreign-library-error (c)
+                           (print (format nil "Library PortMIDI not found!! [~A]"
+                                          (princ-to-string c)))
+                           nil))))
 
 
 ; (load-portmidi-lib)
@@ -92,24 +100,24 @@
 		 (opened :int))
 
 (defun pm-device-info-interf (ptr)
-  (or (ignore-errors (cffi:foreign-string-to-lisp 
-                      (cffi:foreign-slot-value ptr 'pm-device-info 'interf)))
+  (or (ignore-errors (cffi:foreign-string-to-lisp
+                      (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'interf)))
       "Error reading interface name"))
 
 (defun pm-device-info-name (ptr)
   (or (ignore-errors
         (cffi:foreign-string-to-lisp
-         (cffi:foreign-slot-value ptr 'pm-device-info 'name)))
+         (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'name)))
       "Error reading device name"))
 
 (defun pm-device-info-input (ptr)
-  (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'input) 0)))
+  (not (= (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'input) 0)))
 
 (defun pm-device-info-output (ptr)
-  (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'output) 0)))
+  (not (= (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'output) 0)))
 
 (defun pm-device-info-opened (ptr)
-  (not (= (cffi:foreign-slot-value ptr 'pm-device-info 'opened) 0)))
+  (not (= (cffi:foreign-slot-value ptr '(:struct pm-device-info) 'opened) 0)))
 
 
 ;;; MIDI EVENTS
@@ -135,20 +143,20 @@
   (message pm-message) 
   (timestamp pm-timestamp))
 
-;;; accessors 
+;;; accessors
 (defun Event.message (e &optional (v nil vp))
   (if vp
-      (progn 
-	(setf (cffi:foreign-slot-value e 'pm-event 'message) v)
+      (progn
+	(setf (cffi:foreign-slot-value e '(:struct pm-event) 'message) v)
 	v)
-    (cffi:foreign-slot-value e 'pm-event 'message)))
-    
+    (cffi:foreign-slot-value e '(:struct pm-event) 'message)))
+
 (defun Event.timestamp (e &optional (v nil vp))
   (if vp
-      (progn 
-	(setf (cffi:foreign-slot-value e 'pm-event 'timestamp) v)
+      (progn
+	(setf (cffi:foreign-slot-value e '(:struct pm-event) 'timestamp) v)
 	v)
-    (cffi:foreign-slot-value e 'pm-event 'timestamp)))
+    (cffi:foreign-slot-value e '(:struct pm-event) 'timestamp)))
 
 
 
@@ -156,21 +164,21 @@
 ;;; EVENT BUFFERS
 
 (defun pm-EventBufferNew (len)
-  (cffi:foreign-alloc 'pm-event :count len))
+  (cffi:foreign-alloc '(:struct pm-event) :count len))
 
 (defun pm-EventBufferFree (buf)
   (cffi:foreign-free buf))
 
 (defun pm-EventBufferElt (buf i)
   ;; buf is POINTER to buf
-  (cffi:mem-aref buf 'pm-event i))
+  (cffi:mem-aptr buf '(:struct pm-event) i))
 
 (defun pm-EventBufferSet (buffer index timestamp message)
   (setf (cffi:foreign-slot-value
-         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'timestamp)
+         (cffi:mem-aptr buffer '(:struct pm-event) index) '(:struct pm-event) 'timestamp)
         timestamp)
   (setf (cffi:foreign-slot-value
-         (cffi:mem-aref buffer 'pm-event index) 'pm-event 'message)
+         (cffi:mem-aptr buffer '(:struct pm-event) index) '(:struct pm-event) 'message)
         message)
   (values))
 

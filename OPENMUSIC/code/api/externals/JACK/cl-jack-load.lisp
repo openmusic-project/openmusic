@@ -5,8 +5,8 @@
 
 
 (defun compile?-and-load (file)
-  (cl-user::compile-file-if-needed file)
-  (load file))
+  #+lispworks (progn (cl-user::compile-file-if-needed file) (load file))
+  #+sbcl (cl-user::compile&load file))
 
 (defparameter cl-jack-files '("cl-jack"
 			      ;;"cl-jack-midi"  ;; leave while checking :portmidi
