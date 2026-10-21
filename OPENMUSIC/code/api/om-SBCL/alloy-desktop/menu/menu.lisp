@@ -1387,7 +1387,9 @@ transparent surface that has not been rendered exposes one empty frame."
                            &key parent-item return-focus opener)
   (when (popup-consume-opener-suppression-p opener)
     (return-from popup-open-menu-at nil))
-  (let* ((width  (popup-menu-width entries window screen-left screen-top))
+  ;; a menu with nothing to show opens with one disabled "(empty)" item, as CAPI does
+  (let* ((entries (or entries (list (make-menu-item "(empty)" nil :enabled nil))))
+         (width  (popup-menu-width entries window screen-left screen-top))
          (height (popup-compute-height entries))
          (left   nil)
          (top    nil)
