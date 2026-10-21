@@ -155,16 +155,22 @@ predicate (the toolkit's :enabled-function)."
                ((and s (symbolp s) (not (keywordp s)) (fboundp s)) (and (funcall s) t))
                (t (and s t))))))
 
-(defun format-accelerator-label (title accelerator)
-  "Accelerator case encodes Shift: an uppercase letter requires the Shift modifier."
-  (cond ((null accelerator) title)
+(defun accelerator-text (accelerator)
+  "Display text of ACCELERATOR, or NIL. Its case encodes Shift: an uppercase letter
+requires the Shift modifier."
+  (cond ((null accelerator) nil)
         ((and (consp accelerator) (eq (first accelerator) :shift))
-         (format nil "~A    Ctrl+Shift+~A" title (string-upcase (second accelerator))))
+         (format nil "Ctrl+Shift+~A" (string-upcase (second accelerator))))
         (t (let* ((s (string accelerator))
                   (c (and (= 1 (length s)) (char s 0))))
              (if (and c (alpha-char-p c) (upper-case-p c))
-                 (format nil "~A    Ctrl+Shift+~A" title s)
-                 (format nil "~A    Ctrl+~A" title (string-upcase s)))))))
+                 (format nil "Ctrl+Shift+~A" s)
+                 (format nil "Ctrl+~A" (string-upcase s)))))))
+
+(defun format-accelerator-label (title accelerator)
+  "TITLE followed by the display text of ACCELERATOR."
+  (let ((text (accelerator-text accelerator)))
+    (if text (format nil "~A    ~A" title text) title)))
 
 (defun menu-entry-label (item)
   "Display label for a menu entry: title plus accelerator suffix. The selection
@@ -544,8 +550,9 @@ horizontal-linear-layout)."
 (defparameter *popup-menu-corner-radius*    8)
 (defparameter *popup-menu-border-width*     1)
 (defparameter *popup-menu-item-height*      26)
-(defparameter *popup-menu-separator-height* 9)
-(defparameter *popup-menu-min-width*        220)
+(defparameter *popup-menu-separator-height* 11)
+(defparameter *popup-menu-padding*          2
+  "Px between the ring of a popup frame and its first and last row.")
 
 (defparameter *popup-surface-samples*
   #+darwin 0
@@ -622,26 +629,36 @@ horizontal-linear-layout)."
              (popup-note-pointer-down window (alloy:location event)))
            (call-next-method)))))
 
-(defparameter *popup-menu-label-left*  24
-  "Left gutter of a row label: the selection tick's lane.")
+(defparameter *popup-menu-label-left*  45
+  "Px from a row's left edge to its label: the selection tick's lane.")
 
-(defparameter *popup-menu-label-right* 28
-  "Right gutter of a row label: the submenu chevron's lane.")
+(defparameter *popup-menu-label-right* 56
+  "Px from a row's label to its right edge: the submenu chevron's lane.")
+
+(defparameter *popup-menu-accelerator-gap* 33
+  "Px from the widest row label to the accelerator column.")
+
+(defparameter *popup-menu-accelerator-right* 33
+  "Px from the widest accelerator to a row's right edge.")
 
 (defparameter *popup-menu-label-slack* 8
   "Px added to a measured label: the MSDF glyph quad overhangs the advance sum.")
 
-(defparameter *popup-menu-border-color*    (chroma:rgb 0.5 0.5 0.5)
+(defparameter *popup-menu-border-color*    (chroma:rgb (/ 229 255.0) (/ 229 255.0) (/ 229 255.0))
   "Ring of a popup frame.")
-(defparameter *popup-menu-background*      (chroma:rgb 0.9 0.9 0.9)
+(defparameter *popup-menu-background*      (chroma:rgb (/ 249 255.0) (/ 249 255.0) (/ 249 255.0))
   "Interior of a popup frame.")
+(defparameter *popup-menu-highlight*       (chroma:rgb (/ 240 255.0) (/ 240 255.0) (/ 240 255.0))
+  "Background of the focused row of a popup.")
+(defparameter *popup-menu-chevron-color*   (chroma:rgb 0.2 0.2 0.2)
+  "Submenu chevron of an enabled row.")
 (defparameter *menu-highlight*             (chroma:rgb 0.85 0.85 0.85)
-  "Background of the focused row of a popup or of the menu bar.")
+  "Background of the focused title of the menu bar.")
 (defparameter *menu-text*                  (chroma:rgb 0.0 0.0 0.0)
-  "Label, tick and chevron of an enabled row.")
+  "Label and tick of an enabled row.")
 (defparameter *menu-disabled-text*         (chroma:rgb 0.5 0.5 0.5)
   "Label, tick and chevron of a disabled row.")
-(defparameter *popup-menu-separator-color* (chroma:rgb 0.5 0.5 0.5)
+(defparameter *popup-menu-separator-color* (chroma:rgb (/ 215 255.0) (/ 215 255.0) (/ 215 255.0))
   "Rule of a popup separator.")
 (defparameter *menubar-background*
   (chroma:rgb (/ 255 255.0) (/ 255 255.0) (/ 255 255.0))
@@ -692,7 +709,10 @@ widget that opened a chain closes it instead of re-opening."
 (defclass popup-menu-item (alloy:menu-item)
   ((submenu-tree :initarg :submenu-tree :initform nil :accessor popup-item-submenu-tree)
    (enabled-p    :initarg :enabled-p    :initform t   :accessor popup-item-enabled-p)
-   (selected-p   :initarg :selected-p   :initform nil :accessor popup-item-selected-p)))
+   (selected-p   :initarg :selected-p   :initform nil :accessor popup-item-selected-p)
+   (accelerator  :initarg :accelerator  :initform nil :accessor popup-item-accelerator)
+   ;; px from the row's left edge to its menu's accelerator column
+   (accelerator-left :initform 0 :accessor popup-item-accelerator-left)))
 
 (defclass popup-menu-separator (alloy:layout-element alloy:renderable)
   ())
@@ -742,9 +762,24 @@ filter's clear glyph: the two ends stay vertical, the width comes from D."
         (:down (quad x0 (+ cy 1.5) (+ x0 3.5) (- cy 2.5)))
         (:up   (quad (+ x0 3.5) (- cy 2.5) (+ x0 10.0) (+ cy 5.0)))))))
 
+(defun popup-chevron-stroke (item which)
+  "One arm of the right-pointing chevron marking a submenu row, its tip 15 px from
+ITEM's right edge (item-local px, alloy y-up); built like POPUP-CHECK-STROKE."
+  (let* ((b  (alloy:bounds item))
+         (cy (/ (alloy:pxh b) 2.0))
+         (d  1.0)
+         (tip (- (alloy:pxw b) 15.0 d))
+         (x0  (- tip 5.0)))
+    (flet ((quad (ax ay bx by)
+             (list (alloy:px-point (- ax d) ay) (alloy:px-point (+ ax d) ay)
+                   (alloy:px-point (+ bx d) by) (alloy:px-point (- bx d) by))))
+      (ecase which
+        (:upper (quad x0 (+ cy 5.0) tip cy))
+        (:lower (quad tip cy x0 (- cy 5.0)))))))
+
 (presentations:define-realization (window popup-menu-item)
   ((:background simple:rectangle)
-   (alloy:margins 4 1 4 1)
+   (alloy:margins (alloy:px 8) 0 (alloy:px 10) 0)
    :z-index 1000
    :corner-radii (vector (alloy:px 4) (alloy:px 4) (alloy:px 4) (alloy:px 4)))
   ((:check-down simple:polygon)
@@ -754,23 +789,31 @@ filter's clear glyph: the two ends stay vertical, the width comes from D."
    (list (alloy:px-point 0 0) (alloy:px-point 1 0) (alloy:px-point 0 1))
    :z-index 1020)
   ((:label simple:text)
-   (alloy:margins *popup-menu-label-left* 0 *popup-menu-label-right* 0) alloy:text
+   (alloy:margins (alloy:px *popup-menu-label-left*) 0 (alloy:px *popup-menu-label-right*) 0)
+   alloy:text
    :font (font-entry-font (role-font-entry alloy:renderer :menu))
    :size (font-entry-size-unit (role-font-entry alloy:renderer :menu))
    :halign :start :valign :middle
    :z-index 1020)
-  ((:chevron simple:text)
-   (alloy:margins 0 0 10 0) ""
+  ((:accelerator simple:text)
+   (alloy:margins (alloy:px (popup-item-accelerator-left alloy:renderable)) 0 0 0)
+   (or (popup-item-accelerator alloy:renderable) "")
    :font (font-entry-font (role-font-entry alloy:renderer :menu))
    :size (font-entry-size-unit (role-font-entry alloy:renderer :menu))
-   :halign :end :valign :middle
+   :halign :start :valign :middle
+   :z-index 1020)
+  ((:chevron-upper simple:polygon)
+   (list (alloy:px-point 0 0) (alloy:px-point 1 0) (alloy:px-point 0 1))
+   :z-index 1020)
+  ((:chevron-lower simple:polygon)
+   (list (alloy:px-point 0 0) (alloy:px-point 1 0) (alloy:px-point 0 1))
    :z-index 1020))
 
 (presentations:define-update (window popup-menu-item)
   (:background
    :hidden-p (not (and (popup-item-enabled-p alloy:renderable)
                        (alloy:focus alloy:renderable)))
-   :pattern *menu-highlight*)
+   :pattern *popup-menu-highlight*)
   (:check-down
    :points (popup-check-stroke alloy:renderable :down)
    :hidden-p (not (popup-item-selected-p alloy:renderable))
@@ -788,17 +831,26 @@ filter's clear glyph: the two ends stay vertical, the width comes from D."
    :pattern (if (popup-item-enabled-p alloy:renderable)
                 *menu-text*
                 *menu-disabled-text*))
-  (:chevron
-   :text (if (popup-item-submenu-tree alloy:renderable)
-             (string (code-char #x25B6))
-             "")
+  (:accelerator
    :pattern (if (popup-item-enabled-p alloy:renderable)
                 *menu-text*
+                *menu-disabled-text*))
+  (:chevron-upper
+   :points (popup-chevron-stroke alloy:renderable :upper)
+   :hidden-p (not (popup-item-submenu-tree alloy:renderable))
+   :pattern (if (popup-item-enabled-p alloy:renderable)
+                *popup-menu-chevron-color*
+                *menu-disabled-text*))
+  (:chevron-lower
+   :points (popup-chevron-stroke alloy:renderable :lower)
+   :hidden-p (not (popup-item-submenu-tree alloy:renderable))
+   :pattern (if (popup-item-enabled-p alloy:renderable)
+                *popup-menu-chevron-color*
                 *menu-disabled-text*)))
 
 (presentations:define-realization (window popup-menu-separator)
   ((:line simple:rectangle)
-   (alloy:extent (alloy:px 12) (alloy:ph 0.5) (alloy:pw) 1)
+   (alloy:margins (alloy:px 11) (alloy:px 5) (alloy:px 12) (alloy:px 5))
    :pattern *popup-menu-separator-color*
    :z-index 1000))
 
@@ -1228,7 +1280,8 @@ a dynamic-items generator: call it with WINDOW and splice its result."
 (defun popup-compute-height (entries)
   (multiple-value-bind (n-items n-seps) (popup-count-items-and-separators entries)
     (+ (* n-items *popup-menu-item-height*)
-       (* n-seps  *popup-menu-separator-height*))))
+       (* n-seps  *popup-menu-separator-height*)
+       (* 2 (+ *popup-menu-border-width* *popup-menu-padding*)))))
 
 (defun popup-make-item (entry window return-focus)
   "ENTRY is a menu-item (leaf) or a menu (submenu parent)."
@@ -1237,10 +1290,11 @@ a dynamic-items generator: call it with WINDOW and splice its result."
          (submenu? (typep entry 'menu))
          (action   (and (typep entry 'menu-item)
                         (menu-entry-action entry)))
-         (subtree  (when submenu? (menu-entry-items entry)))
-         (label    (menu-entry-label entry)))
+         (subtree  (when submenu? (menu-entry-items entry))))
     (make-instance 'popup-menu-item
-                   :value        label
+                   :value        title
+                   :accelerator  (and (typep entry 'menu-item)
+                                      (accelerator-text (menu-entry-accelerator entry)))
                    :enabled-p    enabled
                    :selected-p   (menu-entry-selected-now entry)
                    :submenu-tree subtree
@@ -1303,7 +1357,8 @@ coordinates (origin top-left)."
           (+ (popup-screen-top frame) (popup-screen-height frame))))
 
 (defun popup-label-width (entries window)
-  "Widest row label of ENTRIES in px, measured the way the label shape is drawn
+  "Widest row title and widest accelerator of ENTRIES in px, as two values (0 when
+no row has an accelerator), measured the way the label shape is drawn
 \(MSDF advances of the :menu role font) under WINDOW's unit context. WINDOW, the
 chain's owner, is the renderer the font resolves under; the average-advance
 estimate stands in only when no MSDF font resolves."
@@ -1313,26 +1368,33 @@ estimate stands in only when no MSDF font resolves."
                  (string-advance font (role-draw-px window (native-role :menu)) label)
                  (float (* 0.6f0 (role-points-px :menu) (length (or label ""))) 0f0)))))
     (alloy:with-unit-parent window
-      (let ((w 0))
-        (dolist (entry entries w)
+      (let ((w 0) (a 0))
+        (dolist (entry entries (values w a))
           (unless (eq entry :separator)
-            (setf w (max w (ceiling (measure (menu-entry-label entry)))))))))))
+            (setf w (max w (ceiling (measure (menu-entry-title entry)))))
+            (let ((text (and (typep entry 'menu-item)
+                             (accelerator-text (menu-entry-accelerator entry)))))
+              (when text
+                (setf a (max a (ceiling (measure text))))))))))))
 
 (defun popup-menu-width (entries window screen-left screen-top)
-  "Width that fits every row label between the tick and chevron gutters, never
-below the minimum and never wider than the target monitor's usable width.
+  "Width that fits every row label between the tick gutter and the accelerator
+column or chevron gutter, never wider than the target monitor's usable width;
+the second value is the px from a row's left edge to the accelerator column.
 The window system sizes a native menu from its content; this popup mirrors that
 behaviour while clamping the result to the monitor work area."
-  (let* ((want (+ (popup-label-width entries window)
-                  *popup-menu-label-slack*
-                  *popup-menu-label-left*
-                  *popup-menu-label-right*))
-         (monitor (%popup-monitor-for-screen-point screen-left screen-top))
+  (multiple-value-bind (title-w accel-w) (popup-label-width entries window)
+    (let* ((accel-left (+ *popup-menu-label-left* title-w *popup-menu-accelerator-gap*))
+           (want (if (plusp accel-w)
+                     (+ accel-left accel-w *popup-menu-accelerator-right*)
+                     (+ *popup-menu-label-left* title-w
+                        *popup-menu-label-slack* *popup-menu-label-right*)))
+           (monitor (%popup-monitor-for-screen-point screen-left screen-top))
          ;; glfw-error: the monitor may be unplugged between the lookup and this call
          (work    (and monitor (handler-case (%glfw:work-area monitor)
                                  (%glfw-unavailable () nil))))
-         (cap     (if work (third work) want)))
-    (max *popup-menu-min-width* (min cap want))))
+           (cap     (if work (third work) want)))
+      (values (min cap want) accel-left))))
 
 (defun popup-drop-anchor (window widget height)
   "Virtual-screen (LEFT TOP, y-down) for a dropdown hanging off WIDGET: BELOW it,
@@ -1389,7 +1451,11 @@ transparent surface that has not been rendered exposes one empty frame."
     (return-from popup-open-menu-at nil))
   ;; a menu with nothing to show opens with one disabled "(empty)" item, as CAPI does
   (let* ((entries (or entries (list (make-menu-item "(empty)" nil :enabled nil))))
-         (width  (popup-menu-width entries window screen-left screen-top))
+         (accel-left nil)
+         (width  (multiple-value-bind (w a)
+                     (popup-menu-width entries window screen-left screen-top)
+                   (setf accel-left a)
+                   w))
          (height (popup-compute-height entries))
          (left   nil)
          (top    nil)
@@ -1408,7 +1474,7 @@ transparent surface that has not been rendered exposes one empty frame."
                               :screen-width  width
                               :screen-height height))
     (setf surface (popup-attach-surface menu window width height))
-    (let ((cur-y height)
+    (let ((cur-y (- height *popup-menu-border-width* *popup-menu-padding*))
           (top-item nil))
       (dolist (entry entries)
         (cond
@@ -1419,6 +1485,7 @@ transparent surface that has not been rendered exposes one empty frame."
           (t
            (decf cur-y *popup-menu-item-height*)
            (let ((item (popup-make-item entry window return-focus)))
+             (setf (popup-item-accelerator-left item) accel-left)
              (alloy:enter item menu :x 0 :y cur-y :w width :h *popup-menu-item-height*)
              (unless top-item (setf top-item item))))))
       (when top-item
@@ -1537,7 +1604,9 @@ recorded for; any other click re-arms normal activation."
                           (or (null work-left) (>= left work-left)))
                      left
                      right)))
-          (popup-open-menu-at entries depth window screen-left item-top
+          ;; the first row of the submenu lines up with its parent row
+          (popup-open-menu-at entries depth window screen-left
+                              (- item-top *popup-menu-border-width* *popup-menu-padding*)
                               :parent-item parent-item :return-focus rf))))))
 
 (defmethod alloy:handle ((event alloy:pointer-move) (frame popup-frame))
