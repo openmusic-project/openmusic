@@ -14,9 +14,10 @@
     (null (if (uiop:os-windows-p)
               (list "cmd")
               (list (or (uiop:getenv "SHELL") "/bin/sh"))))
+    ;; a string is run as by CALL-SYSTEM (lw/lw-sys-115.htm: run-shell-command)
     (string
      (if (uiop:os-windows-p)
-         command
+         (shell-command-form command)
          (list (or (uiop:getenv "SHELL") "/bin/sh") "-c" command)))
     (list
      (unless (and command (every #'stringp command))
@@ -194,14 +195,15 @@ supplied, matching LispWorks."
               (%run-shell-command-prepare-output
                error-output if-error-output-exists))
         (let* ((owned-resources (remove nil (list owned-output owned-error)))
-               (keys (list :input actual-input
+               (keys (list* :input actual-input
                            :if-input-does-not-exist input-policy
                            :output actual-output
                            :if-output-exists output-policy
                            :error-output actual-error
                            :if-error-output-exists error-policy
                            :element-type element-type
-                           :external-format external-format))
+                           :external-format external-format
+                           (shell-command-options command)))
                (child-environment
                  (%run-shell-command-environment environment)))
           (when current-directory
@@ -263,10 +265,16 @@ supplied, matching LispWorks."
           (format nil "cmd /c \"~A\"" command)
           (list "sh" "-c" command))))
 
+(defun hidden-console-options ()
+  "Extra UIOP:RUN-PROGRAM keywords that start a console program without showing a console window: on Windows a GUI process gives every console child a new one."
+  (if (uiop:os-windows-p)
+      '(:window :hide)
+      '()))
+
 (defun shell-command-options (command)
   "Extra UIOP:RUN-PROGRAM keywords for COMMAND run in shell form: on Windows a string command's console window is hidden, as LispWorks does (lw/lw-sys-13.htm: call-system)."
-  (if (and (stringp command) (uiop:os-windows-p))
-      '(:window :hide)
+  (if (stringp command)
+      (hidden-console-options)
       '()))
 
 (defun %default-process-external-format ()
@@ -382,7 +390,11 @@ supplied, matching LispWorks."
                                                  :name appname)))))
     (make-desktop-thread
      (lambda ()
-       (uiop:run-program (list pathstr) :ignore-error-status t)
+       ;; Windows runs it through the shell with its console hidden, as om-LW does
+       ;; (om-LW system.lisp: om-run-program, call-system of the quoted path)
+       (if (uiop:os-windows-p)
+           (call-system (format nil "~S" pathstr))
+           (uiop:run-program (list pathstr) :ignore-error-status t))
        (when after (funcall after)))
      :name (or name (namestring path))
      :initial-bindings initial-bindings
@@ -414,7 +426,8 @@ supplied, matching LispWorks."
      "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); Get-Process | Where-Object {$_.MainWindowHandle -ne 0} | ForEach-Object { $title = $_.MainWindowTitle -replace '[\\t\\r\\n]', ' '; Write-Output (\"{0}`t{1}`t{2}\" -f $_.Id, $_.ProcessName, $title) }")
    :output :string
    :error-output :output
-   :external-format :utf-8))
+   :external-format :utf-8
+   :window :hide))
 
 #+linux
 (defun %application-window-list ()
@@ -549,7 +562,8 @@ return outText")
                               :output :string
                               :error-output :output
                               :external-format :utf-8
-                              :ignore-error-status t))))
+                              :ignore-error-status t
+                              :window :hide))))
 
 #+linux
 (defun bring-process-to-front (pid)
@@ -610,7 +624,8 @@ end run"
                 :output :string
                 :error-output :output
                 :external-format :utf-8
-                :ignore-error-status t)))
+                :ignore-error-status t
+                :window :hide)))
         (string-equal "true"
                       (string-trim '(#\Space #\Tab #\Return #\Newline)
                                    result))))))

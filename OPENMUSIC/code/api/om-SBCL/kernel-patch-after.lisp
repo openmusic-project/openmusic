@@ -374,6 +374,17 @@ that is actually feeding the device."
                         sdif-mstreamdesc-panel))
   (eval `(defmethod object ((self ,%panel-class)) (%panel-editor-registrant self))))
 
+;;; The kernel shows the editor window first and builds the editor, its menu bar, size
+;;; and colours in it afterwards (kernel editorwindow.lisp: make-editor-window for T),
+;;; so every intermediate state reached the screen. Build hidden, then show once.
+(defmethod make-editor-window :around ((class t) object name ref &rest args &key (winshow t) &allow-other-keys)
+  ;; the first :winshow wins over the caller's in ARGS
+  (if winshow
+      (let ((window (apply #'call-next-method class object name ref :winshow nil args)))
+        (when window (om-select-window window))
+        window)
+      (call-next-method)))
+
 ;;; A non-resizable CAPI editor has no usable maximize action. On Win32, keeping
 ;;; GLFW's maximize title button gives the native frame a 200 px tracking minimum,
 ;;; widening a two-channel AUDIO-MIX-CONSOLE whose vanilla content is 160 px.

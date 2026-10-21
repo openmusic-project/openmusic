@@ -481,7 +481,8 @@ the toolkit puts it in an item of any height."
    (indicator-hovered-p :initform nil :accessor indicator-hovered-p)
    (pressed-p           :initform nil :accessor indicator-pressed-p)
    (hover-progress      :initform 0.0 :accessor hover-progress)
-   (mark-progress       :initform 0.0 :accessor mark-progress))
+   (mark-progress       :initform 0.0 :accessor mark-progress)
+   (drawn-p             :initform nil :accessor indicator-drawn-p))
   (:documentation "A toggle drawn as an indicator plus a caption; the progress slots drive its hover and mark animations."))
 
 (defmethod widget-label ((w indicator-mixin))
@@ -642,6 +643,14 @@ EQUAL) among RADIO-CLUSTER-CANDIDATES."
     (unless (= p target)
       (setf (mark-progress c) (approach p target dt))
       (alloy:mark-for-render c))))
+
+;; A native toggle appears in its state; only a change after it is drawn animates.
+;; Runs before the presentation update of the same render (window is the more specific renderer).
+(defmethod alloy:render :before ((renderer window) (w indicator-mixin))
+  (unless (indicator-drawn-p w)
+    (setf (indicator-drawn-p w) t
+          (mark-progress w) (if (alloy:value w) 1.0 0.0))
+    (alloy:mark-for-render w)))
 
 (defmethod org.shirakumo.alloy.animation:update :after ((r radio-button) dt)
   (let ((target (if (alloy:value r) 1.0 0.0))

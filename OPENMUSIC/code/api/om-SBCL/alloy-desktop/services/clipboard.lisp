@@ -11,7 +11,8 @@
     ((uiop:os-macosx-p)
      (uiop:run-program '("pbcopy") :input (make-string-input-stream text)))
     ((uiop:os-windows-p)
-     (uiop:run-program '("clip") :input (make-string-input-stream text)))
+     (apply #'uiop:run-program '("clip") :input (make-string-input-stream text)
+            (hidden-console-options)))
     (t
      (uiop:run-program '("xclip" "-selection" "clipboard")
                        :input (make-string-input-stream text)))))
@@ -21,9 +22,10 @@
     ((uiop:os-macosx-p)
      (uiop:run-program '("pbpaste") :output :string))
     ((uiop:os-windows-p)
-     (uiop:run-program
-      '("powershell" "-NoProfile" "-Command" "Get-Clipboard")
-      :output :string))
+     (apply #'uiop:run-program
+            '("powershell" "-NoProfile" "-Command" "Get-Clipboard")
+            :output :string
+            (hidden-console-options)))
     (t
      (uiop:run-program '("xclip" "-selection" "clipboard" "-o")
                        :output :string))))

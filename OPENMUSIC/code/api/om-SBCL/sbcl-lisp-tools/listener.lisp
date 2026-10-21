@@ -1033,19 +1033,22 @@ Lisp and its buffer are closed."
                                      :position (when (and x y) (om-make-point x y))
                                      :size (om-make-point (or width 600) (or height 400))
                                      :topmost *listener-on-top*
-                                     :bg-color bg)))
+                                     :bg-color bg
+                                     :window-show nil)))
         (setf *om-listener* window)
         (setf (capi::interface-menu-bar-items window)
               (append (internal-window-class-menubar window)
                       (om-window-class-menubar window)))
         (om-add-menu-to-win window)
         (%install-listener-content window input *text-bg-color*)
-        (om-show-window window)
         ;; before the prompt: the prompt must show the package it establishes
         (when initial-lambda
           (%run-initial-lambda initial-lambda (ip window)))
         (when input
           (%insert-prompt (ip window)))
+        ;; the output written before the window existed waits for a UI cycle; publish it before the show
+        (%stream-drain *om-stream*)
+        (om-show-window window)
         window))))
 
 ;; vanilla (om-LW listener.lisp: the :destroy-callback of make-om-listener) clears *om-listener*

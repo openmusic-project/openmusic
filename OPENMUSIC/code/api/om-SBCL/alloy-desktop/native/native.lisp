@@ -27,7 +27,20 @@
   (cffi:defcfun ("GetWindow" %get-window) :pointer
     (hwnd :pointer) (cmd :uint))
   (cffi:defcfun ("SystemParametersInfoW" %system-parameters-info-w) :boolean
-    (action :uint) (param :uint) (data :pointer) (flags :uint)))
+    (action :uint) (param :uint) (data :pointer) (flags :uint))
+  (cffi:define-foreign-library dwmapi (:windows "dwmapi.dll"))
+  (unless (cffi:foreign-library-loaded-p 'dwmapi)
+    (cffi:load-foreign-library 'dwmapi))
+  (cffi:defcfun ("DwmSetWindowAttribute" %dwm-set-window-attribute) :long
+    (hwnd :pointer) (attribute :uint32) (value :pointer) (size :uint32))
+  (cffi:defcfun ("DwmFlush" %dwm-flush) :long))
+
+#+win32
+(defun %set-window-cloak (hwnd cloak)
+  "Hide HWND from the user while DWM still composes it (DWMWA_CLOAK), or show it again."
+  (cffi:with-foreign-object (value :int32)
+    (setf (cffi:mem-ref value :int32) (if cloak 1 0))
+    (%dwm-set-window-attribute hwnd 13 value 4)))
 
 (defun %window-hwnd (window)
   ;; a destroyed window has no native handle; NIL reaches the FFI as a null SAP

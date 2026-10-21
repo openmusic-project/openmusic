@@ -529,9 +529,9 @@ code stays quiet; SBCL instead treats an unknown location as always different."
     ((:mac :linux)
      (uiop:run-program (list "cp" "-R" (namestring sourcedir) (namestring targetpath))))
     (:win
-     (uiop:run-program (list "robocopy" (namestring sourcedir) (namestring targetpath)
-                             "/E" "/NFL" "/NDL" "/NJH" "/NJS")
-                       :ignore-error-status t))))
+     (apply #'uiop:run-program (list "robocopy" (namestring sourcedir) (namestring targetpath)
+                                     "/E" "/NFL" "/NDL" "/NJH" "/NJS")
+            :ignore-error-status t (alld:hidden-console-options)))))
 
 (defun om-delete-directory (path)
   (if (uiop:directory-pathname-p path)

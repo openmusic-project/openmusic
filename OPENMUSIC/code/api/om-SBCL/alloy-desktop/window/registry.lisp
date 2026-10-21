@@ -161,12 +161,31 @@ never holds the role -- so they are dropped and the next window uploads afresh."
        (member (windowing:state window) '(:normal :maximized))
        t))
 
+(defun %show-presented (window)
+  "glfwShowWindow WINDOW so that it reaches the screen with its content. On Windows a newly
+shown surface is composed from the next frame presented after the show, so the window stays
+cloaked from the user through the show, one render and DwmFlush."
+  #+win32
+  (let ((hwnd (%window-hwnd window)))
+    (if (or (null hwnd) (window-visible-p window) (window-render-suspended-p window))
+        (%glfw:show window)
+        (progn
+          (%set-window-cloak hwnd t)
+          (unwind-protect
+               (progn
+                 (%glfw:show window)
+                 (call-guarded-on-window window (lambda () (alloy:render window window)))
+                 (%dwm-flush))
+            (%set-window-cloak hwnd nil)))))
+  #-win32
+  (%glfw:show window))
+
 (defmethod show-window ((window window))
   ;; Plain orderFront (vanilla show-interface parity); GLFW's :normal state also calls
   ;; restore, whose Cocoa zoom: branch can move a visible window.
   (when (%glfw:iconified-p window)
     (%glfw:restore window))
-  (%glfw:show window)
+  (%show-presented window)
   (raise-window window)
   (window-shown window)
   window)
@@ -183,7 +202,7 @@ true (the GLFW default), so the attribute is cleared for the show and restored."
          (progn
            (when (%glfw:iconified-p window)
              (%glfw:restore window))
-           (%glfw:show window))
+           (%show-presented window))
       (setf (%glfw:attribute :focus-on-show window) focus-on-show)))
   window)
 

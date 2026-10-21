@@ -278,6 +278,7 @@
    #:call-system-showing-output
    #:shell-command-form
    #:shell-command-options
+   #:hidden-console-options
    #:*system-open-command*
    #:open-with-system
    #:run-application
