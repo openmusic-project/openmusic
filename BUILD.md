@@ -148,32 +148,25 @@ from the sources.
 
 Install SBCL from http://www.sbcl.org (these instructions are verified against **SBCL 2.6.8**).
 
-### 2) Install Quicklisp
+### 2) Get the sources with the alloy-desktop submodule
 
-Install Quicklisp (https://www.quicklisp.org/beta/) and run `(ql:add-to-init-file)` so that
-`~/.sbclrc` loads it on every start.
+`OPENMUSIC/code/api/om-SBCL/alloy-desktop/` is a git submodule
+(https://github.com/PHRaposo/alloy-desktop). It holds the GUI toolkit and, in its `DEPENDENCIES/`
+folder, every Lisp library OM loads. Quicklisp is not needed.
 
-### 3) Install the Lisp dependencies
-
-Clone the required dependencies into `~/quicklisp/local-projects/`:
+Clone with the submodule:
 
 ```sh
-cd ~/quicklisp/local-projects/
-
-git clone https://codeberg.org/PHRaposo/color-select.git
-git clone https://codeberg.org/PHRaposo/font-select.git
-git clone https://codeberg.org/PHRaposo/file-select.git
-git clone https://codeberg.org/PHRaposo/cl-bmp.git
-git clone https://codeberg.org/PHRaposo/glfw.git
-git clone https://codeberg.org/PHRaposo/imagine.git
-git clone https://codeberg.org/PHRaposo/os-fonts.git
-git clone https://codeberg.org/PHRaposo/paper-print.git
-git clone https://codeberg.org/PHRaposo/alloy.git
-git clone https://codeberg.org/PHRaposo/observables.git
-git clone https://github.com/PHRaposo/retrospectiff.git
+git clone --recurse-submodules <repository URL>
 ```
 
-### 4) C libraries
+In an existing clone:
+
+```sh
+git submodule update --init
+```
+
+### 3) C libraries
 
 OM links dynamically with `omaudiolib`, `libsndfile`, `libsamplerate`, `libPortMIDI`, `libSDIF`
 and, optionally, `libfluidsynth`.
@@ -215,10 +208,10 @@ rm -f libsdif.so
 ln -s libsdif-3.11.4.so libsdif.so
 ```
 
-### 5) Build and run
+### 4) Build and run
 
 ```sh
-sbcl --noinform \\
+sbcl --noinform --dynamic-space-size 8192 \\
      --load /path/to/OPENMUSIC/build/build-om.lisp \\
      --eval "(om::start-openmusic)"
 ```

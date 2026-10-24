@@ -1,7 +1,13 @@
 (in-package :cl-user)
 
-(pushnew (merge-pathnames "alloy-desktop/"
-                          (make-pathname :name nil :type nil :defaults *load-truename*))
-         asdf:*central-registry*
-         :test #'equal)
-(ql:quickload :alloy-desktop)
+(require :asdf)
+
+(let ((root (merge-pathnames "alloy-desktop/"
+                             (make-pathname :name nil :type nil :defaults *load-truename*))))
+  (asdf:initialize-source-registry
+   `(:source-registry
+     (:directory ,root)
+     (:tree ,(merge-pathnames "DEPENDENCIES/" root))
+     :ignore-inherited-configuration)))
+
+(asdf:load-system "alloy-desktop")
