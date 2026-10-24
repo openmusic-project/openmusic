@@ -69,6 +69,7 @@
 
 #+audio
 (defmethod draw-track-event ((self sound) sheet-object view sheetpanel)
+  (build-display-array self)
     (let* ((bpftime (timebpf sheetpanel))
            (dur (sound-dur-ms self))
            (boxw (w view))

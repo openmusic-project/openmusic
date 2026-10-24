@@ -167,6 +167,9 @@
 
 (defclass sheet-scoreeditor (scoreeditor 3dborder-view) ())
 
+(defmethod sheeteditor-p ((self sheet-scoreeditor)) t)
+(defmethod sheeteditor-p ((self t)) nil)
+
 (defmethod update-subviews ((self sheet-scoreeditor))
   (call-next-method)
   (update-subviews (panel self)))
@@ -282,9 +285,14 @@
 (defmethod get-sheet-objframes ((self sheet-scorepanel))
   (remove nil (flat (mapcar 'om-subviews (trackpanels self)))))
 
-(defmethod update-subviews ((self sheet-scorepanel))
-  (mapcar #'(lambda (p) (om-set-view-size p (om-make-point (om-point-h (om-field-size self)) (h p)))) 
-          (trackpanels self)))
+(defmethod update-subviews ((self t)))
+
+(defmethod update-subviews ((self sheet-scorepanel)) 
+  #-linux (mapcar #'(lambda (p) (om-set-view-size p (om-make-point (om-point-h (om-field-size self)) (h p)))) 
+                  (trackpanels self))
+
+  #+linux(mapcar #'(lambda (p) (om-set-view-size p (om-make-point (om-point-h (om-view-size self)) (h p)))) 
+                 (trackpanels self)))
 
 (defmethod off-selection ((self sheet-scorepanel))
   (setf (selection? self) nil)
@@ -358,21 +366,25 @@
   (cond ((equal key :om-key-up) 
          (mapcar 'sheet-key-up (selection? self))
          (when (find-if 'track-p (selection? self)) (init-tracks self))
-         (update-panel self))
+         (update-panel self)
+         #+win32(update-subviews (sheet-editor self)))
         ((equal key :om-key-down) 
          (mapcar 'sheet-key-down (selection? self))
          (when (find-if 'track-p (selection? self)) (init-tracks self))
-         (update-panel self))
+         (update-panel self)
+         #+win32(update-subviews (sheet-editor self)))
         ((equal key :om-key-left) 
          (mapcar 'sheet-key-left (selection? self))
          (when (find-if 'track-p (selection? self)) (init-tracks self))
          (update-panel self)
-         (report-modifications (sheet-editor self)))
+         (report-modifications (sheet-editor self))
+         #+win32(update-subviews (sheet-editor self)))
         ((equal key :om-key-right) 
          (mapcar 'sheet-key-right (selection? self))
          (when (find-if 'track-p (selection? self)) (init-tracks self))
          (update-panel self)
-         (report-modifications (sheet-editor self)))
+         (report-modifications (sheet-editor self))
+         #+win32(update-subviews (sheet-editor self)))
         ((equal key :om-key-delete) (sheet-key-delete self))
         ((equal key :om-key-esc) (off-selection self) (reset-cursor self) (update-panel self))
         ((equal key #\i) (sheet-key-init self))
@@ -596,26 +608,28 @@
                                          :di-action (om-dialog-item-act item 
                                                       (set-edit-param (sheet-editor self) 'show-tracks (om-checked-p item))
                                                       (om-invalidate-view (panel (om-view-container self))))))
-         (timebox (om-make-dialog-item 'om-check-box (om-make-point 160 24) (om-make-point 80 20) "Onsets"
+         (timebox (om-make-dialog-item 'om-check-box (om-make-point 160 24) (om-make-point 60 20) "Onsets"
                                        :checked-p (get-edit-param (sheet-editor self) 'show-time)
                                        :font *om-default-font1*
                                        :bg-color *controls-color*
                                        :di-action (om-dialog-item-act item 
                                                     (set-edit-param (sheet-editor self) 'show-time (om-checked-p item))
                                                     (om-invalidate-view (panel (om-view-container self))))))
-         (idbox (om-make-dialog-item 'om-check-box (om-make-point 160 2) (om-make-point 40 20) "IDs"
-                                       :checked-p (get-edit-param (sheet-editor self) 'show-ids)
-                                       :font *om-default-font1*
-                                       :bg-color *controls-color*
-                                       :di-action (om-dialog-item-act item 
-                                                    (set-edit-param (sheet-editor self) 'show-ids (om-checked-p item))
-                                                    (om-invalidate-view (panel (om-view-container self))))))
-
-         (stepitem (om-make-dialog-item 'om-editable-text (om-make-point 70 4) (om-make-point 40 18) 
+         (grilletxt (om-make-dialog-item 'om-static-text 
+                                         (om-make-point 290 4) 
+                                         (om-make-point 30 20)
+                                         "ms."
+                                         :font *om-default-font1*
+                                         :fg-color (if (get-edit-param (sheet-editor self) 'grille) *om-black-color* *om-gray-color*)
+                                         :bg-color *controls-color*))
+         (stepitem (om-make-dialog-item 'edit-numbox 
+                                        (om-make-point 230 4) ;(om-make-point 230 4) 
+                                        (om-make-point 60 20) ;ICI
                                         (format nil "~D" (get-edit-param (sheet-editor self) 'grille-step))
                                         :font *om-default-font1*
                                         :enable (get-edit-param (sheet-editor self) 'grille)
-                                        :modify-action (om-dialog-item-act item
+                                        :value 1000
+                                        :di-action (om-dialog-item-act item
                                                          (let ((val (ignore-errors (read-from-string (om-dialog-item-text item)))))
                                                            (if (and (integerp val) (plusp val))
                                                                (progn
@@ -626,30 +640,36 @@
                                                                                         (format nil "~D" (get-edit-param (sheet-editor self) 'grille-step)))
                                                                (om-beep)
                                                                ))))
-                                        :bg-color *om-white-color*))
-         
-         (grilletxt (om-make-dialog-item 'om-static-text 
-                              (om-make-point 120 4) 
-                              (om-make-point 30 20)
-                               "ms."
-                               :font *om-default-font1*
-                               :fg-color (if (get-edit-param (sheet-editor self) 'grille) *om-black-color* *om-gray-color*)
-                               :bg-color *controls-color*))
+                                        :bg-color *om-white-color*
+                                        ))
          
          (grillebut (om-make-dialog-item 'om-check-box 
-                               (om-make-point 20 2) 
-                               (om-make-point 50 20)
-                               "Grid"
-                               :checked-p (get-edit-param (sheet-editor self) 'grille)
-                               :di-action (om-dialog-item-act item
-                                            (set-edit-param (sheet-editor self) 'grille (om-checked-p item))
-                                            (om-enable-dialog-item stepitem (om-checked-p item))
-                                            (om-set-fg-color stepitem (if (om-checked-p item) *om-black-color* *om-gray-color*))
-                                            (om-set-fg-color grilletxt (if (om-checked-p item) *om-black-color* *om-gray-color*))
-                                            (update-panel (panel (om-view-container self)))
-                                            t)
-                               :font *om-default-font1*
-                               :bg-color *controls-color*))
+                                         ;(om-make-point 20 2) 
+                                         (om-make-point 160 2)
+                                         (om-make-point 50 20)
+                                         "Grid"
+                                         :checked-p (get-edit-param (sheet-editor self) 'grille)
+                                         :di-action (om-dialog-item-act item
+                                                      (set-edit-param (sheet-editor self) 'grille (om-checked-p item))
+                                                      (om-enable-dialog-item stepitem (om-checked-p item))
+                                                      (om-set-fg-color stepitem (if (om-checked-p item) *om-black-color* *om-gray-color*))
+                                                      (om-set-fg-color grilletxt (if (om-checked-p item) *om-black-color* *om-gray-color*))
+                                                      (update-panel (panel (om-view-container self)))
+                                                      t)
+                                         :font *om-default-font1*
+                                         :bg-color *controls-color*))
+         
+         (idbox (om-make-dialog-item 'om-check-box 
+                                     ;(om-make-point 160 2) 
+                                     (om-make-point 20 2) 
+                                     (om-make-point 40 20) "IDs"
+                                     :checked-p (get-edit-param (sheet-editor self) 'show-ids)
+                                     :font *om-default-font1*
+                                     :bg-color *controls-color*
+                                     :di-action (om-dialog-item-act item 
+                                                  (set-edit-param (sheet-editor self) 'show-ids (om-checked-p item))
+                                                  (om-invalidate-view (panel (om-view-container self))))))
+         
          )
          
     (om-set-bg-color self *controls-color*)
@@ -658,19 +678,19 @@
     (om-add-subviews self 
                      (setf (patchbutton self) 
                            (om-make-dialog-item'om-check-box 
-                               (om-make-point 20 5) 
-                               (om-make-point 160 20)
-                               "Show Sheet Patches"
-                               :checked-p (get-edit-param (sheet-editor self) 'patch-open)
-                               :di-action (om-dialog-item-act item 
-                                            (setf (patch-display-mode (sheet-editor self)) (om-checked-p item))
-                                            (set-edit-param (sheet-editor self) 'patch-open (om-checked-p item))
-                                            (if (patch-display-mode (sheet-editor self))
-                                                (open-patches (sheet-editor self))
-                                              (close-patches (sheet-editor self)))
-                                            )
-                               :font *om-default-font1*
-                               :bg-color *controls-color*)
+                                               (om-make-point 20 5) 
+                                               (om-make-point 160 20)
+                                               "Show Sheet Patches"
+                                               :checked-p (get-edit-param (sheet-editor self) 'patch-open)
+                                               :di-action (om-dialog-item-act item 
+                                                            (setf (patch-display-mode (sheet-editor self)) (om-checked-p item))
+                                                            (set-edit-param (sheet-editor self) 'patch-open (om-checked-p item))
+                                                            (if (patch-display-mode (sheet-editor self))
+                                                                (open-patches (sheet-editor self))
+                                                              (close-patches (sheet-editor self)))
+                                                            )
+                                               :font *om-default-font1*
+                                               :bg-color *controls-color*)
                            ))
     (om-set-bg-color self bgcol) 
     ))
@@ -776,7 +796,10 @@
          (panel (when track (om-view-container track)))
          (obj (reference self)))
     (when panel
-      (om-set-view-size self (om-make-point (- (get-x-pos panel (end-t obj)) (get-x-pos panel (start-t obj))) (h self)))
+      (om-set-view-size self (om-make-point (- (get-x-pos panel (end-t obj) (staff-zoom panel)) 
+                                               (get-x-pos panel (start-t obj) (staff-zoom panel))
+                                               ) 
+                                            (h self)))
     nil)))
 
 (defmethod om-view-cursor ((self sheet-scoreobjectframe)) nil)
@@ -1130,45 +1153,51 @@ else create a new Editor frame, and select its window."
 ;;; appelee quand le panel est cree ou quand la structure du sheet a change
 (defmethod init-tracks ((self sheet-scorepanel))
   (om-with-delayed-redraw self
-  (loop for trackp in (trackpanels self) collect 
-        (om-remove-subviews self trackp))
-  (let ((yunit 20)
-        (y 0))
-  (setf (trackpanels self)
-        (loop for track in (inside (object (sheet-editor self)))
-              for i = 0 then (+ i 1) 
-              collect
-              (let* ((trackp (om-make-view 'trackpanel 
-                                           :position (om-make-point 0 (+ y (* (track-pos track) yunit))) 
-                                           :size (om-make-point (om-point-h (om-field-size self)) 
-                                                                (track-size track))
-                                          :reference track)))
-                (when (find track (selection? self))
-                  (setf (selected trackp) t))
-                (setf y (+ y (* (track-pos track) yunit) (track-size track)))
-            (loop for object in (objs track) do
-                  (let ((objview (om-make-view (get-sheetframe-class (obj object))
-                                         :reference object
-                                         :position (om-make-point (get-x-pos self (start-t object) (staff-zoom self)) 3)
-                                         :scrollbars nil
-                                         :size (om-make-point (- (get-x-pos self (end-t object) (staff-zoom self))
-                                                                 (get-x-pos self (start-t object) (staff-zoom self))) 
-                                                              (- (h trackp) 6))
-                                         :field-size (om-make-point (- (get-x-pos self (end-t object) (staff-zoom self)) 
-                                                                       (get-x-pos self (start-t object) (staff-zoom self))) 
-                                                                    (- (h trackp) 6))
-                                         :edition-values (make-instance 'edition-values)
-                                         )))
-                    (setf (frame object) objview)
-                    (set-staff-sys objview)
-                    (set-size objview (obj-size object))
-                    (do-initialize-instance objview)
-                    (om-add-subviews trackp objview)
-                    ))
-                (om-add-subviews self trackp)
-                trackp))
-        )
-  )))
+    (loop for trackp in (trackpanels self) collect 
+            (om-remove-subviews self trackp))
+    (let ((yunit 20)
+          (y 0))
+      (setf (trackpanels self)
+            (loop for track in (inside (object (sheet-editor self)))
+                  for i = 0 then (+ i 1) 
+                  collect
+                    (let* ((trackp (om-make-view 'trackpanel 
+                                                 :position (om-make-point 0 (+ y (* (track-pos track) yunit))) 
+                                                 :size 
+                                                 #-linux(om-make-point (om-point-h (om-field-size self)) (track-size track))
+                                                 #+linux(om-make-point (om-point-h (om-view-size self)) (track-size track))
+                                                 :reference track)))
+                      (when (find track (selection? self))
+                        (setf (selected trackp) t))
+                      (setf y (+ y (* (track-pos track) yunit) (track-size track)))
+                      (loop for object in (objs track) do
+                              (let ((objview (om-make-view (get-sheetframe-class (obj object))
+                                                           :reference object
+                                                           :position (om-make-point (get-x-pos self (start-t object) (staff-zoom self)) 3)
+                                                           :scrollbars nil
+                                                           :size (om-make-point (- (get-x-pos self (end-t object) (staff-zoom self))
+                                                                                   (get-x-pos self (start-t object) (staff-zoom self))) 
+                                                                                (- (h trackp) 6))
+                                                           
+                                                           :field-size (om-make-point (- (get-x-pos self (end-t object) (staff-zoom self)) 
+                                                                                         (get-x-pos self (start-t object) (staff-zoom self))) 
+                                                                                      (- (h trackp) 6))
+                                                           
+                                                           :edition-values (make-instance 'edition-values)
+                                                           )))
+                                (setf (frame object) objview)
+                                (set-staff-sys objview)
+                                (set-size objview (obj-size object))
+                                (do-initialize-instance objview)
+                                (om-add-subviews trackp objview)
+                                ))
+                      (om-add-subviews self trackp)
+                      (when (om-view-container self)
+                        (update-subviews (om-view-container self)))
+                      trackp
+                      ))
+            ))))
+
 
 
 ;;;=====================

@@ -470,7 +470,7 @@
     (change-slot-edit ed-view (slots-mode ed-view))
     (change-cursor-mode (panel self) (or (get-edit-param self 'cursor-mode) :normal))
     ;to insure all objs get the correct approx (graces)
-    (unless (or (graceeditor-p self) (scaleeditor-p self))
+    (unless (or (graceeditor-p self) (scaleeditor-p self)(sheeteditor-p self))
       (progn
         (setf (approx (object self)) approx)
         (setf (staff-tone (panel self)) approx)
@@ -483,7 +483,7 @@
          (format nil "~A" (give-symbol-of-approx (approx (object self)))))))
     (init-draw self)
     (init-boxes-in-score ed-view)
-    #+macosx(update-alt-panel (panel self));a voir
+    #+macosx(unless (sheeteditor-p self) (update-alt-panel (panel self)));a voir
     ))
 
 
@@ -521,13 +521,14 @@
 ;-------------EVENTS
 
 (defmethod update-subviews ((self scoreeditor))
-  (when (title-bar self)
-    (om-set-view-size  (title-bar self) (om-make-point (w self) *titlebars-h*)))
-  (om-set-view-size  (panel self ) (om-make-point (w self) (- (h self) (get-control-h self) *titlebars-h*)))
-  (om-set-view-position  (panel self ) (om-make-point 0 *titlebars-h*))
-  (om-set-view-size  (ctr-view self) (om-make-point (w self) (get-control-h self)))
-  (om-set-view-position (ctr-view self) (om-make-point 0 (- (h self) (get-control-h self))))
-  (om-invalidate-view self))
+  (when (panel self)
+    (when (title-bar self)
+      (om-set-view-size  (title-bar self) (om-make-point (w self) *titlebars-h*)))
+    (om-set-view-size  (panel self ) (om-make-point (w self) (- (h self) (get-control-h self) *titlebars-h*)))
+    (om-set-view-position  (panel self ) (om-make-point 0 *titlebars-h*))
+    (om-set-view-size  (ctr-view self) (om-make-point (w self) (get-control-h self)))
+    (om-set-view-position (ctr-view self) (om-make-point 0 (- (h self) (get-control-h self))))
+    (om-invalidate-view self)))
 
 
 ;-------------UPDATES
@@ -5289,11 +5290,13 @@
       (om-add-menu-to-win win)  
       #+win32(sleep 0.1)
       (when winshow (om-select-window win))
-    #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
-    #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
+    #-(and linux lispworks8.1)(om-set-view-size editor (om-interior-size win))
+    #+(and linux lispworks8.1)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
       (setf (att-ed editor) ref)
       (setf (attached-editors editor) ref)
-      (set-omicron-approx editor (get-approx (object ref)))
+
+      (unless (typep ref 'sheet-track-obj)
+      (set-omicron-approx editor (get-approx (object ref))))
       win))
 
 
