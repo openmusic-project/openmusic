@@ -14,10 +14,10 @@
 (load (make-pathname :directory (butlast (pathname-directory *load-truename*))
                      :name "build-om" :type "lisp" :defaults *load-truename*))
 
-(ql:quickload :deploy)
+(asdf:load-system "deploy")
 
 (when *emacs-mode*
-  (ql:quickload "swank/exts")
+  (asdf:load-system "swank/exts")
   (setf (symbol-value (find-symbol "*GLOBALLY-REDIRECT-IO*" "SWANK")) nil))
 
 (print "==============================")

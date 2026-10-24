@@ -26,7 +26,7 @@ for image in "$om_root"/OM_* "$om_root"/openmusic; do
 done
 
 printf '%s\n' '=== GUI executable'
-sbcl --dynamic-space-size 8192 --load "$build_dir/deliver-sbcl.lisp"
+sbcl --dynamic-space-size 8192 --no-userinit --load "$build_dir/deliver-sbcl.lisp"
 printf '%s\n' '=== Emacs-mode executable'
-sbcl --dynamic-space-size 8192 --eval '(defvar cl-user::*emacs-mode* t)' --load "$build_dir/deliver-sbcl.lisp"
+sbcl --dynamic-space-size 8192 --no-userinit --eval '(defvar cl-user::*emacs-mode* t)' --load "$build_dir/deliver-sbcl.lisp"
 printf '%s\n' 'DONE!'

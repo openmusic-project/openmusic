@@ -1,10 +1,7 @@
 # SBCL Deliver
 
-Requires the SBCL environment of [BUILD.md](../../../BUILD.md) and the `deploy` library:
-
-```lisp
-(ql:quickload :deploy)
-```
+Requires the SBCL environment of [BUILD.md](../../../BUILD.md). The `deploy` library comes with
+`OPENMUSIC/code/api/om-SBCL/alloy-desktop/DEPENDENCIES/`.
 
 A release holds two executables, named after `*version-str*` of `build-om.lisp` (8.1 below):
 

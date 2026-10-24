@@ -22,14 +22,14 @@ deliver_app() {
         rm -rf -- "$old"
     done
     printf '%s\n' '=== GUI executable'
-    sbcl --dynamic-space-size 8192 --load "$build_dir/deliver-sbcl.lisp"
+    sbcl --dynamic-space-size 8192 --no-userinit --load "$build_dir/deliver-sbcl.lisp"
     printf '%s\n' '=== Emacs-mode executable'
-    sbcl --dynamic-space-size 8192 --eval '(defvar cl-user::*emacs-mode* t)' --load "$build_dir/deliver-sbcl.lisp"
+    sbcl --dynamic-space-size 8192 --no-userinit --eval '(defvar cl-user::*emacs-mode* t)' --load "$build_dir/deliver-sbcl.lisp"
 }
 
 pack_app() {
     printf '%s\n' '=== Pack'
-    sbcl --dynamic-space-size 8192 --load "$build_dir/pack-om-sbcl.lisp"
+    sbcl --dynamic-space-size 8192 --no-userinit --load "$build_dir/pack-om-sbcl.lisp"
 }
 
 sign_app() {
@@ -45,8 +45,10 @@ sign_app() {
     app=${apps[0]}
     identity=${OM_CODESIGN_IDENTITY:--}
     printf 'Signing %s with identity %s\n' "$app" "$identity"
-    sbcl --noinform --disable-debugger \
-         --eval '(ql:quickload :deploy)' \
+    sbcl --noinform --disable-debugger --no-userinit \
+         --eval '(require :asdf)' \
+         --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$om_root/code/api/om-SBCL/alloy-desktop/DEPENDENCIES/\") :ignore-inherited-configuration))" \
+         --eval '(asdf:load-system "deploy")' \
          --eval "(deploy:sign-app #p\"$app/\" \"$identity\" :entitlements #p\"$script_dir/entitlements-om.plist\")" \
          --eval '(sb-ext:quit)'
     codesign --verify --deep --strict --verbose=2 "$app"

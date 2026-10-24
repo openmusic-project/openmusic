@@ -30,7 +30,7 @@ where objcopy.exe >NUL 2>NUL || (
 )
 
 ECHO === Runtime with the OM icon
-sbcl --load make-om-runtime.lisp || GOTO :failed
+sbcl --no-userinit --load make-om-runtime.lisp || GOTO :failed
 
 FOR /D %%D IN ("%REPO_ROOT%\OM * SBCL") DO (
   ECHO === Removing the previous release "%%~fD"
@@ -39,13 +39,13 @@ FOR /D %%D IN ("%REPO_ROOT%\OM * SBCL") DO (
 )
 
 ECHO === GUI executable
-om-runtime.exe --core "%SBCL_CORE%" --dynamic-space-size 8192 --load ..\deliver-sbcl.lisp || GOTO :failed
+om-runtime.exe --core "%SBCL_CORE%" --dynamic-space-size 8192 --no-userinit --load ..\deliver-sbcl.lisp || GOTO :failed
 
 ECHO === Emacs-mode executable
-om-runtime.exe --core "%SBCL_CORE%" --dynamic-space-size 8192 --eval "(defvar cl-user::*emacs-mode* t)" --load ..\deliver-sbcl.lisp || GOTO :failed
+om-runtime.exe --core "%SBCL_CORE%" --dynamic-space-size 8192 --no-userinit --eval "(defvar cl-user::*emacs-mode* t)" --load ..\deliver-sbcl.lisp || GOTO :failed
 
 ECHO === Pack
-sbcl --load ..\pack-om-sbcl.lisp || GOTO :failed
+sbcl --no-userinit --load ..\pack-om-sbcl.lisp || GOTO :failed
 
 DEL om-runtime.exe
 ECHO DONE!

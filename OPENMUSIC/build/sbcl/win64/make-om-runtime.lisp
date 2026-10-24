@@ -27,7 +27,17 @@
 
 (in-package "CL-USER")
 
-(ql:quickload :cffi)
+(require :asdf)
+
+(asdf:initialize-source-registry
+ `(:source-registry
+   (:tree ,(make-pathname :name nil :type nil
+                          :directory (append (butlast (pathname-directory *load-truename*) 3)
+                                             '("code" "api" "om-SBCL" "alloy-desktop" "DEPENDENCIES"))
+                          :defaults *load-truename*))
+   :ignore-inherited-configuration))
+
+(asdf:load-system "cffi")
 
 (defparameter *om-icon* (merge-pathnames (make-pathname :directory '(:relative :up :up "win64")
                                                         :name "om" :type "ico")
