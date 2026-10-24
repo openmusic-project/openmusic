@@ -162,6 +162,8 @@ Carlos Agon, Gerard Assayag, Jean Bresson, Karim Haddad
 
 Linux support and development: Anders Vinjar, Karim Haddad
 
+SBCL port: Paulo Henrique Raposo
+
 Documentation: K. Haddad, C. Diatkin
 
 Contributions and code from: 
@@ -215,7 +217,7 @@ External Libraries:
                              :bg-color backcolor
                              :size (om-add-points 
                                     (or (om-get-picture-size *graph-pres*) (om-make-point 20 20))
-                                    (if credits (om-make-point 320 #-linux 80 #+linux 110) (om-make-point 0 0)))
+                                    (if credits (om-make-point 340 #-linux 110 #+linux 140) (om-make-point 0 0)))
                              :subviews (list (om-make-dialog-item 'om-static-text  
                                                                   (om-make-point 60 6) (om-make-point 400 56)
                                                                   name
@@ -243,7 +245,7 @@ External Libraries:
 
                                                         
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 385) (om-make-point 300 50)
+                                                                  (om-make-point 58 395) (om-make-point 300 50)
                                                                   (format nil "Release: ~,6f~%~A - ~A" *om-version* *release-author* *release-date*)
                                                                   :font mainfont
                                                                   :fg-color textcolor
@@ -251,7 +253,7 @@ External Libraries:
                                                                   )
                                              
                                              (om-make-dialog-item 'om-static-text  
-                                                                  (om-make-point 58 419) (om-make-point 300 36)
+                                                                  (om-make-point 58 429) (om-make-point 300 36)
                                                                   (format nil "Dedicated to the memory of G. Grisey (1946-1998)~%Artwork: A. Mohsen (1963-2014)")
                                                                   :font mainfont
                                                                   :fg-color textcolor
