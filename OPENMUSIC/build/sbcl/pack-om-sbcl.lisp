@@ -91,9 +91,10 @@
 #+win32
 (progn
   (print "--- COPYING DLLs BESIDE THE EXECUTABLE...")
-  (dolist (file (uiop:directory-files (uiop:subpathname *om-root-dir* "resources/lib/win64/")))
-    (uiop:copy-file file (make-pathname :name (pathname-name file) :type (pathname-type file)
-                                        :defaults *target-dir*)))
+  (dolist (dir '("resources/lib/win64/" "resources/lib/win64/sbcl/"))
+    (dolist (file (uiop:directory-files (uiop:subpathname *om-root-dir* dir)))
+      (uiop:copy-file file (make-pathname :name (pathname-name file) :type (pathname-type file)
+                                          :defaults *target-dir*))))
   (print "--- COPYING OM ICON...")
   (uiop:copy-file (uiop:subpathname *om-root-dir* "build/win64/om.ico")
                   (uiop:subpathname *target-dir* "resources/om.ico")))

@@ -29,11 +29,12 @@ OPENMUSIC\build\sbcl\win64\release-sbcl.bat
 <repo-root>/OM 8.1 SBCL/
     OM 8.1.exe
     openmusic.exe
-    *.dll              all the libraries, plus libwinpthread-1.dll
+    *.dll              all the libraries, plus libwinpthread-1.dll and the C runtimes
+                       of OPENMUSIC/resources/lib/win64/sbcl/:
+                       vcruntime140.dll, vcruntime140_1.dll, msvcp140.dll   (Visual C++)
+                       libgcc_s_seh-1.dll                                   (MSYS2 MinGW-w64)
     code/  init/  resources/   (resources/om.ico added)
 ```
-
-Self-contained: copy the folder anywhere and run `OM 8.1.exe`.
 
 ## LINUX
 

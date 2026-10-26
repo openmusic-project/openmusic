@@ -28,6 +28,12 @@ where objcopy.exe >NUL 2>NUL || (
   ECHO objcopy is not on the PATH.
   EXIT /B 1
 )
+FOR %%L IN (vcruntime140.dll vcruntime140_1.dll msvcp140.dll libgcc_s_seh-1.dll) DO (
+  IF NOT EXIST "%REPO_ROOT%\OPENMUSIC\resources\lib\win64\sbcl\%%L" (
+    ECHO Missing OPENMUSIC\resources\lib\win64\sbcl\%%L
+    EXIT /B 1
+  )
+)
 
 ECHO === Runtime with the OM icon
 sbcl --no-userinit --load make-om-runtime.lisp || GOTO :failed
