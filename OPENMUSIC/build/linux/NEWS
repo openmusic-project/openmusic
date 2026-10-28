@@ -17,6 +17,7 @@ IMPROVEMENTS
 
 FIXES
 
+- sysex now sends correct sysesex midi messages
 - OMSHEET fixes for linux
 - Approx for arp-chord
 - Chord-seq zoom fix (note positions)
