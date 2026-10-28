@@ -423,12 +423,6 @@ The range of volume values is 0-127.
      t))
 |#
 
-(defmethod sysex->dec ((lst list))
-  (let* ((hex (loop for i in lst
-                    collect (string-to-number (concatenate 'string "#x" (format nil "~a" i))))))
-    hex))
-
-;(sysex->dec '(7E 7F 04 01 00 00))
 
 (defun send-sysex-bytes (bytes port)
   (let ((out (om-midi::get-output-stream-from-port port)))

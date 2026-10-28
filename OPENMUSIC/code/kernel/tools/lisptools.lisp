@@ -18,6 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;DocFile
@@ -38,6 +39,8 @@
           erase-n
           string-to-number
           number-to-string
+          hex-to-decimal
+          decimal-to-hex
 
           copy-instance
           
@@ -140,6 +143,27 @@
 (defun integer-to-string (int)
    (format nil "~D" int))
 
+(defmethod hex-to-decimal ((lst list))
+  (let* ((hex (loop for i in lst
+                    collect (string-to-number 
+                             (concatenate 'string "#x" (format nil "~a" i))))))
+    hex))
+
+(defmethod hex-to-decimal ((lst string))
+  (let* ((hex (split-sequence " " lst)))
+    (hex-to-decimal
+     (mapcar #'string-to-number hex))))
+
+#|
+(defmethod decimal-to-hex ((lst list))
+  (loop for i in lst
+        collect (format nil "#x~X" i)))
+|#
+
+(defmethod decimal-to-hex ((lst list))
+  (let* ((hex (loop for i in lst
+                    collect (format nil "~X" i))))
+    hex))
 
 ;-----------------------
 ; POSITION
