@@ -42,7 +42,9 @@ deliver_app()
 echo "***************************************************"
 echo "COMPILING STANDALONE EXE"
 echo "***************************************************"
-
+	
+	rm -rf ./OPENMUSIC/build/sbcl/
+	rm -rf ./OPENMUSIC/code/api/om-SBCL/
 	rm -rf ./OPENMUSIC/*.app/
 	/Applications/LispWorks\ $LWVERSION\ \($LWARCH\)/LispWorks\ \($LWARCH\).app/Contents/MacOS/$LWEXEC -build ./OPENMUSIC/build/deliver.lisp
 
