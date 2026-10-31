@@ -5,7 +5,7 @@ Requires the SBCL environment of [BUILD.md](../../../BUILD.md). The `deploy` lib
 
 A release holds two executables, named after `*version-str*` of `build-om.lisp` (8.1 below):
 
-- `OM <version>`, **GUI mode**: the OpenMusic application. Starting it opens the Workspaces dialog,
+- `OM <version> SBCL` (Windows/macOS) or `OM_<version>_SBCL` (Linux), **GUI mode**: the OpenMusic application. Starting it opens the Workspaces dialog,
   then the OM windows; the Lisp listener is OM's own Listener window.
 - `openmusic`, **Emacs mode**: a console image with swank loaded and no window of its own. Emacs
   starts it as the inferior Lisp of a SLIME connection; the SLIME REPL replaces the Listener (OM
@@ -27,7 +27,7 @@ OPENMUSIC\build\sbcl\win64\release-sbcl.bat
 
 ```
 <repo-root>/OM 8.1 SBCL/
-    OM 8.1.exe
+    OM 8.1 SBCL.exe
     openmusic.exe
     *.dll              all the libraries, plus libwinpthread-1.dll and the C runtimes
                        of OPENMUSIC/resources/lib/win64/sbcl/:
@@ -87,11 +87,11 @@ Options: `-d` deliver, `-p` pack, `-s` sign, `-dmg` disk image; no option runs a
 uses the identity in `OM_CODESIGN_IDENTITY` (ad-hoc `-` when unset).
 
 ```
-<repo-root>/OM 8.1 SBCL/OM 8.1.app/Contents/
-    MacOS/OM 8.1              SBCL runtime, shared by both modes
+<repo-root>/OM 8.1 SBCL/OM 8.1 SBCL.app/Contents/
+    MacOS/OM 8.1 SBCL         SBCL runtime, shared by both modes
     MacOS/sbcl.core           GUI-mode image
     Resources/openmusic.core  Emacs-mode image
-    Resources/openmusic       launcher: MacOS/OM 8.1 --core openmusic.core (the path for emacs-mode.el)
+    Resources/openmusic       launcher: MacOS/OM 8.1 SBCL --core openmusic.core (the path for emacs-mode.el)
     Resources/                code/, the resources/ content (fonts/mac/* moved up to fonts/), document icons (.icns)
     Frameworks/               all the libraries (lib/mac/ on Intel, lib/m1/ on Apple Silicon)
     Init/                     init/

@@ -505,14 +505,16 @@ that is actually feeding the device."
       )))
 
 ;;; LispWorks and SBCL must not read the same preferences (kernel omworkspace.lisp: ompref-file):
-;;; same body, with the build's name in place of the version.
+;;; same body, with SBCL added to the version folder.
 (om-with-redefinitions
   (defun ompref-file ()
     (let* ((userpref (om-user-pref-folder)))
       (make-pathname
        :device (pathname-device userpref) :host (pathname-host userpref)
        :directory (append (pathname-directory userpref)
-                          (list "OpenMusic" (oa::%application-name)))
+                          (list "OpenMusic"
+                                (format nil (if (eq oa:*om-os* :linux) "~A_SBCL" "~A SBCL")
+                                        (cl-user::version-to-string *version* nil nil))))
        :name "OMPrefs" :type "lisp"))))
 
 ;;; projects soundeditor.lisp (update-cursor for full-preview) places the preview cursor at

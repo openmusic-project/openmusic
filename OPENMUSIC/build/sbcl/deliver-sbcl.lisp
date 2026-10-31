@@ -24,8 +24,8 @@
 (print "APPLICATION SETUP")
 (print "==============================")
 
-(defvar *app-name+version* #+linux (oa::%application-name)
-                           #-linux (concatenate 'string "OM " *version-str*))
+(defvar *app-name+version* #+linux (format nil "OM_~A_SBCL" *version-str*)
+                           #-linux (format nil "OM ~A SBCL" *version-str*))
 
 (defparameter *om-root-folders* (butlast (pathname-directory *load-truename*) 2))
 
@@ -33,7 +33,7 @@
   (make-pathname :device (pathname-device *load-truename*)
                  :directory #+linux *om-root-folders*
                             #-linux (append (butlast *om-root-folders*)
-                                            (list (oa::%application-name)))))
+                                            (list (format nil "OM ~A SBCL" *version-str*)))))
 
 #+darwin (require :asdf)
 
