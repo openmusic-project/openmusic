@@ -38,7 +38,10 @@ compress	= gzip
 rsyncflags	= -v -rlt -z -C --include '*.so'
 exclude_fasl	= --include 'dspec-database.$(faslname)' --exclude '$(rubbish)'
 
-exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/m1/' --exclude 'resources/lib/win/'
+exclude_lib	= --exclude 'resources/lib/mac/' --exclude 'resources/lib/m1/' --exclude 'resources/lib/win/' 
+
+exclude_sbcl    = --exclude 'build/sbcl/' --exclude 'code/api/om-SBCL/'
+
 
 imgfound	= $(shell find $(BUILDROOT) -maxdepth 1 -perm -111 -type f | grep -e "OM")
 
@@ -73,7 +76,7 @@ clean:
 
 dist:   
 	rm -rf $(release) && mkdir -p $(release)
-	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
+	rsync $(rsyncflags) $(exclude_fasl) $(exclude_lib) $(exclude_sbcl) --exclude '*.finderinfo' --exclude 'Makefile' $(BUILDROOT)/ $(release)
 	find $(release)/build -not -iname '*build*' -and -not -path '*linux*' -delete
 	cp $(release)/build/linux/README.LINUX.md $(release)
 	cp $(BUILDROOT)/../LICENSE $(release)

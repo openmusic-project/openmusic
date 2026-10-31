@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 ;;; MIDI package
@@ -401,6 +401,7 @@ The range of volume values is 0-127.
        )
      t))
 
+#|
 (defmethod* sysex ((databytes list) &optional port) 
    :icon 912
    :indoc '("data bytes (ID data)" "output port number")
@@ -420,9 +421,47 @@ The range of volume values is 0-127.
              (midi-send-bytes (cons #xF7 '(0 0)) aport)
              ))
      t))
+|#
 
 
+(defun send-sysex-bytes (bytes port)
+  (let ((out (om-midi::get-output-stream-from-port port)))
+    (when out
+      (cffi:with-foreign-object (ptr :unsigned-char (length bytes))
+        (loop for byte in bytes
+              for i from 0
+              do (setf (cffi:mem-aref ptr :unsigned-char i) byte))
+        (pm::pm-write-sys-ex-PTR out 0 ptr)))))
 
+;(send-sysex-bytes '(240 125 1 2 3  34 23 12 2 247) 0)
+
+(defmethod* sysex ((databytes list) &optional port)
+  :icon 912
+  :indoc '("data bytes (ID data)" "output port number")
+  :initvals '((1 1) nil)
+  :doc "Sends a system exclusive MIDI message on <port> with any number of data bytes. The data will be framed between SysEx begin/end messages (F0/F7)."
+  (when databytes
+    (unless port
+      (setf port *def-midi-out*))
+    (if (every #'integerp databytes)
+        (send-sysex-bytes
+          (append (list #xF0) databytes (list #xF7))
+          port)
+        (if (integerp port)
+            (loop for item in databytes
+                  do (sysex item port))
+            (loop for item in databytes
+                  for item1 in port
+                  do (sysex item item1))))
+    t))
+
+;NOTE ON
+;(om-midi::get-output-stream-from-port 0)
+
+;(sysex '(144 60 100) 0)
+
+;NOTE OFF
+;(sysex '(128 60 40) 0)
 
 ;===================
 ; SEND ONE NOTE

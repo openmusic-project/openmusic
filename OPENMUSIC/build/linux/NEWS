@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- hex-to-decimal, decimal-to-hex conversion
 - Install pkg for Mac
 - Text-View editor (double-click)
 - display-extra-dyn: displays all extra dynamics, with or without repetition
@@ -17,6 +18,7 @@ IMPROVEMENTS
 
 FIXES
 
+- sysex now sends correct sysesex midi messages
 - OMSHEET fixes for linux
 - Approx for arp-chord
 - Chord-seq zoom fix (note positions)
