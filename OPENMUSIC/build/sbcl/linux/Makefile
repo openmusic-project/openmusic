@@ -59,7 +59,7 @@ install: check-images
 	install -m 0755 $(EMACSIMAGE) $(bindir)/openmusic-sbcl
 	install -m 0644 $(LOGO) $(datadir)/pixmaps/omlogo.png
 	printf '%s\n' '[Desktop Entry]' 'Name=OpenMusic SBCL' 'GenericName=OpenMusic' \
-	  'Exec=$(PREFIX)/bin/$(IMAGENAME)' 'Icon=omlogo' 'Type=Application' 'Terminal=false' \
+	  'Exec=$(PREFIX)/bin/$(IMAGENAME)' 'Icon=omlogo' 'Type=Application' 'Terminal=false' 'StartupWMClass=$(IMAGENAME)' \
 	  'Categories=Application;Development;Science;Multimedia;Audio;X-Jack;Midi;X-MIDI;' 'MimeType=text/x-omp;' \
 	  > $(datadir)/applications/OM-SBCL.desktop
 

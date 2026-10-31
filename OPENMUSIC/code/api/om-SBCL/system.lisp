@@ -911,6 +911,12 @@ The encoding is resolved the way LW resolves :external-format :default."
                           (:win '("Application Data"))
                           (:linux '(".local" "share")))))))
 
+(defun %application-name ()
+  "Name of this build: the preferences folder of ompref-file, and on Linux the executable and the X class."
+  (format nil (if (eq *om-os* :linux) "OM_~A_SBCL" "OM ~A SBCL") cl-user::*version-str*))
+
+(setf alld:*application-name* (%application-name))
+
 (defun om-get-date ()
   (alld:date-string))
 

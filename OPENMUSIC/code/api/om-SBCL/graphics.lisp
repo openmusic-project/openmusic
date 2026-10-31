@@ -771,6 +771,7 @@ point size survives (om-LW/graphics.lisp: om-make-font keeps a ratio in :size)."
     ("omsign"          "omsign"          :roman  :regular :bundled "omsign.ttf")
     ("DejaVu Sans"     "DejaVu Sans"     :roman  :regular :bundled "DejaVuSans.ttf"))
   alld:*bundled-font-directory* *om-fonts-dir*
+  alld:*default-font-role* :dialog-default
   alld:*fallback-families*
   '(#-linux "Verdana" #+linux "Liberation Sans" "Arial" #+win32 "Segoe UI" #-linux "Times New Roman" #-linux "Courier New" "DejaVu Sans")
   alld:*native-role-fallback* (list (omfd-family *om-controls-font*) (%omfd-point *om-controls-font*)
