@@ -23,7 +23,7 @@
 ; MIDI functions called by OpenMusic
 ;;===========================================================================
 
-(defpackage :om-midi)
+(defpackage :om-midi #+sbcl (:use :common-lisp))
 
 (in-package :om-midi)
 

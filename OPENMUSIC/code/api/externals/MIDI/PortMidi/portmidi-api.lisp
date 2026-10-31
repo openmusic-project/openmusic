@@ -119,7 +119,7 @@
 
 (defun pm-channels (&rest channels)
   "=> a bitmask for multiple channels"
-  (apply #'+ (mapcar #'channel channels)))
+  (apply #'+ (mapcar #'pm-channel channels)))
 
 (defun make-message (status data1 data2)
   "=> an integer representing a MIDI message
@@ -325,33 +325,49 @@ Works like `make-message` but combines `upper` and `lower` to the status byte."
     
     (PROGN
       (pm::pm-EventBufferFree buff)
-      (mp:process-kill mp::*current-process*)
+      #+lispworks (mp:process-kill mp::*current-process*)
       )
-    
+
     ))
 
 
 ; (get-input-stream-from-port 0)
-(defun portmidi-in-start (portnum function &optional (buffersize 32) redirect-to-port) 
+(defun portmidi-in-start (portnum function &optional (buffersize 32) redirect-to-port)
   (multiple-value-bind (in name) (get-input-stream-from-port portnum)
     (if (null in) (progn (print (format nil "PortMidi ERROR: INPUT port ~A is not connected" portnum)) nil)
       (let* ((midibuffer (pm::pm-EventBufferNew buffersize))
              (midiprocess (make-midi-in-process :buffer midibuffer
-                                                :process (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
-                                                                                  #'midi-in-loop
-                                                                                  in midibuffer buffersize function redirect-to-port))))
+                                                :process
+                                                #+lispworks
+                                                (mp:process-run-function (format nil "MIDI IN (~s)" name) nil
+                                                                         #'midi-in-loop
+                                                                         in midibuffer buffersize function redirect-to-port)
+                                                #+sbcl
+                                                (bt:make-thread
+                                                 (lambda () (midi-in-loop in midibuffer buffersize function redirect-to-port))
+                                                 :name (format nil "MIDI IN (~s)" name)))))
         midiprocess))))
 
+#+lispworks
 (defun portmidi-in-stop (midiprocess)
-  (when midiprocess 
+  (when midiprocess
     (mp:process-kill (midi-in-process-process midiprocess))
-    (prog1 
+    (prog1
         (pm::pm-EventBufferFree (midi-in-process-buffer midiprocess))
       ;; (when wait
       (mp:process-wait "Wait until MIDI IN process be killed"
                        #'(lambda () (not (mp:process-alive-p (midi-in-process-process midiprocess))))))
-    
+
     ))
+
+#+sbcl
+(defun portmidi-in-stop (midiprocess)
+  (when midiprocess
+    (let ((thread (midi-in-process-process midiprocess)))
+      (when (bt:thread-alive-p thread)
+        (bt:destroy-thread thread))
+      (loop while (bt:thread-alive-p thread) do (sleep 0.01)))
+    t))
 
 
 #|

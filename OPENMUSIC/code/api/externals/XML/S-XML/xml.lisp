@@ -53,8 +53,8 @@
       (char= char #\tab)
       (char= char #\return)
       (char= char #\linefeed)
-      ;;; MODIF JB 21/01/2013
-      (char= char #\Zero-Width-No-Break-Space)))
+      ;;; MODIF JB 21/01/2013 -- U+FEFF (BOM); the LW char name is not portable
+      (char= char (code-char #xfeff))))
 
 (defun identifier-char-p (char)
   "Is char an XML identifier character ?"

@@ -56,7 +56,8 @@
     (format stream "jack-sound: ~S playing: ~A proc: ~A"
 	    (file-namestring (jack-sf-path obj))
 	    (jack-sf-playing? obj)
-	    (mp:process-state (jack-sf-disk-proc obj)))))
+	    #+lispworks (mp:process-state (jack-sf-disk-proc obj))
+	    #+sbcl (if (bt:thread-alive-p (jack-sf-disk-proc obj)) :running :dead))))
 
 (defstruct (jack-sf (:print-function print-jack-sf))
   path
@@ -94,10 +95,15 @@
 				   :outbus tracknum
 				   )))
 	(when (numberp start) (cl-jack-seek mysf (ms->frame start)))
-	(let ((thisproc (mp:process-run-function (format nil "cl-jack-producer ~S" (file-namestring soundfile))
-						 nil
-						 'disk-to-ringbuffer-proc
-						 jack-sf)))
+	(let ((thisproc
+               #+lispworks
+               (mp:process-run-function (format nil "cl-jack-producer ~S" (file-namestring soundfile))
+                                        nil
+                                        'disk-to-ringbuffer-proc
+                                        jack-sf)
+               #+sbcl
+               (bt:make-thread (lambda () (disk-to-ringbuffer-proc jack-sf))
+                               :name (format nil "cl-jack-producer ~S" (file-namestring soundfile)))))
 	  (setf (jack-sf-disk-proc jack-sf) thisproc)
 	  (pushnew jack-sf *jack-sounds*)
 	  jack-sf)))))
@@ -126,7 +132,9 @@
 	   (setf (jack-sf-playing? snd) nil)
 	   (foreign-free (jack-sf-ringbuffer snd))
 	   (sf::sf_close (jack-sf-sound-file-handle snd))
-	   (mp:process-kill (jack-sf-disk-proc snd)))
+	   #+lispworks (mp:process-kill (jack-sf-disk-proc snd))
+	   #+sbcl (when (bt:thread-alive-p (jack-sf-disk-proc snd))
+                    (bt:destroy-thread (jack-sf-disk-proc snd))))
 	  (t nil ;;(warn "didnt find sound: ~A in *jack-sounds*" snd)
 	     ))))
 
@@ -213,9 +221,13 @@
 
 	       (setf (jack-sf-poker jack-sf) nil)))
 	     ;; wait for process-callback to poke me
+	     #+lispworks
 	     (mp:process-wait-local (format nil "cl-jack diskin ~:[pausing~;reading~]"
 					    (and sf-playing? *cl-jack-is-reading*))
-				    #'(lambda () (and sf-playing? (jack-sf-poker jack-sf)))))))))
+				    #'(lambda () (and sf-playing? (jack-sf-poker jack-sf))))
+	     #+sbcl
+	     (loop until (and sf-playing? (jack-sf-poker jack-sf))
+	           do (sleep 0.001)))))))
 
 (defun read-from-ringbuffer-to-outbufs (rb nframes in-channels outbus)
   (let ((buf (foreign-alloc 'jack_default_audio_sample_t :count (* nframes in-channels)))

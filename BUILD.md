@@ -135,3 +135,83 @@ An install-maker tools can be used to perform the whole installation on user mac
   Along with the usual Makefile targets are also `"make dist"`, `"make distclean"` and `"make tar-dist"`.  Running
   `"make"`, then `"make dist"` will leave you with all necessary sources and image files inside $DISTDIR (usually
   `/tmp/OM/BUILD`)
+
+## Loading OM in SBCL
+
+This is the **SBCL port** (`OPENMUSIC/code/api/om-SBCL/`): the same OM kernel and projects,
+with the LispWorks CAPI bridge reimplemented on top of **Alloy + GLFW**.
+
+It is a **work in progress**, and there is no `deliver` step yet: you compile and run OM
+from the sources.
+
+### 1) Install SBCL
+
+Install SBCL from http://www.sbcl.org (these instructions are verified against **SBCL 2.6.8**).
+
+### 2) Get the sources with the alloy-desktop submodule
+
+`OPENMUSIC/code/api/om-SBCL/alloy-desktop/` is a git submodule
+(https://github.com/PHRaposo/alloy-desktop). It holds the GUI toolkit and, in its `DEPENDENCIES/`
+folder, every Lisp library OM loads. Quicklisp is not needed.
+
+Clone with the submodule:
+
+```sh
+git clone --recurse-submodules <repository URL>
+```
+
+In an existing clone:
+
+```sh
+git submodule update --init
+```
+
+### 3) C libraries
+
+OM links dynamically with `omaudiolib`, `libsndfile`, `libsamplerate`, `libPortMIDI`, `libSDIF`
+and, optionally, `libfluidsynth`.
+
+**Windows:** copy the contents of `OPENMUSIC/resources/lib/win64/` into the folder that contains
+`sbcl.exe`, or into another directory on the DLL search path.
+
+**macOS:** no additional setup is required. OM uses the libraries in
+`OPENMUSIC/resources/lib/mac/` on Intel Macs and `OPENMUSIC/resources/lib/m1/` on Apple Silicon.
+
+**Linux:** `omaudiolib`, `libSDIF` and `libfluidsynth` are bundled with OM. Install
+`libsndfile`, `libsamplerate` and `libPortMIDI` from your distribution, and SDL2, which the
+bundled `libfluidsynth` requires.
+
+Debian / Ubuntu:
+
+```sh
+sudo apt install libsndfile1-dev libsamplerate0-dev libportmidi-dev libx11-dev fluidsynth libsdl2-2.0-0
+```
+
+Fedora:
+
+```sh
+sudo dnf install libsndfile-devel libsamplerate-devel portmidi-devel libX11-devel fluidsynth SDL2
+```
+
+Arch:
+
+```sh
+sudo pacman -S libsndfile libsamplerate portmidi libx11 fluidsynth sdl2
+```
+
+On Linux, `libsdif.so` must be a symbolic link to the bundled `libsdif-3.11.4.so`. Some ZIP
+snapshots do not preserve this symbolic link, so recreate it before starting OM:
+
+```sh
+cd /path/to/OPENMUSIC/resources/lib/linux/
+rm -f libsdif.so
+ln -s libsdif-3.11.4.so libsdif.so
+```
+
+### 4) Build and run
+
+```sh
+sbcl --noinform --dynamic-space-size 8192 \\
+     --load /path/to/OPENMUSIC/build/build-om.lisp \\
+     --eval "(om::start-openmusic)"
+```

@@ -34,11 +34,21 @@
 
 
 ;;; LOAD LW OpenGL
-(require "asdf")
+#+lispworks
+(progn
+  (require "asdf")
+  (load (make-pathname :directory (append (pathname-directory *load-pathname*) '("opengl-lw"))
+                       :name "load" :type "lisp"))
+  (compile&load (current-pathname "opengl-api")))
 
-(load (make-pathname :directory (append (pathname-directory *load-pathname*) '("opengl-lw"))
-                     :name "load" :type "lisp"))
+;;; LOAD the SBCL twin
+#+sbcl
+(progn
+  (load (make-pathname :directory (append (pathname-directory *load-pathname*) '("opengl-sbcl"))
+                       :name "load" :type "lisp"))
+  (compile&load (current-pathname "opengl-api-sbcl")))
 
-(compile&load  (current-pathname "opengl-api"))
-
+;;; common to both branches: projects space/space.lisp (the #+om-opengl-api entries
+;;; of *space-files*) reads
+;;; 3deditor/traject-editor under this feature.
 (push :om-opengl-api *features*)

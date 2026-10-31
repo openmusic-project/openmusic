@@ -1,0 +1,3 @@
+[submodule "OPENMUSIC/code/api/om-SBCL/alloy-desktop"]
+	path = OPENMUSIC/code/api/om-SBCL/alloy-desktop
+	url = https://github.com/PHRaposo/alloy-desktop.git
