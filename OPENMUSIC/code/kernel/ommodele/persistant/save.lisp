@@ -1318,6 +1318,7 @@
                  :prompt "Save the instance of this editor"
                  :types '("OM instance" "*.omi"))))
       (when name
+        (setf name (pathname (string+ (namestring name) ".omi")))
         (setf *last-saved-dir* (make-pathname :directory (pathname-directory name)))
         (delete-file-protection name)
         (WITH-OPEN-FILE (out name :direction :output  
