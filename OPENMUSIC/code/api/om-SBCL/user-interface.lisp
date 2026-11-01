@@ -222,31 +222,35 @@ stored verbatim."
                                        (position (om-make-point 200 140)))
   "Display the message dialog entirely on the Alloy/GLFW UI thread."
   (declare (ignore owner position))
-  (alld:message-dialog *om-prompt-host* message :title window-title
-                                                :minimum-width (om-point-h size)
-                                                :minimum-height (om-point-v size)))
+  (alld:message-dialog message :host *om-prompt-host*
+                               :title window-title
+                               :minimum-width (om-point-h size)
+                               :minimum-height (om-point-v size)))
 
 (defun om-y-or-n-dialog (message &key (size (om-make-point 300 150)) default-button)
   "Display a modal Yes/No prompt entirely on the Alloy/GLFW UI thread."
-  (alld:yes-or-no-dialog *om-prompt-host* message :minimum-width (om-point-h size)
-                                                  :minimum-height (om-point-v size)
-                                                  :default-button default-button))
+  (alld:yes-or-no-dialog message :host *om-prompt-host*
+                                 :minimum-width (om-point-h size)
+                                 :minimum-height (om-point-v size)
+                                 :default-button default-button))
 
 (defun om-y-n-cancel-dialog (message &key (size (om-make-point 300 150)) default-button)
   "Display a modal Yes/No/Cancel prompt entirely on the Alloy/GLFW UI thread."
-  (alld:yes-no-cancel-dialog *om-prompt-host* message :minimum-width (om-point-h size)
-                                                      :minimum-height (om-point-v size)
-                                                      :default-button default-button))
+  (alld:yes-no-cancel-dialog message :host *om-prompt-host*
+                                     :minimum-width (om-point-h size)
+                                     :minimum-height (om-point-v size)
+                                     :default-button default-button))
 
 (defun om-get-user-string (prompt &key (initial-string "") (window-title "Get string") owner
                                        (size (om-make-point 365 100))
                                        (position (om-make-point 200 140)))
   "Prompt for a string entirely on the Alloy/GLFW UI thread."
   (declare (ignore owner position))
-  (alld:prompt-for-string *om-prompt-host* prompt :initial-string initial-string
-                                                  :title window-title
-                                                  :minimum-width (om-point-h size)
-                                                  :minimum-height (om-point-v size)))
+  (alld:prompt-for-string prompt :host *om-prompt-host*
+                                 :initial-string initial-string
+                                 :title window-title
+                                 :minimum-width (om-point-h size)
+                                 :minimum-height (om-point-v size)))
 
 (defun om-beep ()
   "Emit the native system alert beep (kernel error/attention beep)."

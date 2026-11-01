@@ -504,6 +504,19 @@ that is actually feeding the device."
                      :directory dirlist :name (pathname-name path) :type (pathname-type path))
       )))
 
+;;; LispWorks and SBCL must not read the same preferences (kernel omworkspace.lisp: ompref-file):
+;;; same body, with SBCL added to the version folder.
+(om-with-redefinitions
+  (defun ompref-file ()
+    (let* ((userpref (om-user-pref-folder)))
+      (make-pathname
+       :device (pathname-device userpref) :host (pathname-host userpref)
+       :directory (append (pathname-directory userpref)
+                          (list "OpenMusic"
+                                (format nil (if (eq oa:*om-os* :linux) "~A_SBCL" "~A SBCL")
+                                        (cl-user::version-to-string *version* nil nil))))
+       :name "OMPrefs" :type "lisp"))))
+
 ;;; projects soundeditor.lisp (update-cursor for full-preview) places the preview cursor at
 ;;; (round (* (/ time (cadr (bounds-x panel))) (w self))). Closing a sound editor with no
 ;;; sound loaded reaches it with time 0 over a zero span -- om-window-close-event :around

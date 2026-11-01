@@ -911,6 +911,10 @@ The encoding is resolved the way LW resolves :external-format :default."
                           (:win '("Application Data"))
                           (:linux '(".local" "share")))))))
 
+(setf alld:*application-name*
+      (format nil (if (eq *om-os* :linux) "OM_~A_SBCL" "OM ~A SBCL")
+              cl-user::*version-str*))
+
 (defun om-get-date ()
   (alld:date-string))
 

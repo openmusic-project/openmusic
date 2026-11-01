@@ -5,7 +5,7 @@
 ;; (defvar openmusic-path "PATH-TO/openmusic")
 ;; macOS: inside the bundle, where a launcher runs the bundle's own runtime on the
 ;; console core (build/sbcl/deliver-sbcl.lisp, #+darwin)
-;; (defvar openmusic-path "PATH-TO/OM 8.1 SBCL/OM 8.1.app/Contents/Resources/openmusic")
+;; (defvar openmusic-path "PATH-TO/OM 8.1 SBCL/OM 8.1 SBCL.app/Contents/Resources/openmusic")
 
 ;; SLIME from the same version as the swank inside openmusic. Enter the path of the swank folder.
 ;; (defvar om-slime-directory "PATH-TO/swank/")
