@@ -457,6 +457,19 @@
   (let ((con (connected? (object self))))
     (if con (car (frames (car con))))))
 
+(defmethod get-connection-box ((self c-connection))
+  "origin"
+  (car (connected? (object (nth (index self) (inputframes (thebox self)))))))
+
+(defmethod get-connection-boxframe ((self c-connection))
+  "origin"
+  (car (frames (car (connected? (object (nth (index self) (inputframes (thebox self)))))))))
+
+(defmethod get-connected-box ((self c-connection))
+  "target"
+  (thebox self))
+
+#|
 (defmethod switch-input-connection ((self c-connection) (n number))
   (let* ((boxframe (thebox self))
          (indx (index self)) 
@@ -469,17 +482,23 @@
     (connect-box (nth nout objouts) (nth mod inputs))
     (disconnect-box boxframe (nth indx inputs))
     (select-connection (car (connections boxframe)))))
+|#
 
-
-#|
-(defmethod switch-input-connection ((self c-connection) (n character)) 
+(defmethod switch-input-connection ((self c-connection) (n number)) 
   (let* ((boxframe (thebox self))
-         (indx (index self)); index of connected input 
-         (pos (digit-char-p n))
+         (indx (index self)) 
          (inputs (inputframes boxframe))
-         (connected (remove nil (mapcar #'connected-p inputs))))
-    (connect-box (car (outframes (connected-p (nth indx inputs)))) (nth (1- pos) inputs))
+         (mod (mod (+ n indx) (length inputs)))
+         (connected (remove nil (mapcar #'connected-p inputs)))
+         (nobj (position (get-connection-boxframe self) connected :test 'equal))
+         (objouts (reverse (outframes (nth nobj connected))));outputs are in reverse order!
+         (nout (nth indx (loop for i in inputs
+                               collect (second (connected? (object i)))))))
+    (connect-box (nth nout objouts) (nth mod inputs))
     (disconnect-box boxframe (nth indx inputs))
     (select-connection (car (connections boxframe)))
     ))
-|#
+
+(defmethod switch-input-connection ((self list) (n number)) 
+  (loop for i in self
+          do (switch-input-connection i n)))

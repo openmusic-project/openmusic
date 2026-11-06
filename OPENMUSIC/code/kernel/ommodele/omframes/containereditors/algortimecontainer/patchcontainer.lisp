@@ -381,7 +381,7 @@ because digit-char-p will not accept backspace and special om keys!"
       (:om-key-left
        (cond
         ((and (om-option-key-p) connections (not actives))
-         (switch-input-connection (car connections) -1))
+         (switch-input-connection connections -1))
         ((om-option-key-p)
          (mapc #'(lambda (item) (delete-all-inputs item) t) actives))
         ((and (om-command-key-p) (om-shift-key-p))
@@ -395,7 +395,7 @@ because digit-char-p will not accept backspace and special om keys!"
       (:om-key-right 
        (cond
         ((and (om-option-key-p) connections (not actives))
-         (switch-input-connection (car connections) 1))
+         (switch-input-connection connections 1))
         ((om-option-key-p)
          (mapc #'(lambda (item) (add-all-inputs item)) actives))
         ((and (om-command-key-p) (om-shift-key-p))
