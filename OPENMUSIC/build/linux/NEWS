@@ -19,6 +19,7 @@ IMPROVEMENTS
 
 FIXES
 
+- midi and audio preference refresh (pop-up linux)
 - sysex now sends correct sysesex midi messages
 - OMSHEET fixes for linux
 - Approx for arp-chord
