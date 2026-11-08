@@ -168,8 +168,10 @@
                                   :size (get-pref-scroll-size)
                                   :selection selec))
           )
-      #-linux (om-remove-subviews self (tabs self))
-      #-linux(om-add-subviews self (setf (tabs self) newtl))
+      #-linux 
+      (om-remove-subviews self (tabs self))
+      #-linux
+      (om-add-subviews self (setf (tabs self) newtl))
     ))
 
 #|

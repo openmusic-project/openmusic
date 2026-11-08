@@ -152,7 +152,7 @@
                                  :name "Audio"
                                  :size (get-pref-scroll-size)
                                  :position (om-make-point 66 0)
-                                 :scrollbars :v 
+                                 :scrollbars nil ;:v 
                                  :retain-scrollbars t
                                  :bg-color *om-light-gray-color*
                                  ))

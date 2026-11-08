@@ -84,14 +84,14 @@
 	  :midi-setup '(((0 nil)) ((0 nil))) ;;; (in out)
 	  :midi-presets (def-midi-presets)))
 
-(defmethod make-new-pref-scroll ((num (eql :midi)) modulepref)
-   
+(defmethod make-new-pref-scroll ((num (eql :midi)) modulepref)  
    (let ((thescroll (om-make-view 'preference-pane
                                   :name "MIDI" :pref-id num
                                   :size (get-pref-scroll-size)
                                   :position (om-make-point 66 0)
                                   :font *controls-font* 
-                                  :scrollbars :v :retain-scrollbars t
+                                  :scrollbars nil ;:v 
+                                  :retain-scrollbars t
                                   :bg-color *om-light-gray-color*
                                   ))
                    
