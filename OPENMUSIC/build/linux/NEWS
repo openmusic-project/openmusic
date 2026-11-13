@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- Export to OMPYTHON
 - SBCL port (P.H Raposo)
 - hex-to-decimal, decimal-to-hex conversion
 - Install pkg for Mac

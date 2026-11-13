@@ -154,6 +154,7 @@
 "ommodele/persistant/import-export"   
 "ommodele/persistant/old-compat"
 "ommodele/persistant/finder"
+"ommodele/persistant/export-to-ompython"
                                                             
 ;-----------Menu----------------------------------- 
 "graphics/ommenu"

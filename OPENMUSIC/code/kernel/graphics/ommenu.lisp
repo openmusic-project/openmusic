@@ -623,7 +623,8 @@
          (om-new-leafmenu "Open" #'(lambda () (apply-win (om-view-window self) 'open-icon-win (om-make-point 0 0)))))
         (om-new-leafmenu "Get Info" #'(lambda () (get-info-window (om-view-window self))))
         (om-new-leafmenu "Duplicate" #'(lambda () (duplicate-window (om-view-window self))))
-        (om-new-leafmenu "Export" #'(lambda () (export-file (object self))))))
+        (om-new-leafmenu "Export" #'(lambda () (export-file (object self))))
+        (om-new-leafmenu "Export to OMPython" #'(lambda () (export_ws_om8 (object self))))))
 
 
 
