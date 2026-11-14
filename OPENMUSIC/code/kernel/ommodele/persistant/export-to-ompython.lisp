@@ -877,12 +877,12 @@ on garde donc toujours la valeur OM 8.0 de l'entree."
   "Champs communs + champs specifiques MORE (plist de cles string).
 Dans MORE, :name et :numouts (cles keyword) forcent ces deux champs."
   (let* ((pos (py-safe (frame-position box)))
-         (size (py-safe (frame-size box)))
-         (bname (or (py-safe (name box)) ""))
+         (size (unless (typep box 'omboxcall) (py-safe (frame-size box))));faire une fonction pour donner le size selon box
+         (bname (string-downcase (or (py-safe (name box)) "")))
          (forced-name (getf more :name :none))
          (forced-numouts (getf more :numouts :none))
          (more (loop for (k v) on more by #'cddr
-                     unless (keywordp k) append (list k v))))
+                     unless (keywordp k) append (list k v)))) 
     (apply #'json-obj
            "type" (jstr type)
            "name" (json-string (if (eq forced-name :none) bname (or forced-name "")))
@@ -890,7 +890,7 @@ Dans MORE, :name et :numouts (cles keyword) forcent ces deux champs."
            "x" (jnum (py-int (and pos (om-point-h pos))))
            "y" (jnum (py-int (and pos (om-point-v pos))))
            "w" (jnum (py-int (and size (om-point-h size)) 60))
-           "h" (jnum (py-int (and size (om-point-v size)) 40))
+           "h" (jnum (py-int (and size (om-point-v size)) 60))
            "numouts" (jnum (if (eq forced-numouts :none) (py-box-numouts box) forced-numouts))
            "lock" (json-string (py-lock box))
            "inputs" (json-box-inputs box)
