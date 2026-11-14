@@ -30,7 +30,7 @@
 ;          (extent (car tree))
 ;          (addition (loop for item in (second tree) sum (floor (abs (if (listp item) (car item) item))))))
 ;     (if (integerp (/ extent addition)) nil addition)))
-
+#|
 (defun reduce-num-den (list)
   "Reduit les ratios dedoubles. C-a-d  si on a (14 8) il retourne (7 4)"
   (let ((res list))
@@ -43,6 +43,7 @@
               (* 2 (second res)))
       (reduce-num-den res)
       )))
+|#
 #|
 (defmethod get-group-ratio ((self group))
    (let* ((tree (tree self))
@@ -63,6 +64,32 @@
 |#
 
 ;This fixes display bug on (? (((5 5) (1 1 1 1)))) tree
+
+
+(defun reduce-num-den (list)
+  "Reduit les ratios dedoubles. C-a-d  si on a (14 8) il retourne (7 4).
+Avec des exceptions tel que (6 4) -> (6 4)."
+  (cond
+   ((equal list '(6 4)) list)
+   (t
+    (let ((res list))
+      (setf res
+            (list (/  (car res) 2)
+                  (/ (second res) 2)))
+      (print (list "res" res))
+      (if (or (ratiop (car res))
+              (ratiop (second res)))
+          (list (* 2 (car res))
+                (* 2 (second res)))
+        (reduce-num-den res)
+        )))))
+
+;(reduce-num-den '(6 4))
+;(reduce-num-den '(8 4))
+;(reduce-num-den '(12 8))
+
+
+
 
 (defmethod get-group-ratio ((self group))
    (let* ((tree (tree self))
