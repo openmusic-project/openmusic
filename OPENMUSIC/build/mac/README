@@ -33,6 +33,44 @@ inside the .app bundle's resources.
 ; ...or clone it using GIT:
 ; $ git clone https://github.com/openmusic-project/openmusic.git
 ;------------------------------------
+* RELEASE NOTES 8.1
+
+NEW FEATURES
+
+- Export to OMPYTHON
+- SBCL port (P.H Raposo)
+- hex-to-decimal, decimal-to-hex conversion
+- Install pkg for Mac
+- Text-View editor (double-click)
+- display-extra-dyn: displays all extra dynamics, with or without repetition
+- Scoreeditors continuous font zoom (P.H. Raposo)
+- New extras: trill, sost. pedal, glissando
+
+IMPROVEMENTS
+
+- single-item-list selection input
+- Extras are MIDI aware
+- Empty SDIFFILE, MIDIFILE obj warning on double-click 
+- Now grid view in CHORD-SEQ shows milliseconds
+
+FIXES
+
+- Multiple Clefs displays octavas sign
+- midi and audio preference refresh (pop-up linux)
+- sysex now sends correct sysesex midi messages
+- OMSHEET fixes for linux
+- Approx for arp-chord
+- Chord-seq zoom fix (note positions)
+- Text-View editing (gtk3) bug (to edit in linux shift-clic box)
+- fix size of pop-up-menu di-box (linux)
+- fixed invalidate-view (for n-cercle update and others)
+- Graces notes and extraobjs in page mode
+- musicxml import fixed microintervals from sibelius
+- musicxml export fixed ties in group
+- tree2ratio old format tree issue fixed
+- package browser (libraries loading)fixed panel
+- fix when tree have (minusp D)
+
 
 * RELEASE NOTES 8.0
 
