@@ -131,8 +131,14 @@
 ;;;=============
 (defvar *clicked-view* nil)
 
+;;; Set by a double-click, cleared on button release:
+;;; blocks the motion events that follow a double-click (and arrive late
+;;; while e.g. an editor window opens) from starting a drag.
+(defvar *double-click-lock* nil)
+
 (defmethod om-clic-callback ((self om-graphic-object) x y mods)
-  (om-with-error-handle 
+  (setf *double-click-lock* nil) ;; safety: a release may have been missed
+  (om-with-error-handle
    (set-meta-keys mods)
    ;#+lispworks8(capi::update-drawing-with-cached-display self x y)
     (apply-in-item-subview self 'om-view-click-handler (om-make-point x y))
@@ -155,7 +161,7 @@
 (defmethod om-clic-motion-callback ((self om-graphic-object) x y mods)
   (set-meta-keys mods)
   ;(print (list self x y *clicked-view*))
-  (unless (equal *clicked-view* :abort)
+  (unless (or *double-click-lock* (equal *clicked-view* :abort))
     (if *clicked-view* 
         (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       ; ?!! verifier si tout va bien...
@@ -167,7 +173,7 @@
 (defmethod om-clic-motion-callback ((self window-layout) x y mods)
   (set-meta-keys mods)
   ; click in window, pos in layout
-  (unless (equal *clicked-view* :abort)
+  (unless (or *double-click-lock* (equal *clicked-view* :abort))
     (if *clicked-view* 
         (om-click-motion-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-motion-handler (om-make-point x y)))
@@ -183,9 +189,12 @@
 ;;;==============
 (defmethod om-clic-release-callback ((self om-graphic-object) x y mods)
   (set-meta-keys mods)
-  (unless (equal *clicked-view* :abort) 
+  (if (or *double-click-lock* (equal *clicked-view* :abort))
+      ;; end of a double-click: release the lock, no release handler
+      (setf *double-click-lock* nil
+            *clicked-view* nil)
     ;#+(and cocoa lispworks8) (capi::update-drawing-with-cached-display self x y) ; not good for linux
-    (if *clicked-view* 
+    (if *clicked-view*
         (om-click-release-handler *clicked-view* (om-convert-coordinates (om-make-point x y) self *clicked-view*))
       (apply-in-item-subview self 'om-click-release-handler (om-make-point x y)))
    ; #+(or cocoa linux)(update-for-subviews-changes self t) ;updates some widgets eg. text-box ;;But not in Linux!A VOIR
@@ -201,9 +210,11 @@
 ;;;=================
 (defmethod om-double-clic-callback ((self om-graphic-object) x y mods)
   (declare (ignore mods))
-  (setf *clicked-view* :abort)
-  (om-with-error-handle 
-    (apply-in-item-subview self 'om-view-doubleclick-handler (om-make-point x y))))                         
+  (setf *double-click-lock* t)
+  (om-with-error-handle
+    (apply-in-item-subview self 'om-view-doubleclick-handler (om-make-point x y)))
+  ;; AFTER the handler: its :before method resets *clicked-view* to NIL
+  (setf *clicked-view* :abort))
 
 (defmethod om-view-doubleclick-handler ((self om-abstract-window) pos) self)
 (defmethod om-view-doubleclick-handler ((self om-graphic-object) pos) self)

@@ -122,7 +122,8 @@
 
 
 (defun internal-drag-start (self)
-  (and (om-drag-start self)
+  (and (not *double-click-lock*)
+       (om-drag-start self)
        *click-motion-view*
        ;*clicked-view*
        (capi:drag-pane-object  
