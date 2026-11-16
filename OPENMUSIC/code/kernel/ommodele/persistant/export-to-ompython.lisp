@@ -875,12 +875,14 @@ on garde donc toujours la valeur OM 8.0 de l'entree."
 
 (defun json-box (box type &rest more)
   "Champs communs + champs specifiques MORE (plist de cles string).
-Dans MORE, :name et :numouts (cles keyword) forcent ces deux champs."
+Dans MORE, :name et :numouts (cles keyword) forcent ces deux champs,
+:inputs (liste d'entrees OM 8.0) remplace les entrees de la boite."
   (let* ((pos (py-safe (frame-position box)))
          (size (unless (typep box 'omboxcall) (py-safe (frame-size box))));faire une fonction pour donner le size selon box
          (bname (string-downcase (or (py-safe (name box)) "")))
          (forced-name (getf more :name :none))
          (forced-numouts (getf more :numouts :none))
+         (forced-inputs (getf more :inputs :none))
          (more (loop for (k v) on more by #'cddr
                      unless (keywordp k) append (list k v)))) 
     (apply #'json-obj
@@ -893,12 +895,12 @@ Dans MORE, :name et :numouts (cles keyword) forcent ces deux champs."
            "h" (jnum (py-int (and size (om-point-v size)) 60))
            "numouts" (jnum (if (eq forced-numouts :none) (py-box-numouts box) forced-numouts))
            "lock" (json-string (py-lock box))
-           "inputs" (json-box-inputs box)
+           "inputs" (json-box-inputs box (unless (eq forced-inputs :none) forced-inputs))
            more)))
 
-(defun json-box-inputs (box)
+(defun json-box-inputs (box &optional inputs)
   (json-list (mapcar #'(lambda (input) (omNG-python-save input t))
-                     (py-safe (inputs box)))))
+                     (or inputs (py-safe (inputs box))))))
 
 (defun json-dead-box (box &optional (message ""))
   "Boite sans equivalent : OMBoxDead (ref + savestr = code Lisp OM 8.0)."
@@ -1062,6 +1064,83 @@ Dans MORE, :name et :numouts (cles keyword) forcent ces deux champs."
 (defmethod omNG-python-save ((self OMBoxMaquette) &optional (values? nil))
   (declare (ignore values?))
   (json-dead-box self "Boite maquette OM 8.0"))
+
+;OMLoop -> OMBoxLoop (format de OMBoxLoop::omng_save : le patch de la boucle est dans "thepatch")
+;;; C++ : OMPatchLoop::loadPatchLoop exige "type" = "OMPatch" ; la boucle est compilee a partir
+;;; des boites eachTime / finally (obligatoires), des iterateurs et des accumulateurs.
+(defmethod omNG-python-save ((self omloop-box) &optional (values? nil))
+  (declare (ignore values?))
+  (let ((thepatch (py-safe (patch self))))
+    (if (null thepatch)
+        (json-dead-box self "OMLoop OM 8.0 sans patch")
+      (json-box self "OMBoxLoop"
+                "thepatch" (patch-to-json thepatch)))))
+
+;;; file-box : une sous-classe de omloop-box, sans equivalent C++
+(defmethod omNG-python-save ((self file-box-box) &optional (values? nil))
+  (declare (ignore values?))
+  (json-dead-box self "File-box OM 8.0"))
+
+;Boites internes d'une loop -> OMBoxSpecLoop (le C++ les cherche par leur nom avec omws->loopgetFun,
+;;; en tenant compte des majuscules)
+(defparameter *py-loop-box-names*
+  '(("forloop" "forLoop") ("whileloop" "whileLoop") ("listloop" "listLoop") ("onlistloop" "onlistLoop")
+    ("counter" "count") ("sum" "sum") ("minim" "min") ("maxi" "max")
+    ("listing" "collect") ("accumulator" "accum")
+    ("loopdo" "eachTime") ("finaldo" "finally")))
+
+(defun py-loop-box-name (box)
+  (second (assoc (py-ref-name (py-safe (reference box))) *py-loop-box-names* :test #'string-equal)))
+
+(defun py-loop-box-inputs (box)
+  "Entrees exportees. listloop / onlistloop : l'entree optionnelle <by> (cdr par defaut) n'existe pas
+dans le C++ (genIterator la passerait a zip comme une 2e liste) : on l'enleve si elle n'est pas connectee
+et vaut cdr (elle est la derniere entree : aucune connexion ne la reference)."
+  (let ((inputs (py-safe (inputs box))))
+    (if (and (or (py-is-a box 'listloopcall) (py-is-a box 'onlistloopcall))
+             (cdr inputs))
+        (cons (car inputs)
+              (remove-if #'(lambda (in)
+                             (and (not (py-safe (connected? in)))
+                                  (member (py-safe (value in)) '(nil cdr))))
+                         (cdr inputs)))
+      inputs)))
+
+(defun json-loop-spec-box (box)
+  (let ((name (py-loop-box-name box))
+        (inputs (py-loop-box-inputs box)))
+    (cond
+     ((null name)
+      (json-dead-box box (format nil "Boite de loop OM 8.0 ~A sans equivalent C++"
+                                 (py-ref-name (py-safe (reference box))))))
+     (t
+      (when (and (or (py-is-a box 'listloopcall) (py-is-a box 'onlistloopcall))
+                 (cdr inputs))
+        (om-print (format nil "Export JSON : l'entree <by> de ~A n'est pas geree par le C++" name)))
+      (json-box box "OMBoxSpecLoop"
+                :name name
+                :inputs inputs
+                "value" "null")))))
+
+(defmethod omNG-python-save ((self loopIterators) &optional (values? nil))
+  (declare (ignore values?))
+  (json-loop-spec-box self))
+
+(defmethod omNG-python-save ((self acumboxes) &optional (values? nil))
+  (declare (ignore values?))
+  (json-loop-spec-box self))
+
+(defmethod omNG-python-save ((self OMLoopDo) &optional (values? nil))
+  (declare (ignore values?))
+  (json-loop-spec-box self))
+
+(defmethod omNG-python-save ((self OMfinalDo) &optional (values? nil))
+  (declare (ignore values?))
+  (json-loop-spec-box self))
+
+(defmethod omNG-python-save ((self OMinitDo) &optional (values? nil))
+  (declare (ignore values?))
+  (json-dead-box self "Boite initDo OM 8.0 : pas d'equivalent dans les loops C++"))
 
 ;Entrees / sorties de patch
 (defmethod omNG-python-save ((self OMIn) &optional (values? nil))
