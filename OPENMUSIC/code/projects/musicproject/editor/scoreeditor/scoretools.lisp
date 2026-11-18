@@ -512,7 +512,24 @@
     (selected :initform nil)
     (main-point :initform nil)
     (extras :initform nil)
-    (boxes-from-patch :initform nil)))
+    (boxes-from-patch :initform nil)
+    ;; (main-point . rectangle) as built, before spacing: see snapshot-layout
+    (layout0 :initform nil)
+    ;; (father . ms): onset of the reference in FATHER, see graphic-onset
+    (onset-cache :initform nil)))
+
+;;; Onset (ms) of a graphic object's reference relative to FATHER, computed once
+;;; per graphic object: get-temporal-objects (spacing) and collect-bpftime-objects
+;;; both need it, on every object, at every layout. Graphic objects are rebuilt
+;;; whenever rhythm can change (update-panel); the partial rebuild
+;;; (update-panel-for-objects) is only used after pitch edits, which keep onsets.
+(defun graphic-onset (self father)
+  (let ((cache (onset-cache self)))
+    (if (and cache (eq (car cache) father))
+        (cdr cache)
+      (let ((ms (offset->ms (reference self) father)))
+        (setf (onset-cache self) (cons father ms))
+        ms))))
 
 ;;; redefine this to set a specific selection color in specific contexts
 (defmethod get-object-selection-color ((self t) (in t)) nil)
@@ -1126,7 +1143,18 @@
 
 ;;=========================================
 
-(defclas grap-poly (grap-container) ())
+;;; aligned: cache of (cdr (get-aligne-measures (reference self))).
+;;; The graphic tree is rebuilt by update-panel after every edit, so the cache
+;;; lives exactly as long as the layout it describes.
+;;; build-key: editor parameters the tree was built with (see score-build-key);
+;;; a partial rebuild is only valid if they did not change.
+(defclas grap-poly (grap-container)
+         ((aligned :initform nil)
+          (build-key :initform nil)))
+
+;;; (minx . maxx) of the visible band of the score panel being drawn, or NIL
+;;; meaning "draw everything" (miniviews, sheets, pages).
+(defvar *score-visible-x* nil)
 
 
 (defmethod make-graph-form-obj ((self poly) x top linespace mode scale sel system stem)
@@ -1161,8 +1189,10 @@
 (defmethod draw-object ((self grap-poly) view x y zoom minx maxx miny maxy slot size linear? staff grille-p chnote)
    (let* ( (posy y) 
             positions
-            (meas-list (cdr (get-aligne-measures (reference self)))))
-     (om-with-fg-color nil *system-color* ;measure bars and num always in black! 
+            (meas-list (or (aligned self)
+                           (setf (aligned self) (cdr (get-aligne-measures (reference self))))))
+            (*score-visible-x* (if (typep view 'scorePanel) (cons minx maxx) *score-visible-x*)))
+     (om-with-fg-color nil *system-color* ;measure bars and num always in black!
       (loop for item in (inside self)
             for i = 0 then (+ i 1) 
             for system in staff do
@@ -1202,18 +1232,21 @@
                             (first (rectangle nextmes))))))
 
 
+;;; For each distinct measure onset (ms), in increasing order, the list of
+;;; (measure-index voice-index) starting there, voices in increasing order.
+;;; Hash-table version: O(n log n) instead of the quadratic
+;;; remove-duplicates + position scan.
 (defmethod get-aligne-measures ((self poly))
-   (let* ((ofsets (loop for item in (inside self)
-                        collect (loop for mes in (inside item) collect (offset->ms mes))))
-          (all (sort (remove nil (remove-duplicates (flat ofsets) :test 'equal)) '<)) rep)
-     (loop for item in all do
-           (let (resp )
-             (loop for voice in ofsets
-                   for i = 0 then (+ i 1) do
-                   (let ((pos (position item voice)))
-                     (when pos (push (list pos i) resp))))
-              (push (reverse resp) rep)))
-     (reverse rep)))
+  (let ((table (make-hash-table :test 'eql)) keys)
+    (loop for voice in (inside self)
+          for i from 0 do
+            (loop for mes in (inside voice)
+                  for pos from 0
+                  for ms = (offset->ms mes)
+                  when (and ms (not (find i (gethash ms table) :key 'second))) do
+                    (unless (gethash ms table) (push ms keys))
+                    (push (list pos i) (gethash ms table))))
+    (loop for k in (sort keys '<) collect (reverse (gethash k table)))))
 
 (defun make-aligned-groups (list)
   (let (rep temp)
@@ -1229,32 +1262,38 @@
     (reverse rep)))
     
 
+;;; Rectangles of all aligned measures are still aligned (selection and clicks
+;;; rely on them), but barlines and numbers are only drawn inside the visible
+;;; band *score-visible-x* (NIL = draw all).  Voices are accessed through
+;;; vectors, and the measure number is the index already stored in the group.
 (defmethod draw-aligned-measures ((self grap-poly) list staff size positions)
-  (loop for group in list do
-          (let* ((measures (loop for item in group collect 
-                                   (nth (first item) (inside (nth (second item) (inside self))))))
-                 (min (loop for item in measures minimize (first (rectangle item)))) subgroups)
-            (loop for item in measures do
-                    (setf (nth 0 (rectangle item)) min))
-            (setf subgroups (make-aligned-groups group))
-            (loop for bar in subgroups do
-                    (let* ((firstm (car bar))
-                           (lastm (car (last bar)))
-                           (realmes (nth (first firstm) (inside (nth (second firstm) (inside self)))))
-                           (ys (round (or (nth (second firstm) positions) 0)))
-                           (ysf (round (or (nth (second lastm) positions) 0))))
-                      (if (= *on-all-staves* 0)
-                          (om-with-font (get-font-to-draw 5)
-                                        (om-draw-string  (- (car (rectangle realmes)) (round size 4)) (- ys (round size 4)) 
-                                                         (format () "~D" (+ (position realmes (inside (parent realmes)) :test 'equal) 1))))
-                        (loop for p in positions
-                              do 
+  (let* ((voices (map 'vector #'(lambda (v) (coerce (inside v) 'vector)) (inside self)))
+         (minx (car *score-visible-x*))
+         (maxx (cdr *score-visible-x*))
+         (margin (* 4 size)))
+    (flet ((get-mes (item) (svref (svref voices (second item)) (first item))))
+      (loop for group in list do
+              (let* ((measures (mapcar #'get-mes group))
+                     (min (loop for item in measures minimize (first (rectangle item)))))
+                (loop for item in measures do
+                        (setf (nth 0 (rectangle item)) min))
+                (when (or (null *score-visible-x*)
+                          (and (>= min (- minx margin)) (<= min (+ maxx margin))))
+                  (loop for bar in (make-aligned-groups group) do
+                          (let* ((firstm (car bar))
+                                 (lastm (car (last bar)))
+                                 (realmes (get-mes firstm))
+                                 (bx (car (rectangle realmes)))
+                                 (numstr (format () "~D" (+ (first firstm) 1)))
+                                 (ys (round (or (nth (second firstm) positions) 0)))
+                                 (ysf (round (or (nth (second lastm) positions) 0))))
+                            (if (= *on-all-staves* 0)
                                 (om-with-font (get-font-to-draw 5)
-                                              (om-draw-string  (+ 15 (- (car (rectangle realmes)) (round size 4))) (- p (round size 4)) 
-                                                               (format () "~D" (+ (position realmes (inside (parent realmes)) :test 'equal) 1)))))
-                        )
-                      (om-draw-line  (car (rectangle realmes))  ys 
-                                     (car (rectangle realmes)) (+ ysf (get-system-size (nth (second  lastm) staff) size))))))))
+                                              (om-draw-string (- bx (round size 4)) (- ys (round size 4)) numstr))
+                              (om-with-font (get-font-to-draw 5)
+                                            (loop for p in positions
+                                                  do (om-draw-string (+ 15 (- bx (round size 4))) (- p (round size 4)) numstr))))
+                            (om-draw-line bx ys bx (+ ysf (get-system-size (nth (second lastm) staff) size)))))))))))
 
 ;=========================================
 (defclas grap-voice (grap-container)  
@@ -1303,6 +1342,10 @@
                                                 (or staffsys (make-instance 'omsystem))
                                                 linespace  scale sel thevoice nil))))
      (setf (inside thevoice) meslist)
+     (loop for (prev mes) on meslist
+           while mes
+           when (and (grap-measure-p prev) (grap-measure-p mes))
+             do (setf (prev-mes mes) prev))
      (make-graphic-extras thevoice)
      thevoice))
 
@@ -1315,9 +1358,9 @@
          (namedir (if (= 0 *staff-name-dir*) 6 0))
          dynamicpos)
     (om-with-fg-color nil *system-color* ;measure bars and num always in black! 
-    (loop for i from 0 to (- (length (inside self)) 1) 
-          do (let ((cur-mes (nth i (inside self)))
-                   (next-mes (nth (+ i 1) (inside self)))) 
+    (loop for (cur-mes next-mes) on (inside self)
+          for i from 0
+          do (progn
                (when (or (null next-mes) (and (x next-mes)
                                               (> (round (* zoom (x next-mes) )) minx)
                                               (< (round (* zoom (x cur-mes) )) maxx)))
@@ -1331,8 +1374,9 @@
     (collect-rectangles self)
     (remake-measures (inside self))
     (when thetempi
-      (loop for i from 0 to (- (length (inside self)) 1)  do
-            (setf dynamicpos (draw-tempi-in-mes self i (copy-list thetempi)  (nth i (inside self)) size staff y dynamicpos (car (rectangle (nth i (inside self))))))
+      (loop for mes in (inside self)
+            for i from 0 do
+            (setf dynamicpos (draw-tempi-in-mes self i (copy-list thetempi) mes size staff y dynamicpos (car (rectangle mes))))
             ))
     (when (and (name (reference self)) (stringp (name (reference self))))
       (om-with-font (get-font-to-draw 6)
@@ -1397,8 +1441,12 @@
                     ))
  |#   
 ;=========================================
-(defclas grap-measure (grap-container) 
-   ((metric :initform nil)))
+;;; prev-mes: the previous grap-measure in the same voice, set by
+;;; make-graph-ryth-obj (voice) so that get-chiffrage-space does not have to
+;;; search the voice for it (quadratic on long voices).
+(defclas grap-measure (grap-container)
+   ((metric :initform nil)
+    (prev-mes :initform nil)))
 
 (defmethod grap-measure-p ((self grap-measure)) t)
 (defmethod grap-measure-p ((self t)) nil)
@@ -1417,13 +1465,15 @@
                     :metric (list (fnumerator (first tree))
                                   (fdenominator (first tree)))
                     :parent pere))
-          (inside (flat (loop for item in (inside self) 
-                        for i = 0 then (+ i 1)
-                        collect 
+          ;; reuse TREE bound above: (tree self) recomputes approx + grace tree
+          ;; on each call, and gives the same result here
+          (inside (flat (loop for item in (inside self)
+                        for subtrees = (cadr tree) then (cdr subtrees)
+                        collect
                         (let* ((dur-obj-noire (/ (extent item) (qvalue item)))
                                (factor (/ (* 1/4 dur-obj-noire) real-beat-val)))
-                          (make-graph-ryth-obj item  top staffsys linespace  scale sel themes 
-                                               (* symb-beat-val factor) (list real-beat-val (nth i (cadr (tree self))))))))))
+                          (make-graph-ryth-obj item  top staffsys linespace  scale sel themes
+                                               (* symb-beat-val factor) (list real-beat-val (car subtrees))))))))
      (setf (inside themes) inside)
      (make-graphic-extras themes)
      themes))
@@ -1525,9 +1575,16 @@
   (if metric size (round size 1)))
 
 
+(defun previous-grap-measure (self)
+  "Measure before SELF in its parent; uses the PREV-MES link when valid."
+  (let ((prev (prev-mes self)))
+    (if (and prev (eq (parent prev) (parent self)))
+        prev
+      (nth (- (position self (inside (parent self)) :test 'equal) 1) (inside (parent self))))))
+
 (defmethod get-chiffrage-space ((self grap-measure) size)
    (if (or (show-chifrage self) (first-of-group? self)) size
-     (let ((previous-mes (nth (- (position self (inside (parent self)) :test 'equal) 1) (inside (parent self)))))
+     (let ((previous-mes (previous-grap-measure self)))
        (mesure-space self size (not (equal (metric self) (metric previous-mes)))))))
 
 
@@ -1560,7 +1617,7 @@
                               (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
                               (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
                               )
-                             (t (let ((previous-mes (nth (- (position self (inside (parent self)) :test 'equal) 1) (inside (parent self)))))
+                             (t (let ((previous-mes (previous-grap-measure self)))
                                   (unless (equal (metric self) (metric previous-mes))
                                     (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ (round size 4) ys) (format () "~D" (caar (tree (reference self)))))
                                     (om-draw-string  (+ (car (rectangle self)) deltachiff) (+ ys (round size 4) (round size 2)) (format () "~D" (cadar (tree (reference self)))))
@@ -1577,8 +1634,9 @@
 
 
 (defun remake-measures (list)
-  (loop for i from 0 to (- (length list) 2) do
-        (setf (nth 2 (rectangle (nth i list))) (nth 0 (rectangle (nth (+ i 1) list))))))
+  (loop for (cur next) on list
+        while next do
+        (setf (nth 2 (rectangle cur)) (nth 0 (rectangle next)))))
 
 
 
@@ -1646,6 +1704,17 @@
        (* 100 (+ min (round (- max min) 2))))
      7200))
 
+;;; Width of rest strings, memoized per font: only a handful of distinct
+;;; strings exist, but om-string-size goes to the font system on every call.
+(defvar *rest-size-cache* (make-hash-table :test 'eq))
+
+(defun cached-name-size (str font)
+  (when (> (hash-table-count *rest-size-cache*) 32) (clrhash *rest-size-cache*))
+  (let ((table (or (gethash font *rest-size-cache*)
+                   (setf (gethash font *rest-size-cache*) (make-hash-table :test 'equal)))))
+    (or (gethash str table)
+        (setf (gethash str table) (get-name-size str font)))))
+
 (defmethod make-graph-ryth-obj ((self rest) top staffsys linespace scale sel pere durtot &optional ryth)
   (declare (ignore head ryth))
   (let* ((ypos (midi2pixel (default-rest-position staffsys) top linespace scale))
@@ -1656,7 +1725,7 @@
     (setf onlyhead (first symb-info))
     (loop for i from 1 to (second symb-info) do
           (setf str (string+ str ".")))
-    (setf sizex (get-name-size str (get-font-to-draw 0)))
+    (setf sizex (cached-name-size str (get-font-to-draw 0)))
     (setf beams (get-number-of-beams durtot))
     (setf beams-num (if (listp beams) (car beams) beams))
     (setf delta-y (if (< beams-num 1) (list (round linespace -2) 0) (list 0 0))) 
@@ -2354,13 +2423,13 @@
            (typep (parent self) 'g-grap-grace-notes))
           (typep self 's-grap-grace-notes))
       (list (list (get-grace-offset self father) self))
-    (list (list (offset->ms (reference self) father) self))))
+    (list (list (graphic-onset self father) self))))
 
-(defmethod collect-temporal-objects ((self grap-rest) father) 
-   (list (list (offset->ms (reference self) father) self)))
+(defmethod collect-temporal-objects ((self grap-rest) father)
+   (list (list (graphic-onset self father) self)))
 
-(defmethod collect-temporal-objects ((self grap-measure) father) 
-   (cons (list (offset->ms (reference self) father) self)
+(defmethod collect-temporal-objects ((self grap-measure) father)
+   (cons (list (graphic-onset self father) self)
          (loop for item in (inside self)
                append (collect-temporal-objects item father))))
 
@@ -2393,12 +2462,12 @@
   (do-space-objects (get-temporal-objects self) size))
 
 (defun do-space-objects (list  size)
+  ;; walk packets pairwise instead of (nth i packet-list): linear, not quadratic
   (let ((packet-list  (group-space-objects list))
         (count 0))
-    (loop for packet in packet-list
-          for i = 1 then (+ i 1) do
-          (let ((nextdur (if (caar (nth i packet-list)) 
-                             (- (caar (nth i packet-list)) (caar (nth (- i 1) packet-list)))
+    (loop for (packet next) on packet-list do
+          (let ((nextdur (if (caar next)
+                             (- (caar next) (caar packet))
                            2000)))
             (setf count (space-packet packet count nextdur size))))))
 
@@ -2491,14 +2560,14 @@
    (loop for item in (inside self)
          append (collect-bpftime-objects item father size)))
 
-(defmethod collect-bpftime-objects ((self grap-rest) father size) 
-   (list (list (offset->ms (reference self) father) (car (main-point self)))))
+(defmethod collect-bpftime-objects ((self grap-rest) father size)
+   (list (list (graphic-onset self father) (car (main-point self)))))
 
 (defmethod collect-bpftime-objects ((self grap-ryth-chord) father size)
-   (list (list (offset->ms (reference self) father) (car (main-point self)))))
+   (list (list (graphic-onset self father) (car (main-point self)))))
 
 (defmethod collect-bpftime-objects ((self grap-chord) father size)
-   (list (list (offset->ms (reference self) father)  (car (main-point self)))))
+   (list (list (graphic-onset self father)  (car (main-point self)))))
 
 (defmethod collect-bpftime-objects ((self grap-measure) father size)
    (loop for item in (inside self)
@@ -2696,6 +2765,67 @@
 
 (defmethod set-graph-rectangles ((self grap-note) )
    (rectangle self))
+
+
+;;;==================================================================================
+;;; INCREMENTAL LAYOUT SUPPORT
+;;; space-objects and set-graph-rectangles are not idempotent: they turn the
+;;; relative positions/widths stored by make-graph-ryth-obj into absolute ones.
+;;; To re-layout a graphic tree that was already laid out (and drawn), every
+;;; object's main-point and rectangle are recorded right after it is built
+;;; (snapshot-layout) and put back before the next layout (restore-layout).
+;;; Used by update-panel-for-objects (scoreeditors.lisp) to rebuild only the
+;;; voices of a poly that were edited.
+
+(defun map-graphic-tree (fn g)
+  "Call FN on graphic object G and on every graphic object below it."
+  (funcall fn g)
+  (when (typep g 'grap-container)
+    (dolist (item (inside g)) (map-graphic-tree fn item)))
+  (when (and (typep g '(or grap-rest grap-ryth-chord)) (grap-grace-notes g))
+    (map-graphic-tree fn (grap-grace-notes g))))
+
+(defun snapshot-layout (g)
+  (map-graphic-tree
+   #'(lambda (o) (setf (layout0 o) (cons (copy-tree (main-point o)) (copy-tree (rectangle o)))))
+   g))
+
+(defun restore-layout (g sel)
+  "Put back the as-built geometry of G's tree, and recompute the selection flags
+the builders derive from SEL."
+  (map-graphic-tree
+   #'(lambda (o)
+       (let ((l0 (layout0 o)))
+         (when l0
+           (setf (main-point o) (copy-tree (car l0))
+                 (rectangle o) (copy-tree (cdr l0)))))
+       (when (and (typep o '(or grap-chord grap-note grap-rest))
+                  (not (typep o 's-grap-grace-notes)))
+         (setf (selected o) (member (reference o) sel :test 'equal))))
+   g))
+
+(defun rebuild-poly-voices (g dirty staffsys linespace scale sel)
+  "G: a grap-poly built and snapshotted earlier. Rebuild the graphic voices
+whose indexes are in DIRTY, restore the as-built geometry of the others.
+Same arguments as make-graph-ryth-obj (poly). The caller then lays out G."
+  (let ((poly (reference g)))
+    (setf (inside g)
+          (loop for voice in (inside poly)
+                for old in (inside g)
+                for i from 0
+                collect (if (member i dirty)
+                            (let* ((system (or (nth i staffsys) (car staffsys)))
+                                   (new (make-graph-ryth-obj voice (top-in-midi system) system
+                                                             linespace scale sel g nil)))
+                              (snapshot-layout new)
+                              new)
+                          (progn (restore-layout old sel) old))))
+    (let ((l0 (layout0 g)))
+      (when l0
+        (setf (main-point g) (copy-tree (car l0))
+              (rectangle g) (copy-tree (cdr l0)))))
+    (setf (aligned g) nil)
+    g))
 
 
 

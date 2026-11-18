@@ -325,9 +325,15 @@ returns them with real chords"
                       (loop for i in chrds
                             collect (if (listp i) (1- (length i)))))))
     (setf (slot-value self 'tree)
-            (add-tree-graces 
+            (add-tree-graces
              (remove-tree-graces (slot-value self 'tree))
              pos lgt))))
+
+;;; the grace editor calls this on the object of the score editor it was opened
+;;; from, which is a POLY in a poly editor
+(defmethod add-graces-to-tree ((self poly))
+  (loop for voice in (inside self) do
+        (add-graces-to-tree voice)))
 
 ;;;;;;;;;;;;;;;;;;;;
 

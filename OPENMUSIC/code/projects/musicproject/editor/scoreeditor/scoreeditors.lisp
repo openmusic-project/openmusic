@@ -2080,6 +2080,7 @@
   (om-invalidate-view self))
 |#
 
+#|
 ;#+(or linux win32)
 (defmethod update-panel ((self scorePanel) &optional (updateref nil))
   (set-editor-tonality self)
@@ -2113,6 +2114,98 @@
       (report-modifications (editor self)))
     (setf *redraw-diamonds* t)
     (om-invalidate-view self)))
+|#
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ENHANCING POLY;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;#+(or linux win32)
+(defmethod update-panel ((self scorePanel) &optional (updateref nil))
+  (set-editor-tonality self)
+  (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
+        (linespace (/ (staff-size self) 4)))
+    (setf (graphic-obj self)
+          (if (score-page-mode self)
+              (make-pages-form-obj self (objectfromeditor self) 0
+                                   120 linespace
+                                   (staff-mode self)
+                                   (get-approx-scale self)
+                                   (selection? self) (staff-sys self) (show-stems self) )
+            (make-graph-form-obj (objectfromeditor self) 0
+                                 120 linespace
+                                 (staff-mode self)
+                                 (get-approx-scale self)
+                                 (selection? self) (staff-sys self) (show-stems self))))
+    ;; keep what update-panel-for-objects needs to rebuild only edited voices
+    (when (and (eq (type-of (graphic-obj self)) 'grap-poly) (not (score-page-mode self)))
+      (snapshot-layout (graphic-obj self))
+      (setf (build-key (graphic-obj self)) (score-build-key self)))
+    (finish-update-panel self updateref linespace)))
+
+;;; layout + notifications, common to update-panel and update-panel-for-objects
+;;; (called with *internal-score-fonts* bound)
+(defmethod finish-update-panel ((self scorePanel) updateref linespace)
+  (when (and (graphic-obj self) (not (score-page-mode self)))
+    (let ((sboxf (remove nil
+                         (loop for i in (get-subframes self)
+                               collect (if (scoreboxframe-p i)
+                                           (let ((out (car (outframes i))))
+                                             (list (om-view-container out) out)))))))
+      (space-objects (graphic-obj self) (* 4 linespace))
+      (set-graph-rectangles (graphic-obj self))
+      (cons-the-bpf-time self (graphic-obj self))
+      (loop  for i in sboxf
+             do (center-outfleche-sboxframe (car i) (second i)))))
+  (when (and (editor self) updateref)
+    (report-modifications (editor self)))
+  (setf *redraw-diamonds* t)
+  (om-invalidate-view self))
+
+;;;===========INCREMENTAL UPDATE (POLY)
+;;; After an edit that only changed some notes/chords (pitch moves), rebuild the
+;;; graphic voices that contain them and keep the others (rebuild-poly-voices,
+;;; scoretools.lisp). Spacing is still global. Any doubt => full update-panel.
+
+(defmethod score-build-key ((self scorePanel))
+  "Editor parameters a graphic tree depends on, besides the object itself."
+  (list (staff-size self) (staff-mode self) (get-approx-scale self)
+        (staff-sys self) (show-stems self) *om-tonalite*))
+
+(defun edited-voice-indexes (poly objects)
+  "Sorted indexes of the voices of POLY containing every one of OBJECTS,
+or NIL if some object is not inside one voice (e.g. the poly itself)."
+  (let (indexes)
+    (dolist (obj objects (sort (remove-duplicates indexes) '<))
+      (let ((voice (ignore-errors
+                     (loop for x = obj then (parent x)
+                           while x
+                           when (eq (parent x) poly) return x))))
+        (if voice
+            (push (position voice (inside poly) :test 'eq) indexes)
+          (return nil))))))
+
+(defmethod update-panel-for-objects ((self scorePanel) objects &optional (updateref nil))
+  "Same as (update-panel self updateref) after an edit touching only OBJECTS."
+  (let* ((g (graphic-obj self))
+         (poly (objectfromeditor self))
+         (dirty (and objects
+                     (eq (type-of g) 'grap-poly)
+                     (not (score-page-mode self))
+                     (eq (reference g) poly)
+                     (layout0 g)
+                     (= (length (inside g)) (length (inside poly)))
+                     (every #'(lambda (gv v) (eq (reference gv) v)) (inside g) (inside poly))
+                     (equal (build-key g) (score-build-key self))
+                     (edited-voice-indexes poly objects))))
+    (if (null dirty)
+        (update-panel self updateref)
+      (progn
+        (set-editor-tonality self)
+        (let ((*internal-score-fonts* (init-fonts-to-draw (staff-size self)))
+              (linespace (/ (staff-size self) 4)))
+          (rebuild-poly-voices g dirty (staff-sys self) linespace
+                               (get-approx-scale self) (selection? self))
+          (finish-update-panel self updateref linespace))))))
+
+;;;;;;;;;;;;;;;;;END ENHANCING POLY;;;;;;;;;;;;;;;;;;;;
 
 ;maybe not needed anymore...
 #+macosx
@@ -5256,7 +5349,10 @@
     #-(and linux lispworks8)(om-set-view-size editor (om-interior-size win))
     #+(and linux lispworks8)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
       (setf (att-ed editor) ref)
-      (setf (attached-editors editor) ref)     
+      ;; the parent editor is kept in att-ed. attached-editors must stay a list
+      ;; of windows: the window close loops over it before close-editor-before,
+      ;; so storing REF there made the close fail and the edit was never applied.
+      ;(setf (attached-editors editor) ref)
       (set-omicron-approx editor (get-approx (object ref)))
       win))
 
@@ -5293,7 +5389,8 @@
     #-(and linux lispworks8.1)(om-set-view-size editor (om-interior-size win))
     #+(and linux lispworks8.1)(om-set-view-size editor (om-subtract-points (om-interior-size win) (om-make-point 0 20)))
       (setf (att-ed editor) ref)
-      (setf (attached-editors editor) ref)
+      ;; see intmeasureeditor: attached-editors must stay a list of windows
+      ;(setf (attached-editors editor) ref)
 
       (unless (typep ref 'sheet-track-obj)
       (set-omicron-approx editor (get-approx (object ref))))
@@ -5358,13 +5455,11 @@
 
 (defmethod close-editor-before  ((self intchordeditor))
   (setf (ref self) (att-ed self))
-  (let* ((voice (object (att-ed self)))
-         (sel (selection? (panel (att-ed self))))
-         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
-         (pos (loop for i in sel1
-                    collect (position i  (get-all-chords voice)))))
-    (tie-continuation-if (panel (ref self)) (orig self))
-    (update-panel (panel (ref self)) t))
+  ;; tie-continuation-if only fixes the voice tree; the parent is redrawn once
+  ;; here, rebuilding only the voice holding the chord when it is a poly editor
+  ;; (falls back to a full update-panel otherwise)
+  (tie-continuation-if (panel (ref self)) (orig self))
+  (update-panel-for-objects (panel (ref self)) (list (orig self)) t)
   (setf (attached-editors self) (attached-editors (att-ed self)))
   (setf (attached-editors (att-ed self)) nil); in order to close all intchord (om-close-window is recursive !)
   )
@@ -5372,20 +5467,22 @@
 (defmethod close-editor-before ((self intmeasureeditor))
   (setf (ref self) (att-ed self))
   (tie-a-voice (parent (orig self)) (list (next-cont-chord-p (orig self))))
-  (update-panel (panel (ref self)) t))
+  ;; only the voice holding the measure is rebuilt (falls back to a full
+  ;; update-panel when the parent is not a poly editor)
+  (update-panel-for-objects (panel (ref self)) (list (orig self)) t))
 
 (defmethod close-editor-before ((self intvoiceeditor))
   (setf (ref self) (att-ed self))
-  (update-panel (panel (ref self)) t))
+  (update-panel-for-objects (panel (ref self)) (list (object self)) t))
 
+;;; Re-ties the voice tree when the chord edited in an intchordeditor has
+;;; continuation chords. No redraw here: close-editor-before (intchordeditor),
+;;; the only caller, updates the panel right after.
 (defmethod tie-continuation-if ((self voicepanel) (chord chord))
-  (let* ((voice (object (om-view-container self)))
-         (sel (selection? self))
-         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
-         (chords (x-append chord (get-all-continuation-chords chord))))
+  (let ((voice (object (om-view-container self)))
+        (chords (x-append chord (get-all-continuation-chords chord))))
     (when (member-if #'con-chord-p chords)
-      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
-      (update-panel self t))))
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))))
 
 (defmethod tie-continuation-if ((self chordseqpanel) (chord chord)) nil)
 
@@ -5395,24 +5492,7 @@
   (let ((chords (x-append chord (get-all-continuation-chords chord)))
         (voice (get-voice chord)))
     (when (member-if #'con-chord-p chords)
-      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
-    (update-panel self t)))
-
-(defmethod tie-continuation-if ((self voicepanel) (chord chord))
-  (let* ((voice (object (om-view-container self)))
-         (sel (selection? self))
-         (sel1 (sort sel '< :key #'(lambda (x) (offset->ms x voice))))
-         (chords (x-append chord (get-all-continuation-chords chord))))
-    (when (member-if #'con-chord-p chords)
-      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice))
-      (update-panel self t))))
-
-(defmethod tie-continuation-if ((self polypanel) (chord chord))
-  (let ((chords (x-append chord (get-all-continuation-chords chord)))
-        (voice (get-voice chord)))
-    (when (member-if #'con-chord-p chords)
-      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))
-    (update-panel self t)))
+      (setf (tree voice) (check-tree-for-contchord (build-tree voice) voice)))))
 
 ;=========================
 ;ADD
@@ -5677,7 +5757,7 @@
         (setf midic-transp (- midic-transp 6000))
         (loop for item in list do
               (transpose-a item midic-transp))
-        (update-panel self t)
+        (update-panel-for-objects self list t)
         (om-invalidate-view self)
         t))))
 
@@ -5839,7 +5919,7 @@
                                    (t (let ((factor (round (approx-factor (get-current-scale (staff-tone self))))))
                                         (if (= dir 0) factor
                                           (* -1 factor)))))))
-  (update-panel self t)
+  (update-panel-for-objects self (selection? self) t)
   (om-invalidate-view self t))
 
 (defmethod move-selection ((self chordPanel) dir)

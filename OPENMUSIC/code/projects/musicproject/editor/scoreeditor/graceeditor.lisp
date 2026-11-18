@@ -6,15 +6,41 @@
 ;;We use a chord-seq panel.
 (defclass* grace-note-seq (chord-seq)()) 
 
-(defclass graceEditor (scoreeditor) ())
+;;; Like intchordeditor (scoreeditors.lisp), the grace editor works "detached":
+;;; editing in it does not rebuild the score it was opened from (see
+;;; change-in-int-editor for gracepanel below); the graces are applied once,
+;;; on close, to ORIG, and the score is updated incrementally.
+;;; Unlike intchordeditor it keeps REF (the score editor): its staff, approx
+;;; and scale are read from the score editor through it.
+(defclass graceEditor (scoreeditor)
+  ((att-ed :initform nil :accessor att-ed)     ; score editor it was opened from
+   (orig :initform nil :accessor orig)         ; chord or rest receiving the graces
+   (applied :initform nil :accessor applied))) ; graces already applied (close)
 
-(defmethod graceeditor-p ((self graceEditor)) t) 
+;;; Undo stays inside the grace editor. The scoreeditor methods forward to REF
+;;; when it is an editor, i.e. here the score editor: record-undo then cloned
+;;; the whole score on every note added/edited (seconds on a large poly), and
+;;; do-undo undid the score. The score is only changed on close anyway.
+(defmethod record-undo ((self graceEditor))
+  (setf (undo self) (clone (object self))))
+
+(defmethod do-undo ((self graceEditor))
+  (when (undo self)
+    (let ((current (clone (object self))))
+      (setf (object self) (undo self))
+      (off-selection (panel self))
+      (setf (selection? (panel self)) nil)
+      (update-panel (panel self))
+      (setf (undo self) current)
+      (mapcar 'om-close-window (attached-editors self)))))
+
+(defmethod graceeditor-p ((self graceEditor)) t)
 (defmethod graceeditor-p ((self t)) nil) 
 
 (defmethod Class-has-editor-p  ((self grace-note-seq)) t)
 (defmethod get-editor-class ((self grace-note-seq)) 'graceEditor)
 
-
+#|
 (defmethod close-editor-after ((self graceEditor)) 
   (let* ((obj (object self))
          (chords (inside obj))
@@ -34,28 +60,45 @@
     (setf (mus-const sel) (repeat-n 1 (length graces)))
     (report-modifications (ref self))
     (update-panel (panel (ref self)))))
+|#
 
+(defun apply-grace-editor (self)
+  "Attach the grace notes of grace editor SELF to its chord (or rest) and update
+the score editor it was opened from. Runs once: closing calls both
+close-editor-after and close-editor-before."
+  (unless (applied self)
+    (setf (applied self) t)
+    (let* ((score-ed (or (att-ed self) (ref self)))
+           (panel (panel score-ed))
+           (score (object score-ed))
+           (sel (or (orig self) (car (selection? panel)))))
+      (when sel
+        (let ((graces (loop for i in (inside (object self))
+                            collect (objfromobjs i (make-instance 'grace-chord)))))
+          (loop for i in graces do (setf (thechord i) sel))
+          (setf (gnotes sel)
+                (make-instance 'grace-notes
+                               :glist graces
+                               :thechord sel
+                               :before? t))
+          ;; in a poly only the voice of SEL changes
+          (add-graces-to-tree (if (poly-p score) (get-voice sel) score))
+          (setf (mus-const sel) (repeat-n 1 (length graces)))
+          (report-modifications score-ed)
+          ;; only the voice of SEL is rebuilt (full update-panel if not a poly)
+          (update-panel-for-objects panel (list sel)))))))
+
+(defun detach-grace-editor (grace-ed thing score-ed)
+  "Remember what GRACE-ED edits graces for, as intchordeditor does (orig/att-ed)."
+  (setf (orig grace-ed) thing
+        (att-ed grace-ed) score-ed))
+
+(defmethod close-editor-after ((self graceEditor))
+  (apply-grace-editor self))
 
 ;necessary for internal "detached" editors
 (defmethod close-editor-before ((self graceeditor))
-(let* ((obj (object self))
-         (chords (inside obj))
-         (voice (object (ref self)))
-         (sel (car (selection? (panel (ref self)))))
-         (pos (position sel (inside voice) :test 'equal)) ;(1- (evt-pos sel)))
-         (graces (loop for i in chords
-                       collect 
-                         (objfromobjs i (make-instance 'grace-chord)))))
-  (loop for i in graces do (setf (thechord i) sel))
-    (setf (gnotes sel) 
-          (make-instance 'grace-notes
-                         :glist graces
-                         :thechord sel
-                         :before? t))
-    (add-graces-to-tree voice)
-    (setf (mus-const sel) (repeat-n 1 (length graces)))
-    (report-modifications (ref self))
-    (update-panel (panel (ref self)))))
+  (apply-grace-editor self))
 
 ;;;;DELETE GRACE NOTES
 
@@ -184,7 +227,9 @@
                                       (om-dialog-item-act item
                                                        (declare (ignore item)) 
                                                         (om-close-window editor)
-                                                        (update-panel (panel (ref editor))));update voice panel when first created
+                                                        ;; closing already applied the graces and updated the score
+                                                        (unless (applied editor)
+                                                          (update-panel (panel (ref editor)))));update voice panel when first created
                                       ))
          
                   
@@ -388,6 +433,13 @@
    (update-panel self t))
 
   
+;;; Editing graces must not rebuild the score the grace editor was opened
+;;; from (report-modifications -> change-in-int-editor -> full update-panel on
+;;; every edit): the score only changes on close, see apply-grace-editor.
+(defmethod change-in-int-editor ((self scorePanel) (internal gracepanel) newobject lastobj)
+  (declare (ignore newobject lastobj))
+  nil)
+
 (defmethod set-name-to-mus-obj ((self gracepanel))
   (let ((name (om-get-user-string "Voice name:" :initial-string (or (get-name (object (editor self))) ""))))
     (when name
@@ -582,6 +634,7 @@
          (internal (obj-for-internal-editor chrdseq))
          (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
     (setf (approx chrdseq) (approx self));ADD
+    (detach-grace-editor (editor win) thing editor)
     (push win (attached-editors editor))))
 
 (defmethod open-add-grace-panel ((self voice) thing panel)
@@ -594,6 +647,7 @@
          (internal (obj-for-internal-editor chrdseq))
          (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
     (setf (approx chrdseq) (approx self));ADD
+    (detach-grace-editor (editor win) thing editor)
     (push win (attached-editors editor))))
 
 
@@ -607,4 +661,5 @@
          (internal (obj-for-internal-editor chrdseq))
          (win (make-editor-window 'graceeditor chrdseq "Grace note editor" editor)))
     (setf (approx chrdseq) (approx self));ADD
+    (detach-grace-editor (editor win) thing editor)
     (push win (attached-editors editor))))

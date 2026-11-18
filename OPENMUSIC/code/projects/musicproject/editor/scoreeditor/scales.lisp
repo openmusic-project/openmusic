@@ -66,8 +66,8 @@
     (let* ((vlength (length (lines-list self)))
            (int-cents (mod midic 1200))
            (index (round (/ int-cents (approx-factor self) )))
-           (up-octave (truncate (/ index (length (lines-list self))))))
-      (setq index (mod index (length (lines-list self))))
+           (up-octave (truncate (/ index vlength))))
+      (setq index (mod index vlength))
       (if (and (= (approx-factor self) 25) (= index (1- vlength))) (incf up-octave))
       (list (nth index  (lines-list self)) (nth  index (alteration-list self)) up-octave)))
 

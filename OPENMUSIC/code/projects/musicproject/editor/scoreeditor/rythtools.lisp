@@ -76,7 +76,6 @@ Avec des exceptions tel que (6 4) -> (6 4)."
       (setf res
             (list (/  (car res) 2)
                   (/ (second res) 2)))
-      (print (list "res" res))
       (if (or (ratiop (car res))
               (ratiop (second res)))
           (list (* 2 (car res))
