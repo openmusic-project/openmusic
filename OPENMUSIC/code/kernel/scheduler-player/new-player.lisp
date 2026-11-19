@@ -504,7 +504,9 @@
   (general-pause (player self)))
 
 (defmethod editor-stop ((self play-editor-mixin))
-  (general-stop (player self)))
+  (general-stop (player self))
+  (om-stop-transient-drawing (panel self));clear cursor
+  )
 
 (defmethod editor-play/stop ((self play-editor-mixin))
   (if (idle-p (player self))
