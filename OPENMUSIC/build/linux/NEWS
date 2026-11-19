@@ -13,6 +13,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- POLY display
 - single-item-list selection input
 - Extras are MIDI aware
 - Empty SDIFFILE, MIDIFILE obj warning on double-click 
@@ -20,7 +21,8 @@ IMPROVEMENTS
 
 FIXES
 
-- Multiple Clefs displays octavas sign
+- drag&drop control
+- Multiple Clefs displays octava sign
 - midi and audio preference refresh (pop-up linux)
 - sysex now sends correct sysesex midi messages
 - OMSHEET fixes for linux
