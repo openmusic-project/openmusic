@@ -86,7 +86,7 @@
 (defvar *om-pict-folder* nil)
 (defvar *om-cursor-folder* nil)
 
-(defvar *om-pict-type* '("tif" "tiff" "gif" "jpg" "jpeg" "png" "bmp"))
+(defvar *om-pict-type* '("tif" "tiff" "gif" "jpg" "jpeg" "png" "bmp" "svg"))
 
 (defvar *om-cursor-type* nil)
 ;#-win32(setf *om-cursor-type* '("tif" "tiff"))
