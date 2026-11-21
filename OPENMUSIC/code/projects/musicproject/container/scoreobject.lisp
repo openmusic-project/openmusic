@@ -1431,10 +1431,27 @@ of all its direct subcontainers (supposed adjacent)"
                      voice))
                   (t nil)))
         
+#|
 (defmethod* Objfromobjs ((Self measure) (Type voice))
   (ObjFromObjs (list self) type))
+|#
+
+        
+(defmethod* Objfromobjs ((Self measure) (Type voice))
+  (make-instance 'voice
+                 :tree (list '? (list (tree self)))
+                 :chords (chords self)
+                 :tempo (meastempo-to-voicetempo self)
+                 ))
 
 
+(defmethod* meastempo-to-voicetempo ((self measure))
+  (let ((tempo (tempo self)))
+    (if (second tempo)
+        (list (car tempo) (loop for i in (second tempo)
+                                  collect (list (cons 0 (car i))
+                                                (second i))))
+      tempo)))
 
 ;;; POLY
 
