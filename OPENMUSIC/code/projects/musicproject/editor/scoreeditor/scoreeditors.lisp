@@ -3401,6 +3401,7 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
           (("q") "Start Midi Record")
           (("w") "Stop Midi Record")
           ("esc" "Stop  + Reset")
+          ("ctrl+esc" "Scroll to cursor");scroll-update
 	  )))
 
 ;----------ZOOM HANDLER
@@ -3695,8 +3696,6 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
 
 ;PANEL
 
-
-;(defclass voicepanel (rythmicpanel chordseqPanel) ())
 
 (defclass measurepanel  (chordseqPanel) ())
 
@@ -4147,6 +4146,7 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
            (("q") "Start Midi Record")
            (("w") "Stop Midi Record")
            ("esc" "Stop  + Reset")
+           ("ctrl+esc" "Scroll to cursor");scroll-update
            )))
 
 
@@ -7681,5 +7681,5 @@ Does NOT modify dur/time/parent/continuation etc."
 (defmethod get-help-list :around ((self multiSeqPanel))
   (let ((consed (reverse (call-next-method))))
     (push '(("f" "F") "Flip Selection Down/Up") (car consed))
-    (setf (car consed) (append (car consed) '(("esc" "Stop  + Reset"))))
+    (setf (car consed) (append (car consed) '(("esc" "Stop  + Reset") ("ctrl+esc" "Scroll to cursor"))))
     (nreverse consed)))
