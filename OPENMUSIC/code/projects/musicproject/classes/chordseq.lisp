@@ -397,6 +397,28 @@ All values (excepted onsets and legato) are returned (in the box outputs) as lis
       chordseq)))
 
 
+;due to an old bug (since 6.15) the chord-seq don't have correct qvalue and extent.
+(defmethod* Objfromobjs ((Self voice) (Type Chord-seq))
+  (if (subtypep (type-of self) (type-of type))
+    (call-next-method)
+    (let (;(chordseq  (flatten-container self '(chord note) (type-of type))))
+          (chordseq  (collect-and-transform self '(chord note rest))));for grace notes compat
+      (SET-TEMPO chordseq 60) ; in case we come from a voice in a diff tempo
+      (cast-to-chords chordseq)
+      (untie-chords chordseq)
+      (adjust-extent chordseq)
+      ;not working for maquette! TODO
+      ;(setapprox type (approx self));;Edo scale heritage
+      (setf (approx chordseq) (approx self))
+      (make-instance 'chord-seq
+                     :lmidic (lmidic chordseq)
+                     :lonset (lonset chordseq)
+                     :ldur (ldur chordseq)
+                     :lvel (lvel chordseq)
+                     :lchan (lchan chordseq)
+                     :lport (lport chordseq)))))
+
+
 
 (defun mk-chord-at (t-time pitch-list dur-list offset-list chan-list vel-list port-list)
   (let ((chord (mki 'chord
