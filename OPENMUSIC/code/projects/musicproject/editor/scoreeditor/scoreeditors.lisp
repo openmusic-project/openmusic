@@ -1176,22 +1176,9 @@
           ; (#\r (get-score-tree self)) ;;wait for score-box distribution fix 
            (t (call-next-method))))
         ;; ZOOM-INPUT: Ctrl+= / Ctrl+- step staff-zoom by 1.1; Ctrl+0 resets to 100%.
+        ;;plus besoin car c'est un callback: change-editor-zoom ->score-touch-zoom -> om-zoom-touch-callback
         ((om-command-key-p)
-         (cond
-          ((or (equal char #\=) (equal char #\+))
-           (change-editor-zoom
-            self
-            (max 1 (min 1000 (round (* (staff-zoom self) 110)))))
-           t)
-          ((equal char #\-)
-           (change-editor-zoom
-            self
-            (max 1 (min 1000 (round (/ (* (staff-zoom self) 100) 1.1)))))
-           t)
-          ((equal char #\0)
-           (change-editor-zoom self 100)
-           t)
-          (t (scroll-pane self char))))
+         (scroll-pane self char))
         ((edit-cursor self)
          (cond 
           ((and (rythmic? (edit-cursor self)) (char-is-figure char))
@@ -1215,26 +1202,21 @@
           ;;; MARCHE PAS
           ((equal char #\.) (point-edit-cursor self))
           ))
-        ((om-command-key-p) (scroll-pane self char))
         (t 
          (case char
-           
            (#\SPACE (editor-play/stop (editor self)))
-           
            (:om-key-esc 
             ;; not so good: the escape key serves both to stop the player and toggle notes/rests....
-            (if (and (selection? self)
+            (cond
+            ((and (selection? self)
                      (idle-p (player (editor self))))
                 
-                (toggle-selection self)
-            
-              (let ()
-                (editor-stop (editor self))
-                (when (recording (editor self))
-                  (stop-recording (editor self))
-                  (setf (selected-p (nth 3 (play-buttons (title-bar (editor self))))) nil)))
-              )
-            )
+                (toggle-selection self))
+            (t ;(reset-cursor self) 
+             (editor-stop-reset (om-view-container self))
+               (scroll-pane self char)
+               )))
+           
            (#\s (if (om-command-key-p) 
                     (omng-save (mycontainer(associated-box (object (editor self)))))
                   (toggle-patch-mode self)))
@@ -1301,13 +1283,8 @@
                     (#\/ (untie-selection self))
                     (#\o (open-internal-editor self))
                     ;; (#\/ (subdivise-edit-cursor self)) ;a faire
-                           
                     (otherwise (om-beep))))
-                 )
-              (case char
-                (:om-key-esc (reset-cursor self)))
-              ))
-           
+                 )))
          (when (editor self) (update-inspector (editor self) 0))
          )))
 
@@ -2705,6 +2682,7 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
             )))
     (call-next-method)))
 
+
 ;==========================================================================
 ; SPECIFIC EDITORS
 ;==========================================================================
@@ -3024,6 +3002,20 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
             0)))
 
 
+(defmethod editor-stop-reset ((self scoreeditor))
+   (editor-stop self)
+   (reset-cursor (panel self))
+   (update-cursor (panel self) 0))
+
+(defmethod reset-cursor ((self chordseqpanel))
+  (call-next-method)
+  (let* ((editor (om-view-container self))
+         (subviews (om-subviews editor))
+         (ctrl (last-elem subviews))
+         (meas (nth 9 (om-subviews ctrl))))
+    (setf (value meas) 0)
+    (om-set-dialog-item-text meas "0")))
+
 
 (defmethod scroll-play-window ((self chordseqPanel))
    (let ((delta (get-key-space self)))
@@ -3032,7 +3024,17 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
                                    (om-v-scroll-position self)
                                    ))))
 
-
+(defmethod scroll-pane ((self chordseqpanel) char) 
+  (call-next-method)
+  (let* ((editor (om-view-container self))
+         (subviews (om-subviews editor))
+         (ctrl (last-elem subviews))
+         (meas (nth 9 (om-subviews ctrl)))
+         (zoom (float (/ 1 (get-edit-param editor 'zoom))))
+         (val (round (+ (* zoom 1000) (pixel-toms self (om-scroll-position self))))))
+    (setf (value meas) val)
+    (om-set-dialog-item-text meas (write-to-string val))
+    ))
 
 
 (defmethod all-chords-2-ms ((self chord-seq))
@@ -3401,7 +3403,6 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
           (("q") "Start Midi Record")
           (("w") "Stop Midi Record")
           ("esc" "Stop  + Reset")
-          ("ctrl+esc" "Scroll to cursor");scroll-update
 	  )))
 
 ;----------ZOOM HANDLER
@@ -4001,6 +4002,33 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
      (setf (value numbox) pos)
      (call-next-method)))
 
+(defmethod scroll-pane ((self voicepanel) char)
+  (let* ((pos (om-scroll-position self))
+         (vpos (om-point-v pos))
+         (hpos (om-point-h pos))
+         (inc (if (om-shift-key-p) 500 50)))
+    (case char 
+      (:om-key-right 
+       (om-move-scroll-position self (om-make-point (+ hpos inc) vpos))
+       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      (:om-key-left
+       (om-move-scroll-position self (om-make-point (- hpos inc) vpos))
+       (om-set-h-scroll-position self  (om-point-h (om-scroll-position self))))
+      (:om-key-up
+       (om-move-scroll-position self (om-make-point hpos (- vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
+      (:om-key-down
+       (om-move-scroll-position self (om-make-point hpos (+ vpos inc)))
+       (oa::om-set-v-scroll-position self  (om-point-v (om-scroll-position self))))
+      (:om-key-esc 
+       (om-move-scroll-position self (om-make-point 0 0))
+       (oa::om-set-h-scroll-position self 0)
+       (oa::om-set-v-scroll-position self 0))
+      )
+    (om-invalidate-view self t)
+    ;(capi::update-drawing-with-cached-display self);linux
+    ))
+
 (defmethod change-ties-too ((self voicePanel) chord)
    (let ((pointer (next-container chord '(chord))))
      (if (cont-chord-p pointer) 
@@ -4146,7 +4174,6 @@ or NIL if some object is not inside one voice (e.g. the poly itself)."
            (("q") "Start Midi Record")
            (("w") "Stop Midi Record")
            ("esc" "Stop  + Reset")
-           ("ctrl+esc" "Scroll to cursor");scroll-update
            )))
 
 
