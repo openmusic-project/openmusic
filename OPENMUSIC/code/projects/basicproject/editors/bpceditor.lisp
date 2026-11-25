@@ -54,6 +54,20 @@
 (defmethod get-panel-class ((self bpcEditor)) 'bpcPanel)
 (defmethod get-control-class ((self bpcEditor)) 'control-bpc)
 
+(defmethod bpceditor-p ((self bpceditor)) t)
+(defmethod bpceditor-p ((self t)) nil)
+
+(defmethod add-multibpc-controls ((self Control-Bpf))
+  (om-add-subviews self
+              (om-make-dialog-item 'om-check-box (om-make-point 220 20) (om-make-point 100 16) "Background"
+                                     :di-action (om-dialog-item-act item
+                                      (setf (show-back-p (panel (om-view-container  (om-view-container  item))))
+                                        (om-checked-p item))
+                                      (om-invalidate-view (panel (om-view-container  (om-view-container  item))) t))
+                                     :checked-p t
+                                     :font *om-default-font1*
+                                     :bg-color *controls-color*
+                                     )))
 
 ;------------------------------------
 ;bpc EDITOR VIEW Definition and initialization

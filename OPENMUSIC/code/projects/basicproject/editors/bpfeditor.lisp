@@ -83,7 +83,7 @@
                                              :checked-p nil 
                                              ))
 
-                   (setf (precisionitem self) (om-make-dialog-item 'numbox (om-make-point 340 4) (om-make-point 30 18) (format nil " ~D" 0)
+                   (setf (precisionitem self) (om-make-dialog-item 'numbox (om-make-point 340 2) (om-make-point 30 18) (format nil " ~D" 0)
                                         :di-action nil
                                         :font *om-default-font1*
                                         :bg-color *om-white-color*
@@ -92,7 +92,7 @@
                                                       (editor-change-precision (om-view-container self) (value item)))
                                         :min-val 0
                                         :max-val 10))
-                   (om-make-dialog-item 'om-static-text (om-make-point 220 4) (om-make-point 120 18) "Precision (decimals)"
+                   (om-make-dialog-item 'om-static-text (om-make-point 220 0) (om-make-point 120 18) "Precision (decimals)"
                                          :font *om-default-font1*
                                          :bg-color *controls-color*)
                    )
@@ -309,8 +309,10 @@
     ;(setf ranges (space-bpf-ranges (give-editor-list-range self)))
     ;(set-ranges panel  (list (first ranges) (second ranges)) (list (third ranges) (fourth ranges)))
     (set-control self control)
-    (when (multibpf? self) (add-multibpf-controls (control self)))
-    )
+    (cond
+     ((and (multibpf? self) (bpceditor-p self)) (add-multibpc-controls (control self)))
+     ((multibpf? self) (add-multibpf-controls (control self)))
+     (t)))
    (set-attached-editor self)
    (init-spline-manager self))
 

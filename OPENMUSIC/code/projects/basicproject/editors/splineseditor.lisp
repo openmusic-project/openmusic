@@ -50,7 +50,7 @@
                      ;                     :font *controls-font*
                      ;                     :bg-color *controls-color*
                      ;                     )
-                     (om-make-dialog-item 'om-check-box (om-make-point 400 7) (om-make-point 110 8) 
+                     (om-make-dialog-item 'om-check-box (om-make-point 400 3) (om-make-point 110 8) 
                                           (format nil "Spline preview")
                                           :di-action  (om-dialog-item-act item
                                                         (set-spline-preview (spline (om-view-container (om-view-container item)))
