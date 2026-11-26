@@ -889,3 +889,113 @@ functions concatenated together inside.
               thebpc-lib)
             )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun om-bpf-y-on-segment (p1 p2 x)
+  "Interpole lineairement entre deux points."
+  (let ((x1 (first p1))
+        (y1 (second p1))
+        (x2 (first p2))
+        (y2 (second p2)))
+    (+ y1
+       (* (- y2 y1)
+          (/ (- x x1) (- x2 x1))))))
+
+
+(defun om-bpf-add-unique (point points tolerance)
+  "Ajoute un point s'il n'existe pas deja."
+  (if (some
+       (lambda (p)
+         (and
+          (< (abs (- (first p)
+                     (first point)))
+             tolerance)
+          (< (abs (- (second p)
+                     (second point)))
+             tolerance)))
+       points)
+      points
+    (cons point points)))
+
+
+(defmethod! bpf-intersect ((self1 list)  (self2 list))
+  :icon 233
+  :indoc '("a list or BPF" "a list or BPF")
+  :initvals '(nil nil)
+  :doc "Calcule les intersections de deux BPF.
+   Entrees : listes de points (x y).
+   Sortie : liste des intersections (x y)."
+
+  (let ((result nil)
+        (eps 1d-8))
+
+    (loop for a in self1
+          for b in (cdr self1)
+          do
+      (loop for c in self2
+            for d in (cdr self2)
+            do
+
+        (let* ((xmin (max (first a) (first c)))
+               (xmax (min (first b) (first d))))
+
+          ;; Les segments doivent avoir un domaine commun
+          (when (<= xmin xmax)
+
+            (let* ((ya0 (om-bpf-y-on-segment a b xmin))
+                   (yb0 (om-bpf-y-on-segment c d xmin))
+                   (ya1 (om-bpf-y-on-segment a b xmax))
+                   (yb1 (om-bpf-y-on-segment c d xmax))
+                   (delta0 (- ya0 yb0))
+                   (delta1 (- ya1 yb1)))
+
+              (cond
+
+                ;; Segments confondus sur un intervalle
+                ((and (< (abs delta0) eps)
+                      (< (abs delta1) eps))
+                 (setf result
+                       (om-bpf-add-unique
+                        (list xmin ya0) result eps))
+                 (setf result
+                       (om-bpf-add-unique
+                        (list xmax ya1) result eps)))
+
+                ;; Intersection a gauche
+                ((< (abs delta0) eps)
+                 (setf result
+                       (om-bpf-add-unique
+                        (list xmin ya0) result eps)))
+
+                ;; Intersection a droite
+                ((< (abs delta1) eps)
+                 (setf result
+                       (om-bpf-add-unique
+                        (list xmax ya1) result eps)))
+
+                ;; Changement de signe : intersection interieure
+                ((< (* delta0 delta1) 0)
+
+                 (let* ((x
+                          (- xmin
+                             (* delta0
+                                (/ (- xmax xmin)
+                                   (- delta1 delta0)))))
+                        (y (om-bpf-y-on-segment a b x)))
+
+                   (setf result
+                         (om-bpf-add-unique
+                          (list x y) result eps))))))))))
+
+    ;; Classement des intersections par abscisse
+    (sort result #'< :key #'first)))
+
+
+(defmethod! bpf-intersect ((self1 bpf)  (self2 bpf))
+  (let* ((bpf1 (point-pairs self1))
+         (bpf2 (point-pairs self2))
+         (points (bpf-intersect bpf1 bpf2)))
+    (simple-bpf-from-list (mapcar 'car points)
+                          (mapcar 'second points)
+                          (type-of self1) 
+                          (decimals self1))))

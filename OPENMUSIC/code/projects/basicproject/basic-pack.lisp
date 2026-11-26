@@ -71,7 +71,7 @@
                               linear-fun bpf-interpol
                               reduce-points reduce-n-points
                               bpf-offset bpf-crossfade bpf-extract bpf-scale 
-                              bpf-stretch bpf-concat
+                              bpf-stretch bpf-concat bpf-intersect
                               om-rotate om-translate om-mirror 
                               export-svg import-svg
                               ) *function-package*)
