@@ -2,6 +2,7 @@
 
 NEW FEATURES
 
+- New Functions: bpf-intersect
 - Export to OMPYTHON
 - SBCL port (P.H Raposo)
 - hex-to-decimal, decimal-to-hex conversion
@@ -13,6 +14,7 @@ NEW FEATURES
 
 IMPROVEMENTS
 
+- Display all bpfs in bpf-lib
 - POLY display
 - single-item-list selection input
 - Extras are MIDI aware
