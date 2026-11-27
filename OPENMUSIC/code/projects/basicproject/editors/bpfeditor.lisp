@@ -185,9 +185,14 @@
                              :icon1 "color" :icon2 "color-pushed"
                              :lock-push nil
                              :action #'(lambda (item) (set-random-color (panel self)))))
+         (list (om-make-view 'om-icon-button :position (om-make-point 172 2) :size (om-make-point 22 22)
+                             :id :color
+                             :icon1 "grid-color" :icon2 "grid-color-pushed"
+                             :lock-push nil
+                             :action #'(lambda (item) (set-grid-color (panel self)))))
          (loop for mode in '(:normal :pen :zoom :scroll :move)
                for icon in '("mousecursor" "pencursor" "zoomcursor" "handcursor" "handbpfcursor")
-               for xx = 180 then (+ xx 21) 
+               for xx = 202 then (+ xx 21) 
                collect 
                  (let ((m mode))
                    (om-make-view 'om-icon-button :position (om-make-point xx 2) :size (om-make-point 22 22)
@@ -198,7 +203,7 @@
                                                   (equal m (mode (panel self))))
                                  :action #'(lambda (item) (set-cursor-mode self m)))
                    ))
-         (list (om-make-view 'om-icon-button :position (om-make-point 300 2) :size (om-make-point 22 22)
+         (list (om-make-view 'om-icon-button :position (om-make-point 322 2) :size (om-make-point 22 22)
                              :id :resize
                              :icon1 "resize" :icon2 "resize-pushed"
                              :lock-push nil
@@ -217,6 +222,12 @@
     (setf (selected-p button) (equal (mode (om-view-container self)) (id button))))
   (om-invalidate-view self))
 
+(defmethod set-grid-color ((self bpfpanel))
+  (let ((cont (om-view-container self))
+        (color (om-choose-color-dialog)))
+       (print (list "color" color cont))
+       (setf (grid-color self) color)
+  (om-invalidate-view self)))
 
 (defmethod om-draw-contents :before ((Self bpf-titlebar)) 
   (let ((editor (om-view-container self)))

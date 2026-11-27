@@ -648,6 +648,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
     (rangey :initform nil :accessor rangey)
     (rulery :initform nil :accessor rulery)
     (scrollery :initform nil :accessor scrollery)
+    (grid-color :initform *bpf-grid-color* :accessor grid-color)
     ))
 
 (defmethod get-system-etat ((self view-with-ruler-xy)) 
@@ -739,7 +740,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    (let* ((rulerx (rulerx self))
           (rulery (rulery self))
           (system-etat (get-system-etat self)))
-     (om-with-fg-color self *om-red-color*
+     (om-with-fg-color self (grid-color self)
        (om-with-line '(2 2)
          (ruler-print-draw-grille rulery 'y offx offy system-etat)
          (ruler-print-draw-grille rulerx 'x offx offy system-etat)))))
@@ -823,7 +824,7 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
    (let* ((rulerx (rulerx self))
           (rulery (rulery self))
           (system-etat (get-system-etat self)))
-     (om-with-fg-color self *om-red-color*
+     (om-with-fg-color self (grid-color self)
        (om-with-line-size 2
          (ruler-print-draw-grille rulery 'y offx offy system-etat)
          (ruler-print-draw-grille rulerx 'x offx offy system-etat))

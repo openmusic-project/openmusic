@@ -320,6 +320,7 @@
 (defvar *patch-bg-color* nil)
 (defvar *score-bg-color* nil)
 (defvar *bpf-bg-color* nil)
+(defvar *bpf-grid-color* nil)
 (defvar *sound-bg-color* nil)
 (defvar *sound-wave-color* nil)
 (defvar *sound-fill* nil)
@@ -345,6 +346,7 @@
     (setf *score-bg-color* (get-pref modulepref :score-bg-color))
     (setf om-lisp::*text-bg-color* (om-color-to-capi (get-pref modulepref :text-bg-color)))
     (setf *bpf-bg-color*      (eval (get-pref modulepref :bpf-bg-color)))
+    (setf *bpf-grid-color*      (eval (get-pref modulepref :bpf-grid-color)))
     (setf *sound-bg-color*      (eval(get-pref modulepref :sound-bg-color)))
     (setf *sound-wave-color*      (eval(get-pref modulepref :sound-wave-color)))
     (setf *sound-fill*      (eval(get-pref modulepref :sound-fill)))
@@ -388,6 +390,7 @@
    :score-bg-color *om-white-color*
    :text-bg-color *om-white-color*
    :bpf-bg-color  *om-white-color*
+   :bpf-grid-color  *om-red-color*
    :sound-bg-color  *om-white-color*
    
    :sound-wave-color *om-black-color*
@@ -695,14 +698,16 @@
                                    :after-fun #'(lambda (item) (set-pref modulepref :patch-bg-color (color item))))
                       
                        ;2c
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "BPF:"
+                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)
+                                                                         ) (om-make-point 120 24) "SOUND:"
                                           :font *controls-font*)
-                       
+                      
                      (om-make-view 'om-color-view 
                                    :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
-                                   :bg-color (get-pref modulepref :bpf-bg-color)
-                                   :color (get-pref modulepref :bpf-bg-color)
-                                   :after-fun #'(lambda (item) (set-pref modulepref :bpf-bg-color (color item))))
+                                   :bg-color (get-pref modulepref :sound-bg-color)
+                                   :color (get-pref modulepref :sound-bg-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :sound-bg-color (color item))))
+                     
                       ;1c
                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 20) (incf posy 30)) (om-make-point 120 24) "Score:"
                                           :font *controls-font*)
@@ -716,16 +721,15 @@
 
 
                       ;2c
-                     (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)
-                                                                         ) (om-make-point 120 24) "SOUND:"
+                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (incf posy 0)) (om-make-point 120 24) "BPF:"
                                           :font *controls-font*)
-                      
+                       
                      (om-make-view 'om-color-view 
                                    :position (om-make-point (+ l1 280) (incf posy 0)) :size (om-make-point 60 25) 
-                                   :bg-color (get-pref modulepref :sound-bg-color)
-                                   :color (get-pref modulepref :sound-bg-color)
-                                   :after-fun #'(lambda (item) (set-pref modulepref :sound-bg-color (color item))))
-
+                                   :bg-color (get-pref modulepref :bpf-bg-color)
+                                   :color (get-pref modulepref :bpf-bg-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :bpf-bg-color (color item))))
+                    
                       ;1c
                      (om-make-dialog-item 'om-static-text  (om-make-point (+ l1 20) (incf posy 40)) (om-make-point 120 24) "Reset:"
                                           :font *controls-font*)
@@ -755,6 +759,16 @@
                                                (show-preferences-win)
                                                                   
                                                )))
+                         ;2c
+                      (om-make-dialog-item 'om-static-text (om-make-point (+ l1 200) (- (incf posy 0) 10)) (om-make-point 120 24) "BPF Grid:"
+                                          :font *controls-font*)
+                       
+                     (om-make-view 'om-color-view 
+                                   :position (om-make-point (+ l1 280) (- (incf posy 0) 10)) :size (om-make-point 60 25) 
+                                   :bg-color (get-pref modulepref :bpf-grid-color)
+                                   :color (get-pref modulepref :bpf-grid-color)
+                                   :after-fun #'(lambda (item) (set-pref modulepref :bpf-grid-color (color item))))
+                  
                      )   
 
     (om-add-subviews thescroll
