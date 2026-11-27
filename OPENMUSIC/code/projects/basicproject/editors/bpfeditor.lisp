@@ -18,7 +18,7 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with OpenMusic.  If not, see <http://www.gnu.org/licenses/>.
 ;
-; Authors: Gerard Assayag, Augusto Agon, Jean Bresson
+; Authors: Gerard Assayag, Augusto Agon, Jean Bresson, Karim Haddad
 ;=========================================================================
 
 (in-package :om)
@@ -46,17 +46,17 @@
 
 (defmethod initialize-instance :after  ((Self Control-Bpf) &key)
   (om-add-subviews self
-                  (setf (lineitem  self)
-                        (om-make-dialog-item 'om-check-box (om-make-point 25 2) (om-make-point 60 16) "Lines"
-                                             :di-action  (om-dialog-item-act item
-                                                           (setf (lines-p (panel (om-view-container  (om-view-container item))))
-                                                                 (om-checked-p item))
-                                                           (om-invalidate-view (panel (om-view-container (om-view-container item))) t))
-                                             :font *om-default-font1*
-                                             :checked-p nil 
-                                             ))
+                   (setf (lineitem  self)
+                         (om-make-dialog-item 'om-check-box (om-make-point 25 2) (om-make-point 60 16) "Lines"
+                                              :di-action  (om-dialog-item-act item
+                                                            (setf (lines-p (panel (om-view-container  (om-view-container item))))
+                                                                  (om-checked-p item))
+                                                            (om-invalidate-view (panel (om-view-container (om-view-container item))) t))
+                                              :font *om-default-font1*
+                                              :checked-p nil 
+                                              ))
                    
-                 
+                   #|
                    (om-make-dialog-item 'om-check-box (om-make-point 25 20) (om-make-point 60 16) "Grid"
                                         :di-action (om-dialog-item-act item
                                                      (let ((pane (panel (om-view-container (om-view-container item)))))
@@ -68,33 +68,56 @@
                                                        ))
                                         :font *om-default-font1*
                                         :checked-p nil
-                                        ) 
+                                        )
+                   |#
+                   (om-make-dialog-item 'om-pop-up-dialog-item (om-make-point 25 20) (om-make-point 65 20) "Grid"
+                                        :di-action (om-dialog-item-act item
+                                                     (let ((pane (panel (om-view-container (om-view-container item))))
+                                                           (sel (om-get-selected-item-index item)))
+                                                       (cond 
+                                                        ((= sel 1) 
+                                                         (setf (grille-p pane) t)
+                                                         (setf (graph-p pane) nil)
+                                                         (draw-grille pane)
+                                                         (om-invalidate-view pane))
+                                                        ((= sel 2) 
+                                                         (setf (grille-p pane) nil)
+                                                         (setf (graph-p pane) t)
+                                                         (draw-graph pane)
+                                                         (om-invalidate-view pane))
+                                                        (t (setf (grille-p pane) nil)
+                                                           (setf (graph-p pane) nil)))
+                                                       ))
+                                        :font *om-default-font1*
+                                        :range '("Off" "Grid" "Graph") 
+                                        :value "Off"
+                                        )
                    (setf (pointitem self)
-                   (om-make-dialog-item 'om-check-box (om-make-point 92 2) (om-make-point 60 16) "Points"
-                                             :di-action  (om-dialog-item-act item
-                                                           (setf (points-p (panel (om-view-container  (om-view-container item))))
-                                                                 (om-checked-p item))
-                                                           #|
+                         (om-make-dialog-item 'om-check-box (om-make-point 96 2) (om-make-point 60 16) "Points"
+                                              :di-action  (om-dialog-item-act item
+                                                            (setf (points-p (panel (om-view-container  (om-view-container item))))
+                                                                  (om-checked-p item))
+                                                            #|
                                                            (setf (show-point-indices (panel (om-view-container (om-view-container item)))) 
                                                                  (om-checked-p item))
                                                            |#
-                                                           (om-invalidate-view (panel (om-view-container (om-view-container item))) t))
-                                             :font *om-default-font1*
-                                             :checked-p nil 
-                                             ))
+                                                            (om-invalidate-view (panel (om-view-container (om-view-container item))) t))
+                                              :font *om-default-font1*
+                                              :checked-p nil 
+                                              ))
 
                    (setf (precisionitem self) (om-make-dialog-item 'numbox (om-make-point 340 2) (om-make-point 30 18) (format nil " ~D" 0)
-                                        :di-action nil
-                                        :font *om-default-font1*
-                                        :bg-color *om-white-color*
-                                        :value 0
-                                        :afterfun #'(lambda (item)
-                                                      (editor-change-precision (om-view-container self) (value item)))
-                                        :min-val 0
-                                        :max-val 10))
+                                                                   :di-action nil
+                                                                   :font *om-default-font1*
+                                                                   :bg-color *om-white-color*
+                                                                   :value 0
+                                                                   :afterfun #'(lambda (item)
+                                                                                 (editor-change-precision (om-view-container self) (value item)))
+                                                                   :min-val 0
+                                                                   :max-val 10))
                    (om-make-dialog-item 'om-static-text (om-make-point 220 0) (om-make-point 120 18) "Precision (decimals)"
-                                         :font *om-default-font1*
-                                         :bg-color *controls-color*)
+                                        :font *om-default-font1*
+                                        :bg-color *controls-color*)
                    )
   (om-set-bg-color self *controls-color*))
 
@@ -258,7 +281,7 @@
 (defmethod get-control-class ((Self Bpfeditor)) 'control-bpf)
 
 ;(defmethod get-control-h ((self Bpfeditor)) #+(or cocoa win32) 45 #+linux 70)
-(defmethod get-control-h ((self Bpfeditor)) 45)
+(defmethod get-control-h ((self Bpfeditor)) 62)
 ;#+linux(defmethod editor-minimum-size ((self bpfeditor)) (om-make-point 340 330))
 
 (defmethod set-attached-editor ((self bpfeditor))
@@ -463,6 +486,8 @@
       (draw-om-picture (get-bg-pict (editor self)) self))
     (when (grille-p self)
       (draw-grille self))
+    (when (graph-p self)
+      (draw-graph self))
     (draw-axis self)  
     (om-draw-view-outline self)
     ; (redraw-rulers self)
@@ -674,17 +699,26 @@
       (#\h  (show-help-window (format nil "Commands for ~A Editor" 
                                       (string-upcase (class-name (class-of (object (editor self)))))) 
                               (get-help-list (editor self))))
-      (#\g (progn
-             (grille-on-off self)
-             (let ((item (second
-                          (om-subviews
-                           (control
-                            (om-view-container self))))))
-                
-               (if (om-checked-p item) 
-                   (om-set-check-box item nil)
-                 (om-set-check-box item t))
-               )))
+      (#\g 
+       (let ((item (second
+                    (om-subviews
+                     (control
+                      (om-view-container self))))))
+         (setf sel (om-set-selected-item-index item (mod (1+ (om-get-selected-item-index item)) 3)))
+         (cond
+          ((= 1 sel)
+           (setf (grille-p self) t)
+           (setf (graph-p self) nil)
+           (draw-grille self)
+           (om-invalidate-view self))
+          ((= 2 sel)
+           (setf (grille-p self) nil)
+           (setf (graph-p self) t)
+           (draw-graph self)
+           (om-invalidate-view self))
+          (t (setf (grille-p self) nil)
+             (setf (graph-p self) nil)))
+         ))
       (#\l (progn
              (let ((item (lineitem 
                           (control
@@ -820,7 +854,7 @@
                   (("i") "Show point indices")
                   (("l") "Toggle Lines")
                   (("p") "Toggle Points")
-                  (("g") "Toggle Grid On/Off ")
+                  (("g") "Toggle Grid/Graph On/Off ")
                   (("s") "Spline preview ")
                   )
                 (when (multibpf? self)

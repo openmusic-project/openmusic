@@ -468,7 +468,8 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 ;view with ruler class
 
 (defclass view-with-ruler-mixin () 
-   ((grille-p :initform nil :accessor grille-p)))
+   ((grille-p :initform nil :accessor grille-p)
+    (graph-p :initform nil :accessor graph-p)))
 
 (defmethod view-with-ruler-mixin-p ((self t)) nil)
 (defmethod view-with-ruler-mixin-p ((self view-with-ruler-mixin)) t)
@@ -757,5 +758,87 @@ this method draw a horizontal ruler, the argument RANGE is a list (minval maxval
 ;    (om-invalidate-view (rulerx self)))
 ;  (call-next-method)
 ;  )
-    
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;GRAPH PAPER;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; by Karim Haddad
+
+(defmethod ruler-print-draw-grille-all ((self ruler) (axe (eql 'y)) offx offy system-etat)
+  (let* ((view (assoc-view self))
+          (i (first (rangey view)))
+          (unit (zoom self))
+          (ppu (norme2pixel view 'y unit))
+          (j (second (rangey view))))
+     (setf i (+ i (- unit (mod i unit))))
+     (loop while (< i j) do
+           (let* ((pixel (point2pixel view (om-make-big-point 0 i) system-etat))) 
+             (draw-grille-liney view (+ offy (om-point-v pixel)) offx)
+             (incf i unit)))))
+
+(defmethod ruler-print-draw-grille-all ((self ruler) (axe (eql 'x)) offx offy system-etat)
+  (let* ((view (assoc-view self))
+          (i (first (rangex view)))
+          (unit (zoom self))
+          (ppu (norme2pixel view 'x unit))
+          (j (second (rangex view))))
+    (setf i (+ i (- unit (mod i unit))))
+     (loop while (< i j) do
+           (let* ((pixel (point2pixel view (om-make-big-point i 0) system-etat)))
+             (draw-grille-linex view (+ offy (om-point-h pixel)) offx)
+             (incf i unit)))))
+
+;;;
+
+(defmethod ruler-print-draw-grille-centrum ((self ruler) (axe (eql 'y)) offx offy system-etat)
+  (let* ((view (assoc-view self))
+          (i (first (rangey view)))
+          (unit (zoom self))
+          (ppu (norme2pixel view 'y unit))
+          (j (second (rangey view))))
+    (setf i (- (+ i (- unit (mod i unit))) unit))
+     (loop while (< i j) do
+           (let* ((pixel (point2pixel view (om-make-big-point 0 i) system-etat))) 
+             (draw-grille-liney view (+ offy (om-point-v pixel)) offx)
+             (incf i (* 5 unit))
+             ))))
+
+(defmethod ruler-print-draw-grille-centrum ((self ruler) (axe (eql 'x)) offx offy system-etat)
+  (let* ((view (assoc-view self))
+          (i (first (rangex view)))
+          (unit (zoom self))
+          (ppu (norme2pixel view 'x unit))
+          (j (second (rangex view))))
+    (setf i (- (+ i (- unit (mod i unit))) unit))
+     (loop while (< i j) do
+           (let* ((pixel (point2pixel view (om-make-big-point i 0) system-etat)))
+             (draw-grille-linex view (+ offy (om-point-h pixel)) offx)
+             (incf i (* 5 unit))))))
+
+
+
+
+(defmethod draw&print-graph  ((self view-with-ruler-xy) &key offx  offy)
+   (let* ((rulerx (rulerx self))
+          (rulery (rulery self))
+          (system-etat (get-system-etat self)))
+     (om-with-fg-color self *om-red-color*
+       (om-with-line-size 2
+         (ruler-print-draw-grille rulery 'y offx offy system-etat)
+         (ruler-print-draw-grille rulerx 'x offx offy system-etat))
+       (om-with-line-size 1.5
+         (ruler-print-draw-grille-centrum rulerx 'x offx offy system-etat)
+         (ruler-print-draw-grille-centrum rulery 'y offx offy system-etat))
+       (om-with-line-size 1
+         (ruler-print-draw-grille-all rulerx 'x offx offy system-etat)
+         (ruler-print-draw-grille-all rulery 'y offx offy system-etat)))))
+
+
+(defmethod draw-graph  ((self view-with-ruler-xy))
+  (om-with-focused-view self
+    (draw&print-graph self :offx 0  :offy 0)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

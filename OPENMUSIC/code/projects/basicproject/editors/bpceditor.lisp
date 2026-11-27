@@ -36,7 +36,7 @@
 (defmethod initialize-instance :after  ((self control-bpc) &key)
   (om-add-subviews 
    self
-   (om-make-dialog-item 'om-check-box (om-make-point 92 20) (om-make-point 100 16) "Closed BPC"
+   (om-make-dialog-item 'om-check-box (om-make-point 96 20) (om-make-point 100 16) "Closed BPC"
                         :di-action (om-dialog-item-act item
                                      (setf (close-line (panel (om-view-container (om-view-container item))))
                                            (om-checked-p item))
@@ -288,7 +288,6 @@
 (defmethod handle-key-event ((self bpcPanel) char)
   (let ((myobj (get-bpf-obj self)))
     (case char
-       ;(#\g (grille-on-off self))
       (#\p (setf (show-point-indices self) (not (show-point-indices self)))
            (om-invalidate-view self))
       (#\c 
@@ -304,17 +303,26 @@
       (#\h  (show-help-window (format nil "Commands for ~A Editor" 
                                       (string-upcase (class-name (class-of (object (editor self)))))) 
                               (get-help-list (editor self))))
-      (#\g (progn
-             (grille-on-off self)
-             (let ((item (second
-                          (om-subviews
-                           (control
-                            (om-view-container self))))))
-                
-               (if (om-checked-p item) 
-                   (om-set-check-box item nil)
-                 (om-set-check-box item t))
-               )))
+      (#\g 
+       (let ((item (second
+                    (om-subviews
+                     (control
+                      (om-view-container self))))))
+         (setf sel (om-set-selected-item-index item (mod (1+ (om-get-selected-item-index item)) 3)))
+         (cond
+          ((= 1 sel)
+           (setf (grille-p self) t)
+           (setf (graph-p self) nil)
+           (draw-grille self)
+           (om-invalidate-view self))
+          ((= 2 sel)
+           (setf (grille-p self) nil)
+           (setf (graph-p self) t)
+           (draw-graph self)
+           (om-invalidate-view self))
+          (t (setf (grille-p self) nil)
+             (setf (graph-p self) nil)))
+         ))
       (#\l (progn
              (let ((item (car
                           (om-subviews
