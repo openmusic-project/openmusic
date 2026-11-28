@@ -222,12 +222,7 @@
     (setf (selected-p button) (equal (mode (om-view-container self)) (id button))))
   (om-invalidate-view self))
 
-(defmethod set-grid-color ((self bpfpanel))
-  (let ((cont (om-view-container self))
-        (color (om-choose-color-dialog)))
-       (print (list "color" color cont))
-       (setf (grid-color self) color)
-  (om-invalidate-view self)))
+
 
 (defmethod om-draw-contents :before ((Self bpf-titlebar)) 
   (let ((editor (om-view-container self)))
@@ -601,6 +596,12 @@
                     do (setf (bpfcolor i) (om-random-color)))
   (setf (bpfcolor (get-bpf-obj self)) (om-random-color)))
   (om-invalidate-view self))) 
+
+(defmethod set-grid-color ((self bpfpanel))
+  (let ((cont (om-view-container self))
+        (color (om-choose-color-dialog)))
+    (setf (grid-color self) color)
+  (om-invalidate-view self)))
 ;------------------------------------
 ;EVENTS
 ;------------------------------------
