@@ -602,6 +602,28 @@
         (color (om-choose-color-dialog)))
     (setf (grid-color self) color)
   (om-invalidate-view self)))
+
+(defmethod set-units-ruler ((self bpfpanel) (ruler ruler)) 
+   (let* ((durruler (max 1 
+                         (if (equal (axe ruler) 'x)
+                             (abs (- (second (rangex self)) (first (rangex self))))
+                           (abs (- (second (rangey self)) (first (rangey self)))))))
+          (base10 (floor (log durruler 10))))
+     (if (graph-p self)
+     (setf (zoom ruler) 1)
+     (setf (zoom ruler) (max 1 (expt 10 (- base10 1)))))
+     (om-invalidate-view self t)
+     ))
+
+(defmethod update-rulers ((self bpfpanel))
+  (let* ((rulerx (rulerx self))
+         (rulery (rulery self))
+         (rgx (rangex self))
+         (rgy (rangey self)))
+    (set-units-ruler self rulerx)
+    (set-units-ruler self rulery)
+    ))
+
 ;------------------------------------
 ;EVENTS
 ;------------------------------------
@@ -722,14 +744,18 @@
            (setf (grille-p self) t)
            (setf (graph-p self) nil)
            (draw-grille self)
+           (update-rulers self)
            (om-invalidate-view self))
           ((= 2 sel)
            (setf (grille-p self) nil)
            (setf (graph-p self) t)
            (draw-graph self)
+           (update-rulers self)
            (om-invalidate-view self))
           (t (setf (grille-p self) nil)
-             (setf (graph-p self) nil)))
+             (setf (graph-p self) nil)
+             (update-rulers self)
+             (om-invalidate-view self)))
          ))
       (#\l (progn
              (let ((item (lineitem 
